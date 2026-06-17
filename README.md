@@ -194,7 +194,7 @@ Dưới đây là danh sách tài khoản nhân viên được cài đặt sẵn
 
 | Tài Khoản | Mật Khẩu | Vai Trò (Role) | Phạm Vi Quyền Hạn |
 | :--- | :--- | :--- | :--- |
-| **admin_duong** | `admin123` hoặc `chinh123` | **Administrator** | Toàn quyền truy cập tất cả phân hệ quản lý và hệ thống |
+| **admin** | `123456` hoặc `chinh123` | **Administrator** | Toàn quyền truy cập tất cả phân hệ quản lý và hệ thống |
 | **editor_minh** | `admin123` hoặc `chinh123` | **Editor** | Quản lý Sản phẩm, Danh mục, Bài viết tin tức và Banner quảng cáo |
 | **sales_lan** | `admin123` hoặc `chinh123` | **Sales Agent** | Chỉ xem Dashboard, Quản lý đơn đặt hàng và danh sách Khách hàng |
 

@@ -9,6 +9,12 @@ import com.example.vuhoangchinh.Repositories.RoleRepository; // Repository tươ
 import org.springframework.beans.factory.annotation.Autowired; // Tự động inject bean phụ thuộc
 import org.springframework.web.bind.annotation.*; // Định nghĩa REST API Controller và Mapping (@GetMapping, @PostMapping, v.v.)
 
+// Import các lớp hỗ trợ phân trang và sắp xếp dữ liệu từ Spring Data
+import org.springframework.data.domain.Page; // Đại diện cho một trang dữ liệu kèm metadata phân trang
+import org.springframework.data.domain.PageRequest; // Class dùng để tạo yêu cầu phân trang cụ thể
+import org.springframework.data.domain.Pageable; // Interface trừu tượng hóa tham số phân trang
+import org.springframework.data.domain.Sort; // Đối tượng định nghĩa tiêu chí sắp xếp trường
+
 // Import kiểu cấu trúc danh sách dữ liệu động chuẩn của Java
 import java.util.List;
 
@@ -35,12 +41,25 @@ public class UserController {
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     /**
-     * API Lấy danh sách tất cả người dùng hệ thống.
-     * GET /api/users
+     * API Lấy danh sách người dùng hệ thống hỗ trợ phân trang và sắp xếp.
+     * GET /api/users?page=0&size=10&sortBy=id&sortDir=asc
      */
     @GetMapping
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public Page<User> getAllUsers(
+            @RequestParam(defaultValue = "0") int page, // Trang số mấy (bắt đầu từ 0)
+            @RequestParam(defaultValue = "10") int size, // Số bản ghi trên mỗi trang
+            @RequestParam(defaultValue = "id") String sortBy, // Trường sắp xếp (e.g. username, email, id)
+            @RequestParam(defaultValue = "asc") String sortDir) { // Hướng sắp xếp: asc (tăng) hoặc desc (giảm)
+        
+        // Khởi tạo bộ sắp xếp Sort dựa theo hướng và thuộc tính được truyền
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? 
+                Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+                
+        // Khởi tạo đối tượng Pageable làm tham số phân trang
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        // Gọi repository lấy dữ liệu phân trang từ MySQL và trả về
+        return userRepository.findAll(pageable);
     }
 
     /**

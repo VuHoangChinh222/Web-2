@@ -2,9 +2,10 @@
 
 ## 📝 Mô Tả Cơ Bản
 
-Dự án **Hệ Thống Quản Trị & API Bán Hàng** là một giải pháp quản lý bán hàng và thương mại điện tử khép kín, an toàn và chuyên nghiệp. Dự án được phân tách rạch ròi thành hai phân hệ độc lập:
+Dự án **Hệ Thống Quản Trị & API Bán Hàng** là một giải pháp quản lý bán hàng và thương mại điện tử khép kín, an toàn và chuyên nghiệp. Dự án được phân tách rõ ràng thành ba phân hệ độc lập:
 1. **Backend (`vuhoangchinh`)**: Xây dựng bằng Java Spring Boot, chịu trách nhiệm cung cấp các RESTful API kết nối với cơ sở dữ liệu MySQL, được bảo vệ nghiêm ngặt bằng Spring Security kết hợp với JWT Token, kiểm tra nghiêm ngặt tính toàn vẹn của dữ liệu và tự động sinh SEO url (slug).
-2. **Frontend (`backendUI`)**: Ứng dụng quản trị Single Page Application (SPA) xây dựng trên React, Vite và Tailwind CSS, mang thiết kế giao diện tối (Dark Mode) hiện đại với hiệu ứng Glassmorphism bắt mắt, giúp người quản trị quản lý toàn bộ hệ thống đơn hàng, sản phẩm, tin tức và nhân viên.
+2. **Admin Frontend (`backendUI`)**: Giao diện quản trị Single Page Application (SPA) dành cho quản trị viên/nhân viên, xây dựng trên React, Vite và Tailwind CSS, mang thiết kế giao diện tối (Dark Mode) hiện đại với hiệu ứng Glassmorphism bắt mắt, giúp quản lý toàn bộ hệ thống đơn hàng, sản phẩm, danh mục, tin tức và nhân viên.
+3. **Store Frontend (`frontendUI`)**: Giao diện trang bán hàng (Client Store) dành cho khách hàng truy cập mua sắm, xây dựng trên React, Vite và Axios, phục vụ xem sản phẩm, phân loại, tìm kiếm và đặt hàng.
 
 ### 💎 Các Điểm Nhấn Công Nghệ Chính:
 * **Mô hình Client-Server rời rạc**: Giao tiếp bảo mật qua REST API sử dụng định dạng dữ liệu chuẩn JSON.
@@ -22,18 +23,28 @@ Hệ thống hoạt động theo mô hình Client-Server rời rạc:
 * **Backend** tiếp nhận yêu cầu, xử lý nghiệp vụ, kiểm tra phân quyền JWT Token, kết nối MySQL thông qua JPA Hibernate và phản hồi dữ liệu dạng JSON.
 
 ```
-┌─────────────────────────────────┐          HTTP Requests & JWT           ┌─────────────────────────────────┐
-│            Frontend             ├───────────────────────────────────────>│             Backend             │
-│          (backendUI)            │<───────────────────────────────────────┤         (vuhoangchinh)          │
-│    React, Vite, Tailwind CSS    │             JSON Response             │    Spring Boot, JPA, Security   │
-└─────────────────────────────────┘                                        └────────────────┬────────────────┘
-                                                                                            │
-                                                                                            │ JPA / Hibernate
-                                                                                            ▼
-                                                                                   ┌─────────────────┐
-                                                                                   │    Database     │
-                                                                                   │      MySQL      │
-                                                                                   └─────────────────┘
+                ┌─────────────────────────────────────────────────────────┐
+                │                     Backend API                         │
+                │                   (vuhoangchinh)                        │
+                │             Spring Boot, JPA, Security                  │
+                └───────────┬───────────────────────────────┬─────────────┘
+                            ▲                               ▲
+                            │ HTTP & JWT                    │ HTTP Requests
+                            │ JSON Response                 │ JSON Response
+                            ▼                               ▼
+    ┌─────────────────────────────────┐           ┌─────────────────────────────────┐
+    │       Admin Dashboard           │           │          Client Store           │
+    │         (backendUI)             │           │          (frontendUI)           │
+    │    React, Vite, Tailwind CSS    │           │      React, Vite, Axios         │
+    └─────────────────────────────────┘           └─────────────────────────────────┘
+                                    │               │
+                                    └───────┬───────┘
+                                            │ JPA / Hibernate
+                                            ▼
+                                   ┌─────────────────┐
+                                   │    Database     │
+                                   │      MySQL      │
+                                   └─────────────────┘
 ```
 
 ---
@@ -214,9 +225,9 @@ springdoc.api-docs.path=/api-docs
 
 ---
 
-### Bước 2: Khởi động Frontend React (Vite)
+### Bước 2: Khởi động Admin Frontend (`backendUI`)
 
-1. Di chuyển vào thư mục dự án frontend:
+1. Di chuyển vào thư mục dự án quản trị:
    ```bash
    cd backendUI
    ```
@@ -230,6 +241,25 @@ springdoc.api-docs.path=/api-docs
    ```
 4. Mở trình duyệt và truy cập theo đường dẫn:
    [http://localhost:5173](http://localhost:5173)
+
+---
+
+### Bước 3: Khởi động Store Frontend (`frontendUI`)
+
+1. Di chuyển vào thư mục dự án bán hàng của khách:
+   ```bash
+   cd frontendUI
+   ```
+2. Thực hiện cài đặt các thư viện phụ thuộc (node_modules):
+   ```bash
+   npm install
+   ```
+3. Chạy ứng dụng ở chế độ phát triển (Development Mode):
+   ```bash
+   npm run dev
+   ```
+4. Mở trình duyệt và truy cập theo đường dẫn cửa hàng (Thường chạy ở cổng tiếp theo, ví dụ `5174` hoặc xem chi tiết cổng trên Terminal của Vite):
+   [http://localhost:5174](http://localhost:5174)
 
 ---
 
@@ -249,21 +279,30 @@ Dưới đây là danh sách tài khoản nhân viên được cài đặt sẵn
 
 ```
 web2/
-├── backendUI/                 # Phân hệ Frontend (React + Vite)
+├── backendUI/                 # Phân hệ Frontend Admin Dashboard (React + Vite + Tailwind CSS)
 │   ├── src/
 │   │   ├── components/        # Thành phần UI tái sử dụng (Navbar, Sidebar, GlassCard...)
 │   │   ├── context/           # Quản lý State toàn cục (AdminContext.jsx)
 │   │   ├── pages/             # Trang giao diện chính (Dashboard, Products, Users...)
 │   │   ├── App.jsx            # Định tuyến chính
 │   │   └── main.jsx           # Điểm khởi tạo dự án React
-│   ├── package.json           # Danh sách dependencies của frontend
+│   ├── package.json           # Cấu hình dự án & dependencies
+│   └── vite.config.js         # Cấu hình Vite
+│
+├── frontendUI/                # Phân hệ Frontend Client Store (React + Vite + Axios)
+│   ├── src/
+│   │   ├── components/        # Các thành phần giao diện bán hàng (Header, Footer, ProductCard...)
+│   │   ├── pages/             # Các trang (Home, ProductDetail, Cart, Checkout...)
+│   │   ├── App.jsx            # Định tuyến trang bán hàng
+│   │   └── main.jsx           # Điểm khởi tạo React
+│   ├── package.json           # Cấu hình dự án & dependencies
 │   └── vite.config.js         # Cấu hình Vite
 │
 └── vuhoangchinh/              # Phân hệ Backend (Spring Boot)
     ├── src/main/java/com/example/vuhoangchinh/
     │   ├── Config/            # Cấu hình bảo mật Security & tài liệu OpenAPI/Swagger
     │   ├── Controllers/       # Nơi tiếp nhận requests HTTP (Auth, Customers, Users...)
-    │   ├── Entities/          # Các thực thể ánh xạ JPA (User, Role, Customer)
+    │   ├── Entities/          # Các thực thể ánh xạ JPA (User, Role, Customer, ProductVariant, ProductImage)
     │   ├── Repositories/      # Giao tiếp cơ sở dữ liệu Spring Data JPA
     │   └── Security/          # Bộ lọc xác thực JWT Token
     ├── src/main/resources/

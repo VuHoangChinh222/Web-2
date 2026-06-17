@@ -1,0 +1,214 @@
+/* Lưới hiển thị 5 sản phẩm trên một hàng */
+.products-grid-5-columns {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    /* Chia thành 5 cột bằng nhau */
+    gap: 20px;
+    /* Khoảng cách giữa các sản phẩm */
+    margin-top: 2rem;
+    width: 100%;
+}
+
+/* Khu vực thanh phân trang */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 3.5rem;
+    margin-bottom: 2rem;
+}
+
+.page-btn {
+    background-color: #f4f4f5;
+    border: 1px solid #e4e4e7;
+    color: #18181b;
+    padding: 8px 15px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.page-btn:hover:not(:disabled) {
+    background-color: #e4e4e7;
+}
+
+.page-btn.active {
+    background-color: #f97316;
+    /* Màu cam thương hiệu của dự án */
+    color: white;
+    border-color: #f97316;
+}
+
+.page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.loading-text {
+    text-align: center;
+    padding: 4rem;
+    font-size: 16px;
+    color: #71717a;
+}
+
+/* === RESPONSIVE (Tự động co giãn theo kích thước màn hình) === */
+@media (max-width: 1200px) {
+    .products-grid-5-columns {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        /* Màn hình máy tính nhỏ: 4 sản phẩm/hàng */
+    }
+}
+
+@media (max-width: 992px) {
+    .products-grid-5-columns {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        /* Màn hình máy tính bảng lớn: 3 sản phẩm/hàng */
+    }
+}
+
+@media (max-width: 640px) {
+    .products-grid-5-columns {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        /* Màn hình điện thoại di động: 2 sản phẩm/hàng */
+        gap: 12px;
+    }
+}
+
+/* === NÂNG CẤP GIAO DIỆN DANH MỤC THỂ TRÒN CAO CẤP === */
+.section-header-custom {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.section-header-custom .section-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: -0.025em;
+    background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.section-header-custom .section-subtitle {
+    font-size: 1rem;
+    color: #64748b;
+    font-weight: 400;
+}
+
+.category-cards-container {
+    display: flex;
+    gap: 30px;
+    overflow-x: auto;
+    padding: 10px 5px 25px 5px;
+    margin-bottom: 2rem;
+    scrollbar-width: none; /* Ẩn scrollbar Firefox */
+    -ms-overflow-style: none; /* Ẩn scrollbar IE/Edge */
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.category-cards-container::-webkit-scrollbar {
+    display: none; /* Ẩn scrollbar Chrome/Safari/Opera */
+}
+
+.category-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 120px;
+    text-align: center;
+    user-select: none;
+}
+
+.category-card-image-wrapper {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #f1f5f9;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: #f8fafc;
+}
+
+.category-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent 30%, rgba(249, 115, 22, 0.15));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Hover & Active Effects */
+.category-card:hover .category-card-image {
+    transform: scale(1.12);
+}
+
+.category-card:hover .category-card-image-wrapper {
+    border-color: #fdba74; /* Màu cam nhạt hơn khi hover */
+    box-shadow: 0 10px 20px rgba(249, 115, 22, 0.15), 0 4px 8px rgba(249, 115, 22, 0.08);
+    transform: translateY(-5px);
+}
+
+.category-card.active .category-card-image-wrapper {
+    border-color: #f97316; /* Màu cam thương hiệu */
+    box-shadow: 0 12px 24px rgba(249, 115, 22, 0.3), 0 4px 10px rgba(249, 115, 22, 0.15);
+    transform: translateY(-5px) scale(1.03);
+}
+
+.category-card-name {
+    margin-top: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #475569;
+    letter-spacing: -0.01em;
+    transition: color 0.3s ease;
+}
+
+.category-card:hover .category-card-name,
+.category-card.active .category-card-name {
+    color: #f97316;
+}
+
+/* Responsive cho danh mục */
+@media (max-width: 640px) {
+    .category-cards-container {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        gap: 20px;
+    }
+    
+    .category-card {
+        width: 100px;
+        flex-shrink: 0;
+    }
+    
+    .category-card-image-wrapper {
+        width: 75px;
+        height: 75px;
+        border-width: 3px;
+    }
+    
+    .category-card-name {
+        font-size: 0.85rem;
+    }
+}

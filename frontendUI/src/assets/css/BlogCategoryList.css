@@ -1,0 +1,121 @@
+/* 
+ * BLOG CATEGORY LIST - STYLESHEET
+ * Sinh viên: Vũ Hoàng Chính
+ * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ */
+
+.blog-category-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.blog-category-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.8rem;
+}
+
+.blog-category-title i {
+    color: var(--accent);
+}
+
+.blog-category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.blog-category-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: left;
+    width: 100%;
+}
+
+.blog-category-item:hover {
+    background: rgba(249, 115, 22, 0.08);
+    border-color: rgba(249, 115, 22, 0.3);
+    color: var(--accent);
+    transform: translateX(6px);
+}
+
+.blog-category-item.active {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    border-color: #f97316;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
+}
+
+.blog-category-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.blog-category-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.blog-category-item:hover .blog-category-img {
+    border-color: #fdba74;
+    transform: scale(1.1);
+}
+
+.blog-category-item.active .blog-category-img {
+    border-color: white;
+    background-color: white;
+}
+
+.blog-category-name {
+    transition: color 0.3s ease;
+}
+
+.blog-category-item.active .blog-category-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-color: transparent;
+}
+
+.blog-category-badge {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+}
+
+.blog-category-loading {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 1rem 0;
+}

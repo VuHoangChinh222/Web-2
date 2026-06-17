@@ -1,0 +1,263 @@
+/* 
+ * HEROBANNER - Component Stylesheet
+ * Sinh viên: Vũ Hoàng Chính
+ * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ */
+
+.hero-banner-container {
+    position: relative;
+    height: 480px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 24px;
+    margin: 2rem 4%;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    background-color: #0b0f19;
+}
+
+.hero-banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.5) 60%, rgba(15, 23, 42, 0.2) 100%);
+    z-index: 1;
+}
+
+.hero-banner-content {
+    position: relative;
+    z-index: 2;
+    padding: 3rem 6rem;
+    max-width: 850px;
+    color: white;
+    animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.hero-banner-tag {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    display: inline-block;
+    margin-bottom: 1.2rem;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
+}
+
+.hero-banner-title {
+    font-size: 2.8rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.hero-banner-title span {
+    color: #f97316;
+    background: linear-gradient(135deg, #f97316 0%, #fdba74 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-banner-desc {
+    color: rgba(243, 244, 246, 0.85);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.hero-banner-btn {
+    padding: 12px 28px;
+    font-weight: 600;
+    border-radius: 30px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-banner-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(249, 115, 22, 0.35);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .hero-banner-container {
+        margin: 2rem 4%;
+        height: 420px;
+    }
+
+    .hero-banner-content {
+        padding: 2.5rem 4rem;
+    }
+
+    .hero-banner-title {
+        font-size: 2.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-banner-container {
+        height: 360px;
+        border-radius: 16px;
+    }
+
+    .hero-banner-content {
+        padding: 2rem;
+    }
+
+    .hero-banner-title {
+        font-size: 1.8rem;
+    }
+
+    .hero-banner-desc {
+        font-size: 0.95rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .hero-banner-btn {
+        padding: 10px 22px;
+        font-size: 0.9rem;
+    }
+}
+
+/* ==========================================================================
+   SLIDER MODE STYLES FOR DYNAMIC BANNERS
+   ========================================================================== */
+.hero-banner-container.slider-mode {
+    position: relative;
+    height: 480px;
+}
+
+.hero-banner-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+}
+
+.hero-banner-slide.active {
+    opacity: 1;
+    z-index: 2;
+}
+
+.hero-banner-slide.active .hero-banner-content {
+    animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Control buttons for banner navigation */
+.hero-banner-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    color: white;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(8px);
+}
+
+.hero-banner-control:hover {
+    background: #f97316;
+    border-color: #f97316;
+    box-shadow: 0 0 15px rgba(249, 115, 22, 0.45);
+    transform: translateY(-50%) scale(1.08);
+}
+
+.hero-banner-control.prev {
+    left: 24px;
+}
+
+.hero-banner-control.next {
+    right: 24px;
+}
+
+/* Dot pagination indicators */
+.hero-banner-dots {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.hero-banner-dot {
+    width: 24px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.hero-banner-dot.active {
+    background: #f97316;
+    width: 40px;
+    box-shadow: 0 0 8px rgba(249, 115, 22, 0.5);
+}
+
+@media (max-width: 768px) {
+    .hero-banner-container.slider-mode {
+        height: 360px;
+    }
+
+    .hero-banner-control {
+        width: 38px;
+        height: 38px;
+        font-size: 0.9rem;
+    }
+
+    .hero-banner-control.prev {
+        left: 12px;
+    }
+
+    .hero-banner-control.next {
+        right: 12px;
+    }
+
+    .hero-banner-dots {
+        bottom: 16px;
+    }
+}

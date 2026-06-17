@@ -1,0 +1,113 @@
+/* ========================================================= */
+/* LƯỚI HIỂN THỊ CHUNG 5 CỘT (DÙNG CHO CẢ SẢN PHẨM & BÀI VIẾT) */
+/* ========================================================= */
+.products-grid-5-columns {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 20px;
+    width: 100%;
+    margin-top: 2rem;
+}
+
+/* ========================================================= */
+/* CẤU TRÚC LAYOUT CÁC KHỐI TRÊN TRANG HOME */
+/* ========================================================= */
+.featured-sections {
+    padding: 3rem 0 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+}
+
+.featured-sections .container-fluid {
+    padding: 0 4%;
+}
+
+.featured-sections .section-header {
+    margin-bottom: 1.5rem;
+}
+
+.featured-sections .section-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.featured-sections .section-desc {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-top: 0.25rem;
+}
+
+/* Khối Section Bài Viết */
+#posts-sec {
+    border-top: 1px solid var(--border-color);
+    padding-top: 3rem;
+    margin-top: 2rem;
+}
+
+/* Trạng thái chữ báo Loading đồng bộ màu chữ tối */
+.loading-text {
+    text-align: center;
+    padding: 4rem;
+    font-size: 16px;
+    color: var(--text-muted);
+}
+
+/* === RESPONSIVE AUTO CO GIÃN THEO THIẾT BỊ === */
+@media (max-width: 1200px) {
+    .products-grid-5-columns {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 992px) {
+    .products-grid-5-columns {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .products-grid-5-columns {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+}
+
+.blog-section-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.blog-category-sidebar-wrap {
+    max-width: 300px;
+}
+
+.blog-posts-content-wrap {
+    flex: 1;
+}
+
+.blog-posts-loading-wrap {
+    padding: 3rem 0;
+    text-align: center;
+}
+
+.blog-posts-empty-wrap {
+    text-align: center;
+    padding: 3rem 0;
+    color: var(--text-muted);
+}
+
+.blog-posts-empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+    color: var(--border-color);
+}
+
+.blog-posts-grid-inner {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+}

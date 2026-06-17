@@ -1,0 +1,42 @@
+/* 
+ * CHECKOUT VIEW - STYLESHEET
+ * Sinh viên: Vũ Hoàng Chính
+ * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ */
+
+.checkout-form-card {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.checkout-error-alert {
+    background: #fef2f2;
+    border-left: 4px solid #ef4444;
+    color: #b91c1c;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.checkout-error-icon {
+    margin-right: 8px;
+}
+
+.checkout-required-star {
+    color: #ef4444;
+}
+
+.checkout-actions-row {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.checkout-action-btn {
+    flex: 1;
+}
+
+.checkout-spinner-icon {
+    margin-right: 8px;
+}

@@ -1,0 +1,68 @@
+/* 
+ * ABOUT US VIEW - STYLESHEET
+ * Sinh viên: Vũ Hoàng Chính
+ * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ */
+
+.about-content-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3rem;
+    margin-top: 2rem;
+}
+
+.about-text-column {
+    flex: 1 1 500px;
+}
+
+.about-text-lead {
+    color: var(--text-main);
+    font-size: 1.05rem;
+    line-height: 1.8;
+    margin-bottom: 1.2rem;
+}
+
+.about-text-para {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 1.2rem;
+}
+
+.about-text-para-last {
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+}
+
+.project-info-box {
+    margin-top: 2rem;
+    padding: 1.8rem;
+    background: rgba(249, 115, 22, 0.05);
+    border-radius: 16px;
+    border-left: 4px solid var(--accent);
+    border: 1px solid rgba(249, 115, 22, 0.1);
+}
+
+.project-info-box-title {
+    margin: 0 0 10px 0;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+}
+
+.project-info-box-desc {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.about-profile-column {
+    flex: 1 1 350px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}

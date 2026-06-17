@@ -1,0 +1,27 @@
+/* Định dạng văn bản chi tiết bên trong bài viết */
+.post-detail-content p {
+    margin-bottom: 1.5rem;
+    color: var(--text-main);
+}
+
+.post-detail-content strong {
+    color: var(--accent);
+    /* Làm nổi bật các đoạn chữ in đậm */
+    font-weight: 600;
+}
+
+.post-detail-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+    display: block;
+}
+
+.post-detail-content h2,
+.post-detail-content h3 {
+    color: var(--text-main);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    text-transform: none;
+}

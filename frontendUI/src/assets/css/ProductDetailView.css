@@ -1,0 +1,82 @@
+/* 
+ * PRODUCT DETAIL VIEW - STYLESHEET
+ * Sinh viên: Vũ Hoàng Chính
+ * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ */
+
+.detail-loading-container {
+    text-align: center;
+    padding: 8rem 2rem;
+    color: var(--text-muted);
+}
+
+.detail-loading-spinner {
+    font-size: 2rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+}
+
+.detail-error-container {
+    text-align: center;
+    padding: 8rem 2rem;
+}
+
+.detail-error-icon {
+    font-size: 3rem;
+    color: #ef4444;
+    margin-bottom: 1rem;
+}
+
+.detail-error-message {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+.detail-back-button {
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.detail-name-heading {
+    text-transform: none !important;
+}
+
+.detail-stock-row {
+    margin: 1rem 0;
+}
+
+.detail-badge-instock {
+    background: #10b981;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.detail-badge-outofstock {
+    background: #ef4444;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.detail-add-cart-btn {
+    flex: 1;
+}
+
+.detail-cart-icon {
+    margin-right: 10px;
+}
+
+.detail-outofstock-btn {
+    flex: 1;
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.detail-ban-icon {
+    margin-right: 10px;
+}

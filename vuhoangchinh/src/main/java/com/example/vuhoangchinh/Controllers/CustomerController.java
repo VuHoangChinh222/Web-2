@@ -25,6 +25,10 @@ import java.util.HashMap; // Map dùng bảng băm để lưu kết quả trả 
 import java.util.List; // Danh sách động lưu trữ tập hợp phần tử
 import java.util.Map; // Giao diện cấu trúc dữ liệu lưu cặp key-value
 
+// Import thư viện validation
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
 /**
  * @RestController: Khai báo đây là một Controller cung cấp API dạng RESTful.
  *                  Mọi dữ liệu trả về từ các method sẽ được tự động chuyển thành JSON.
@@ -56,7 +60,11 @@ public class CustomerController {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CustomerLoginRequest {
+        @NotBlank(message = "Email đăng nhập không được để trống")
+        @Email(message = "Email không đúng định dạng hợp lệ")
         private String email; // Email đăng nhập của khách hàng
+
+        @NotBlank(message = "Mật khẩu đăng nhập không được để trống")
         private String password; // Mật khẩu chưa mã hóa của khách hàng
     }
 
@@ -65,12 +73,17 @@ public class CustomerController {
      * POST /api/customers/register
      */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Customer customer) {
+    public ResponseEntity<?> register(@Valid @RequestBody Customer customer) {
         // Kiểm tra xem email đăng ký đã tồn tại trong hệ thống chưa
         if (customerRepository.findByEmail(customer.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Email is already registered");
         }
         
+        // Đảm bảo mật khẩu đăng ký không được để trống
+        if (customer.getPassword() == null || customer.getPassword().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Password is required");
+        }
+
         // Tiến hành mã hóa mật khẩu thô trước khi lưu vào cơ sở dữ liệu để bảo mật
         customer.setPassword(passwordEncoder.encode(customer.getPassword()));
         
@@ -89,7 +102,7 @@ public class CustomerController {
      * POST /api/customers/login
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody CustomerLoginRequest loginRequest) {
+    public ResponseEntity<?> login(@Valid @RequestBody CustomerLoginRequest loginRequest) {
         String email = loginRequest.getEmail();
         String password = loginRequest.getPassword();
 
@@ -146,7 +159,12 @@ public class CustomerController {
      * POST /api/customers
      */
     @PostMapping
-    public Customer createCustomer(@RequestBody Customer customer) {
+    public Customer createCustomer(@Valid @RequestBody Customer customer) {
+        // Đảm bảo mật khẩu không được để trống khi tạo mới
+        if (customer.getPassword() == null || customer.getPassword().trim().isEmpty()) {
+            throw new IllegalArgumentException("Mật khẩu không được để trống khi tạo mới khách hàng");
+        }
+
         // Mã hóa mật khẩu khi admin tạo tài khoản cho khách hàng
         customer.setPassword(passwordEncoder.encode(customer.getPassword()));
         return customerRepository.save(customer);
@@ -167,7 +185,7 @@ public class CustomerController {
      * PUT /api/customers/{id}
      */
     @PutMapping("/{id}")
-    public Customer updateCustomer(@PathVariable Long id, @RequestBody Customer customerDetails) {
+    public Customer updateCustomer(@PathVariable Long id, @Valid @RequestBody Customer customerDetails) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found with id " + id));
 

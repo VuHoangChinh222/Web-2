@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.*; // Các annotations REST API (
 // Import cấu trúc dữ liệu chuẩn của Java
 import java.util.List; // Kiểu danh sách dữ liệu động
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
 /**
  * @RestController: Khai báo lớp này là một REST Controller cung cấp các endpoint API trả về JSON.
  * @RequestMapping("/api/user-addresses"): Định nghĩa đường dẫn tiền tố chung cho tất cả API trong lớp này.
@@ -36,19 +39,33 @@ public class UserAddressController {
 
     /**
      * DTO (Data Transfer Object) dùng để chứa dữ liệu yêu cầu thêm mới/cập nhật địa chỉ.
-     * Cấu trúc phẳng (Flat) giúp Client không cần truyền Object lồng phức tạp, chỉ cần truyền ID khách hàng.
      */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UserAddressRequest {
+        @NotNull(message = "ID khách hàng là bắt buộc")
         private Long customerId; // ID của khách hàng sở hữu địa chỉ này
+        
+        @NotBlank(message = "Tên người nhận không được để trống")
         private String recipientName; // Tên người nhận hàng tại địa chỉ này
+        
+        @NotBlank(message = "Số điện thoại người nhận không được để trống")
+        @Pattern(regexp = "^(0|\\+84)[0-9]{9}$", message = "Số điện thoại người nhận không đúng định dạng (Ví dụ: 0912345678)")
         private String recipientPhone; // Số điện thoại liên hệ của người nhận
+        
+        @NotBlank(message = "Địa chỉ chi tiết không được để trống")
         private String addressLine; // Địa chỉ chi tiết (số nhà, ngõ, tên đường)
+        
+        @NotBlank(message = "Phường/Xã không được để trống")
         private String ward; // Phường/Xã
+        
+        @NotBlank(message = "Quận/Huyện không được để trống")
         private String district; // Quận/Huyện
+        
+        @NotBlank(message = "Tỉnh/Thành phố không được để trống")
         private String city; // Tỉnh/Thành phố
+        
         private Boolean isDefault; // Đánh dấu đây có phải địa chỉ giao hàng mặc định hay không
     }
 
@@ -75,7 +92,7 @@ public class UserAddressController {
      * POST /api/user-addresses
      */
     @PostMapping
-    public ResponseEntity<?> createAddress(@RequestBody UserAddressRequest request) {
+    public ResponseEntity<?> createAddress(@Valid @RequestBody UserAddressRequest request) {
         // Kiểm tra xem ID của khách hàng có được gửi lên hay không
         if (request.getCustomerId() == null) {
             return ResponseEntity.badRequest().body("Customer id is required");
@@ -123,7 +140,7 @@ public class UserAddressController {
      * PUT /api/user-addresses/{id}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateAddress(@PathVariable Long id, @RequestBody UserAddressRequest request) {
+    public ResponseEntity<?> updateAddress(@PathVariable Long id, @Valid @RequestBody UserAddressRequest request) {
         // Tìm địa chỉ cần sửa trong Database, nếu không có thì báo lỗi
         UserAddress userAddress = userAddressRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Address not found with id " + id));

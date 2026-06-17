@@ -18,6 +18,9 @@ import org.springframework.data.domain.Sort; // Đối tượng định nghĩa t
 // Import kiểu cấu trúc danh sách dữ liệu động chuẩn của Java
 import java.util.List;
 
+// Import thư viện Validation
+import jakarta.validation.Valid;
+
 /**
  * @RestController: Khai báo lớp này là một REST Controller, các dữ liệu trả về sẽ tự động chuyển thành JSON.
  * @RequestMapping("/api/users"): Định nghĩa tiền tố đường dẫn dùng chung cho các API quản lý User.
@@ -67,7 +70,7 @@ public class UserController {
      * POST /api/users
      */
     @PostMapping
-    public User createUser(@RequestBody User user) {
+    public User createUser(@Valid @RequestBody User user) {
         // Kiểm tra xem đối tượng role truyền lên có ID hợp lệ không
         if (user.getRole() == null || user.getRole().getId() == null) {
             throw new RuntimeException("Role id is required");
@@ -78,6 +81,11 @@ public class UserController {
                 .orElseThrow(() -> new RuntimeException("Role not found"));
         user.setRole(role); // Thiết lập mối quan hệ với Role
         
+        // Đảm bảo mật khẩu không bị trống khi tạo mới
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            throw new IllegalArgumentException("Mật khẩu không được để trống khi tạo mới tài khoản");
+        }
+
         // Mã hóa mật khẩu thô bằng thuật toán BCrypt trước khi lưu tài khoản mới
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         
@@ -100,7 +108,7 @@ public class UserController {
      * PUT /api/users/{id}
      */
     @PutMapping("/{id}")
-    public User updateUser(@PathVariable Long id, @RequestBody User userDetails) {
+    public User updateUser(@PathVariable Long id, @Valid @RequestBody User userDetails) {
         // Tìm kiếm tài khoản người dùng cần sửa trong CSDL, báo lỗi nếu không tìm thấy
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id " + id));

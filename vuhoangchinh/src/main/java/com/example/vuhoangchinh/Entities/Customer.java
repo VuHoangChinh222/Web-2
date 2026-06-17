@@ -13,6 +13,9 @@ import org.hibernate.annotations.UpdateTimestamp; // Tự động điền ngày 
 // Import thư viện xử lý thời gian chuẩn của Java
 import java.time.LocalDateTime; // Lớp xử lý ngày giờ hệ thống
 
+// Import các annotation hỗ trợ bẫy lỗi Validation
+import jakarta.validation.constraints.*;
+
 /**
  * @Entity: Khai báo lớp này là một thực thể JPA được ánh xạ xuống Database.
  * @Table(name = "customers"): Chỉ định tên bảng trong CSDL MySQL tương ứng là "customers".
@@ -36,6 +39,8 @@ public class Customer {
     private Long id;
 
     // Trường email là duy nhất (unique = true), không được phép null, độ dài tối đa 100 ký tự
+    @NotBlank(message = "Email không được để trống")
+    @Email(message = "Email không đúng định dạng hợp lệ (Ví dụ: customer@gmail.com)")
     @Column(unique = true, nullable = false, length = 100)
     private String email;
 
@@ -44,10 +49,13 @@ public class Customer {
     private String password;
 
     // Tên cột trong DB tương ứng là "full_name", không được null, dài tối đa 100 ký tự
+    @NotBlank(message = "Họ và tên không được để trống")
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
     // Trường số điện thoại, độ dài tối đa 15 ký tự
+    @NotBlank(message = "Số điện thoại không được để trống")
+    @Pattern(regexp = "^(0|\\+84)[0-9]{9}$", message = "Số điện thoại không đúng định dạng (Ví dụ: 0912345678)")
     @Column(length = 15)
     private String phone;
 

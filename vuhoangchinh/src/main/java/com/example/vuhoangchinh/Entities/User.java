@@ -13,6 +13,9 @@ import org.hibernate.annotations.UpdateTimestamp; // Tự động điền ngày 
 // Import thư viện xử lý thời gian chuẩn của Java
 import java.time.LocalDateTime; // Lớp xử lý ngày giờ hệ thống
 
+// Import thư viện bẫy lỗi Validation
+import jakarta.validation.constraints.*;
+
 /**
  * @Entity: Khai báo lớp này là một thực thể JPA đại diện cho bảng dữ liệu.
  * @Table(name = "users"): Chỉ định tên bảng trong cơ sở dữ liệu MySQL tương ứng là "users".
@@ -33,6 +36,8 @@ public class User {
     private Long id;
 
     // Tên đăng nhập hệ thống, là duy nhất (unique), không được null, dài tối đa 50 ký tự
+    @NotBlank(message = "Tên đăng nhập không được để trống")
+    @Size(min = 3, max = 50, message = "Tên đăng nhập phải từ 3 đến 50 ký tự")
     @Column(unique = true, nullable = false, length = 50)
     private String username;
 
@@ -41,14 +46,19 @@ public class User {
     private String password;
 
     // Họ tên đầy đủ của nhân viên/quản trị viên, dài tối đa 100 ký tự
+    @NotBlank(message = "Họ và tên không được để trống")
     @Column(name = "full_name", length = 100)
     private String fullName;
 
     // Địa chỉ email của nhân viên/quản trị viên, là duy nhất (unique), dài tối đa 100 ký tự
+    @NotBlank(message = "Email không được để trống")
+    @Email(message = "Email không đúng định dạng hợp lệ (Ví dụ: admin@gmail.com)")
     @Column(unique = true, length = 100)
     private String email;
 
     // Số điện thoại liên hệ, dài tối đa 15 ký tự
+    @NotBlank(message = "Số điện thoại không được để trống")
+    @Pattern(regexp = "^(0|\\+84)[0-9]{9}$", message = "Số điện thoại không đúng định dạng (Ví dụ: 0912345678)")
     @Column(length = 15)
     private String phone;
 

@@ -6,6 +6,9 @@ import jakarta.persistence.*; // Annotations như @Entity, @Table, @Id, @Column,
 // Import thư viện Lombok hỗ trợ viết mã nguồn ngắn gọn, tự động sinh code
 import lombok.*; // Annotations như @Data, @NoArgsConstructor, @AllArgsConstructor
 
+// Import thư viện bẫy lỗi Validation
+import jakarta.validation.constraints.*;
+
 /**
  * @Entity: Khai báo lớp này là một thực thể JPA đại diện cho bảng dữ liệu.
  * @Table(name = "category_products"): Chỉ định tên bảng trong cơ sở dữ liệu MySQL tương ứng là "category_products".
@@ -26,6 +29,8 @@ public class CategoryProduct {
     private Long id;
 
     // Tên danh mục sản phẩm (Ví dụ: Giày thể thao, Quần áo), không được null, dài tối đa 100 ký tự
+    @NotBlank(message = "Tên danh mục không được để trống")
+    @Size(max = 100, message = "Tên danh mục không được vượt quá 100 ký tự")
     @Column(nullable = false, length = 100)
     private String name;
 
@@ -38,6 +43,7 @@ public class CategoryProduct {
     private String description;
 
     // Đường dẫn ảnh đại diện cho danh mục sản phẩm (Ví dụ: "/image/category-sneaker.png"), không được null, dài tối đa 255 ký tự
+    @NotBlank(message = "Ảnh danh mục không được để trống")
     @Column(name = "image_url", nullable = false, length = 255)
     private String imageUrl;
 

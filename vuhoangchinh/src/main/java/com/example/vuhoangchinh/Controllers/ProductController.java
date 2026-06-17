@@ -24,6 +24,9 @@ import org.springframework.data.domain.Sort; // Bộ công cụ hỗ trợ sắp
 import java.math.BigDecimal; // Kiểu số thực chính xác cao
 import java.text.Normalizer; // Công cụ chuẩn hóa bộ chữ cái tiếng Việt
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+
 /**
  * @RestController: Khai báo lớp này là một REST Controller, mọi dữ liệu tự động chuyển sang JSON.
  * @RequestMapping("/api/products"): Đường dẫn gốc định danh cho tất cả các API thao tác Sản phẩm.
@@ -44,21 +47,30 @@ public class ProductController {
 
     /**
      * DTO (Data Transfer Object) dùng để chứa thông tin người dùng gửi lên khi thêm/sửa sản phẩm.
-     * Nhờ cấu trúc phẳng này, người dùng chỉ cần gửi lên "categoryId: 1" thay vì phải gửi nguyên cụm 
-     * json "category: { id: 1 }" rối rắm.
      */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ProductRequest {
+        @NotNull(message = "ID danh mục là bắt buộc nhập")
         private Long categoryId; // Mã danh mục mà sản phẩm này trực thuộc
+        
+        @NotBlank(message = "Tên sản phẩm không được để trống")
+        @Size(max = 200, message = "Tên sản phẩm tối đa 200 ký tự")
         private String name; // Tên sản phẩm
+        
         private String slug; // Đường dẫn tĩnh (nếu rỗng sẽ tự sinh)
         private String shortDescription; // Đoạn mô tả ngắn gọn
         private String description; // Chi tiết mô tả
         private String thumbnail; // Ảnh bìa chính
+        
+        @NotNull(message = "Giá gốc (basePrice) là bắt buộc nhập")
+        @Min(value = 0, message = "Giá gốc không được là số âm")
         private BigDecimal basePrice; // Giá chưa giảm
+        
+        @Min(value = 0, message = "Giá khuyến mãi không được là số âm")
         private BigDecimal discountPrice; // Giá đã giảm
+        
         private Integer status; // Tình trạng kinh doanh
     }
 
@@ -134,7 +146,7 @@ public class ProductController {
      * POST /api/products
      */
     @PostMapping
-    public ResponseEntity<?> createProduct(@RequestBody ProductRequest request) {
+    public ResponseEntity<?> createProduct(@Valid @RequestBody ProductRequest request) {
         // Bắt buộc phải có ID danh mục để biết sản phẩm thuộc phân loại nào
         if (request.getCategoryId() == null) {
             return ResponseEntity.badRequest().body("Category ID is required");
@@ -188,7 +200,7 @@ public class ProductController {
      * PUT /api/products/{id}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductRequest request) {
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
         // Kiểm tra xem ID sản phẩm gửi lên có tồn tại trong CSDL hay không
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id " + id));

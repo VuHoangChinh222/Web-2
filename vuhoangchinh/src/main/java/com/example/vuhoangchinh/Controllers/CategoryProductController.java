@@ -18,6 +18,9 @@ import org.springframework.data.domain.Sort; // Định nghĩa tiêu chí sắp 
 // Import thư viện chuẩn của Java phục vụ chuẩn hóa văn bản
 import java.text.Normalizer; // Dùng để loại bỏ dấu tiếng Việt (ví dụ: á -> a)
 
+// Import thư viện validation
+import jakarta.validation.Valid;
+
 /**
  * @RestController: Khai báo lớp này là một REST Controller, trả về JSON tự động.
  * @RequestMapping("/api/category-products"): Đặt tiền tố chung cho các API quản lý Danh mục sản phẩm.
@@ -83,7 +86,7 @@ public class CategoryProductController {
      * Hỗ trợ tự động tạo SEO slug từ tên danh mục nếu client để trống.
      */
     @PostMapping
-    public ResponseEntity<?> createCategory(@RequestBody CategoryProduct category) {
+    public ResponseEntity<?> createCategory(@Valid @RequestBody CategoryProduct category) {
         // Kiểm tra nếu tên danh mục trống thì báo lỗi 400
         if (category.getName() == null || category.getName().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("Category name is required");
@@ -112,7 +115,7 @@ public class CategoryProductController {
      * PUT /api/category-products/{id}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateCategory(@PathVariable Long id, @RequestBody CategoryProduct categoryDetails) {
+    public ResponseEntity<?> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryProduct categoryDetails) {
         CategoryProduct category = categoryProductRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found with id " + id));
 

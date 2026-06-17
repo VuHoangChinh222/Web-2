@@ -1,48 +1,93 @@
 package com.example.vuhoangchinh.Config;
 
+// Import lớp filter tự định nghĩa để kiểm tra JWT Token của máy khách gửi lên
 import com.example.vuhoangchinh.Security.JwtAuthenticationFilter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+// Import các annotation cấu hình của Spring Framework
+import org.springframework.beans.factory.annotation.Autowired; // Tự động tiêm dependency bean
+import org.springframework.context.annotation.Bean; // Khai báo phương thức sinh ra một Spring Bean
+import org.springframework.context.annotation.Configuration; // Khai báo đây là một lớp cấu hình ứng dụng
+import org.springframework.http.HttpMethod; // Enum các phương thức HTTP (GET, POST, PUT, DELETE...)
+
+// Import các thư viện của Spring Security để cấu hình bảo mật web
+import org.springframework.security.config.annotation.web.builders.HttpSecurity; // Đối tượng dùng để cấu hình bảo mật các API HTTP
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity; // Kích hoạt tính năng Spring Security cho Web
+import org.springframework.security.config.http.SessionCreationPolicy; // Định nghĩa cơ chế quản lý Session (phiên làm việc)
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // Thuật toán băm mật khẩu BCrypt
+import org.springframework.security.crypto.password.PasswordEncoder; // Giao diện chung để mã hóa mật khẩu
+import org.springframework.security.web.SecurityFilterChain; // Chuỗi bộ lọc bảo mật để kiểm tra request đi qua
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter; // Bộ lọc mặc định kiểm tra username/password của Spring
+
+/**
+ * @Configuration: Đánh dấu đây là class cấu hình hệ thống. Spring sẽ quét qua class này khi khởi động.
+ * @EnableWebSecurity: Kích hoạt bộ lọc bảo mật Spring Security để bảo vệ các endpoint URL.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // Tiêm filter JWT để cấu hình chạy trước khi kiểm tra tài khoản mặc định
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    /**
+     * Khởi tạo PasswordEncoder Bean.
+     * Sử dụng thuật toán BCrypt để mã hóa (băm) mật khẩu (mặc định với độ mạnh salt là 10).
+     * Mật khẩu sau khi băm có dạng chuỗi dài cố định và không thể dịch ngược, đảm bảo an toàn tối đa.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Cấu hình Chuỗi bộ lọc bảo mật (SecurityFilterChain) cho toàn bộ ứng dụng web.
+     * Đây là nơi quy định API nào mở tự do, API nào yêu cầu quyền đăng nhập.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            // 1. Vô hiệu hóa tính năng bảo vệ CSRF (Cross-Site Request Forgery).
+            // Do chúng ta thiết kế REST API chạy Stateless (không lưu session), dùng JWT Token, nên không cần CSRF token.
             .csrf(csrf -> csrf.disable())
+            
+            // 2. Cấu hình CORS (Cross-Origin Resource Sharing).
+            // Cho phép gọi API xuyên miền (như từ dự án React Frontend cổng 3000 sang Spring Boot cổng 8080).
             .cors(cors -> {})
+            
+            // 3. Cấu hình Stateless Session Management (Quản lý phiên không lưu trạng thái).
+            // Không tạo HTTP Session trên máy chủ Spring Boot, bắt buộc mỗi Request đều phải mang theo JWT Token để nhận diện.
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // 4. Thiết lập quy tắc phân quyền (Route Permissions) cho từng URL API:
             .authorizeHttpRequests(auth -> auth
+                // Cho phép mở tự do hoàn toàn các tài liệu mô tả API Swagger UI để lập trình viên tiện debug
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api-docs/**").permitAll()
+                
+                // Cho phép tải ảnh lên và truy cập thư mục ảnh tĩnh không cần đăng nhập
                 .requestMatchers("/api/uploads/**", "/image/**").permitAll()
+                
+                // Cho phép gọi API đăng nhập của Admin/Nhân viên công khai
                 .requestMatchers("/api/auth/**").permitAll()
+                
+                // Cho phép gọi API đăng ký và đăng nhập của khách hàng tự do
                 .requestMatchers("/api/customers/login", "/api/customers/register").permitAll()
+                
+                // Bắt buộc phải đăng nhập (Authenticated) khi thực hiện bất cứ hành động nào với User hệ thống
                 .requestMatchers("/api/users/**").authenticated()
+                
+                // Bắt buộc phải đăng nhập khi quản lý vai trò Role hệ thống
                 .requestMatchers("/api/roles/**").authenticated()
+                
+                // Mọi request còn lại khác (như API sản phẩm, blog, banner...) tạm thời mở công khai để phục vụ Frontend
                 .anyRequest().permitAll()
             );
 
+        // 5. Nạp cấu hình filter JWT vào hoạt động TRƯỚC bộ lọc UsernamePasswordAuthenticationFilter của Spring.
+        // Khi Request gửi lên, filter JWT sẽ giải mã Token trước để thiết lập đăng nhập, sau đó filter mặc định của Spring
+        // chỉ việc xem xét người dùng đó đã đăng nhập chưa để cho qua.
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
+        return http.build(); // Trả về cấu hình chuỗi bảo mật đã thiết lập
     }
 }

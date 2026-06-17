@@ -3,6 +3,7 @@ package com.example.vuhoangchinh.Controllers;
 import com.example.vuhoangchinh.Entities.User;
 import com.example.vuhoangchinh.Repositories.UserRepository;
 import com.example.vuhoangchinh.Security.JwtTokenProvider;
+import lombok.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,10 +26,18 @@ public class AuthController {
     @Autowired
     private JwtTokenProvider tokenProvider;
 
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LoginRequest {
+        private String username;
+        private String password;
+    }
+
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
-        String username = loginRequest.get("username");
-        String password = loginRequest.get("password");
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        String username = loginRequest.getUsername();
+        String password = loginRequest.getPassword();
 
         if (username == null || password == null) {
             return ResponseEntity.badRequest().body("Username and password are required");

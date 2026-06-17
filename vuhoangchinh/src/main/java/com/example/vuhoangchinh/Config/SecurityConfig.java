@@ -35,8 +35,10 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/api-docs/**").permitAll()
                 .requestMatchers("/api/uploads/**", "/image/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/api/customers/login", "/api/customers/register").permitAll()
+                .requestMatchers("/api/users/**").authenticated()
+                .requestMatchers("/api/roles/**").authenticated()
+                .anyRequest().permitAll()
             );
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

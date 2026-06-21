@@ -35,10 +35,8 @@ public class ProductImage {
     @NotNull(message = "Sản phẩm trực thuộc là bắt buộc")
     private Product product;
 
-    // Đường dẫn URL hình ảnh chi tiết phụ của sản phẩm (Ví dụ: "/image/nike-detail-1.png")
-    // Không được để trống (Not Null, Not Blank), tối đa 255 ký tự
-    @Column(name = "image_url", nullable = false, length = 255)
+    // Đường dẫn URL hình ảnh chi tiết phụ của sản phẩm, hỗ trợ Base64 dài
+    @Column(name = "image_url", nullable = false, columnDefinition = "LONGTEXT")
     @NotBlank(message = "Đường dẫn hình ảnh không được để trống")
-    @Size(max = 255, message = "Đường dẫn hình ảnh tối đa 255 ký tự")
     private String imageUrl;
 }

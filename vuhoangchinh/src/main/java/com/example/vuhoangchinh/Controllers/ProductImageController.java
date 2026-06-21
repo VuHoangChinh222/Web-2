@@ -52,7 +52,6 @@ public class ProductImageController {
         private Long productId; // ID của sản phẩm gốc sở hữu bức ảnh này
 
         @NotBlank(message = "Đường dẫn hình ảnh không được để trống")
-        @Size(max = 255, message = "Đường dẫn hình ảnh tối đa 255 ký tự")
         private String imageUrl; // URL đường dẫn tới hình ảnh
     }
 

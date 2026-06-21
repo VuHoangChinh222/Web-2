@@ -80,7 +80,6 @@ public class BlogController {
         private String thumbnail; // Ảnh đại diện thu nhỏ
 
         @NotBlank(message = "Đường dẫn ảnh banner không được để trống")
-        @Size(max = 255, message = "Đường dẫn ảnh banner tối đa 255 ký tự")
         private String imageUrl; // Ảnh banner lớn
 
         private Integer status = 1; // Trạng thái: 1 (Đăng tải), 0 (Bản nháp)

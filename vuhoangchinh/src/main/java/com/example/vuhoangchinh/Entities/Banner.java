@@ -33,10 +33,9 @@ public class Banner {
     @Size(max = 150, message = "Tiêu đề banner quảng cáo tối đa 150 ký tự")
     private String title;
 
-    // Đường dẫn URL hình ảnh của banner quảng cáo, bắt buộc nhập, tối đa 255 ký tự
-    @Column(name = "image_url", nullable = false, length = 255)
+    // Đường dẫn URL hình ảnh của banner quảng cáo, bắt buộc nhập, hỗ trợ Base64 dài
+    @Column(name = "image_url", nullable = false, columnDefinition = "LONGTEXT")
     @NotBlank(message = "Đường dẫn hình ảnh banner không được để trống")
-    @Size(max = 255, message = "Đường dẫn hình ảnh banner tối đa 255 ký tự")
     private String imageUrl;
 
     // Thứ tự hiển thị trên Slider (Ví dụ: 1 là hiển thị đầu tiên, 2 là tiếp theo...), tối thiểu là 1

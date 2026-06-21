@@ -21,7 +21,8 @@ const Categories = () => {
     id: '',
     name: '',
     slug: '',
-    description: ''
+    description: '',
+    imageUrl: ''
   });
 
   // Helper to generate slug from Vietnamese or English text
@@ -48,13 +49,25 @@ const Categories = () => {
 
   // Open Actions
   const handleOpenAdd = () => {
-    setCurrentCategory({ id: '', name: '', slug: '', description: '' });
+    setCurrentCategory({ 
+      id: '', 
+      name: '', 
+      slug: '', 
+      description: '', 
+      imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80'
+    });
     setModalType('add');
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (category) => {
-    setCurrentCategory(category);
+    setCurrentCategory({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      description: category.description || '',
+      imageUrl: category.imageUrl || category.image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80'
+    });
     setModalType('edit');
     setIsModalOpen(true);
   };
@@ -148,10 +161,21 @@ const Categories = () => {
                 {activeList.map((cat) => (
                   <tr key={cat.id} className="hover:bg-white/[0.01] transition-colors">
                     <td className="py-3.5 pr-2 font-mono text-slate-400">{cat.id}</td>
-                    <td className="py-3.5 font-bold text-white text-sm">{cat.name}</td>
-                    <td className="py-3.5 font-mono text-purple-400 text-[11px] flex items-center gap-1">
-                      <LinkIcon size={10} className="text-slate-500" />
-                      <span>{cat.slug}</span>
+                    <td className="py-3.5 font-bold text-white text-sm">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={cat.imageUrl || cat.image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=80&q=80'} 
+                          alt="" 
+                          className="w-10 h-8 rounded object-cover border border-white/10 flex-shrink-0"
+                        />
+                        <span>{cat.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-3.5 font-mono text-purple-400 text-[11px]">
+                      <div className="flex items-center gap-1">
+                        <LinkIcon size={10} className="text-slate-500" />
+                        <span>{cat.slug}</span>
+                      </div>
                     </td>
                     <td className="py-3.5 text-slate-400 max-w-[280px] truncate" title={cat.description}>
                       {cat.description || 'No description provided.'}
@@ -205,6 +229,40 @@ const Categories = () => {
               onChange={handleNameChange}
               className="w-full px-3 py-2 rounded-lg text-xs glass-input"
             />
+          </div>
+
+          {/* Category Image upload */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Category Image *</label>
+            <div className="flex items-center gap-4">
+              {currentCategory.imageUrl ? (
+                <img 
+                  src={currentCategory.imageUrl} 
+                  alt="Preview" 
+                  className="w-12 h-10 rounded object-cover border border-purple-500/20" 
+                />
+              ) : (
+                <div className="w-12 h-10 rounded bg-purple-600/10 border border-dashed border-purple-500/30 flex items-center justify-center text-slate-500 text-[10px]">No Pic</div>
+              )}
+              <div className="flex-1">
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setCurrentCategory(prev => ({ ...prev, imageUrl: reader.result }));
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-purple-600/20 file:text-purple-300 hover:file:bg-purple-600/30 file:cursor-pointer glass-input cursor-pointer"
+                />
+                <span className="text-[9px] text-slate-500 block mt-1">Select an image for this category.</span>
+              </div>
+            </div>
           </div>
 
           {/* Slug */}

@@ -60,8 +60,8 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    // Đường dẫn tĩnh lưu URL của ảnh đại diện chính hiển thị trên sản phẩm
-    @Column(length = 255)
+    // Đường dẫn tĩnh lưu URL của ảnh đại diện chính hiển thị trên sản phẩm, hỗ trợ Base64 dài
+    @Column(columnDefinition = "LONGTEXT")
     private String thumbnail;
 
     // Giá niêm yết gốc của sản phẩm (sử dụng BigDecimal để tránh sai số tiền tệ), tối đa 12 chữ số, 2 số thập phân

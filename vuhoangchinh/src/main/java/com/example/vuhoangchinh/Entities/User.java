@@ -62,8 +62,8 @@ public class User {
     @Column(length = 15)
     private String phone;
 
-    // Ảnh đại diện của nhân viên/quản trị viên, lưu đường dẫn ảnh, không được null, dài tối đa 255 ký tự
-    @Column(name = "image_url", nullable = false, length = 255)
+    // Ảnh đại diện của nhân viên/quản trị viên, lưu đường dẫn ảnh, không được null, hỗ trợ Base64 dài
+    @Column(name = "image_url", nullable = false, columnDefinition = "LONGTEXT")
     private String imageUrl;
 
     // Trạng thái hoạt động tài khoản (1: Đang hoạt động, 0: Đã khóa), mặc định là 1

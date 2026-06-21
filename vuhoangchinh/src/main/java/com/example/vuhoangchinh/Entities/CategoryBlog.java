@@ -40,9 +40,8 @@ public class CategoryBlog {
     @Size(max = 100, message = "Đường dẫn SEO slug tối đa 100 ký tự")
     private String slug;
 
-    // Đường dẫn URL hình ảnh đại diện của danh mục, bắt buộc nhập, tối đa 255 ký tự
-    @Column(name = "image_url", nullable = false, length = 255)
+    // Đường dẫn URL hình ảnh đại diện của danh mục, bắt buộc nhập, hỗ trợ Base64 dài
+    @Column(name = "image_url", nullable = false, columnDefinition = "LONGTEXT")
     @NotBlank(message = "Đường dẫn hình ảnh đại diện không được để trống")
-    @Size(max = 255, message = "Đường dẫn hình ảnh đại diện tối đa 255 ký tự")
     private String imageUrl;
 }

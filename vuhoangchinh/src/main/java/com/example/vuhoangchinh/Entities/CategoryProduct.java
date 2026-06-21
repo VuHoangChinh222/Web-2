@@ -42,9 +42,9 @@ public class CategoryProduct {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    // Đường dẫn ảnh đại diện cho danh mục sản phẩm (Ví dụ: "/image/category-sneaker.png"), không được null, dài tối đa 255 ký tự
+    // Đường dẫn ảnh đại diện cho danh mục sản phẩm (Ví dụ: "/image/category-sneaker.png"), không được null, hỗ trợ Base64 dài
     @NotBlank(message = "Ảnh danh mục không được để trống")
-    @Column(name = "image_url", nullable = false, length = 255)
+    @Column(name = "image_url", nullable = false, columnDefinition = "LONGTEXT")
     private String imageUrl;
 
     // Trạng thái hiển thị danh mục trên Website (1: Hiển thị, 0: Ẩn), mặc định là 1

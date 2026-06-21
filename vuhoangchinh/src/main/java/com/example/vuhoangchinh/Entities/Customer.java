@@ -59,8 +59,8 @@ public class Customer {
     @Column(length = 15)
     private String phone;
 
-    // Tên cột tương ứng "image_url", có thể để null, dài tối đa 255 ký tự
-    @Column(name = "image_url", length = 255)
+    // Tên cột tương ứng "image_url", có thể để null, hỗ trợ Base64 dài
+    @Column(name = "image_url", columnDefinition = "LONGTEXT")
     private String imageUrl;
 
     // Trạng thái tài khoản (1: Hoạt động, 0: Bị khóa), mặc định là 1

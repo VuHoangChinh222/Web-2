@@ -69,15 +69,13 @@ public class Blog {
     @NotBlank(message = "Nội dung bài viết không được để trống")
     private String content;
 
-    // Đường dẫn hình ảnh thu nhỏ (thumbnail) hiển thị trong danh sách tin tức
-    @Column(name = "thumbnail", length = 255)
-    @Size(max = 255, message = "Đường dẫn ảnh thumbnail tối đa 255 ký tự")
+    // Đường dẫn hình ảnh thu nhỏ (thumbnail) hiển thị trong danh sách tin tức, hỗ trợ Base64 dài
+    @Column(name = "thumbnail", columnDefinition = "LONGTEXT")
     private String thumbnail;
 
-    // Đường dẫn hình ảnh banner lớn hiển thị ở đầu bài viết chi tiết, bắt buộc nhập
-    @Column(name = "image_url", nullable = false, length = 255)
+    // Đường dẫn hình ảnh banner lớn hiển thị ở đầu bài viết chi tiết, bắt buộc nhập, hỗ trợ Base64 dài
+    @Column(name = "image_url", nullable = false, columnDefinition = "LONGTEXT")
     @NotBlank(message = "Đường dẫn ảnh banner không được để trống")
-    @Size(max = 255, message = "Đường dẫn ảnh banner tối đa 255 ký tự")
     private String imageUrl;
 
     // Trạng thái hiển thị bài viết (1: Đăng tải công khai, 0: Bản nháp lưu trữ nội bộ)

@@ -105,7 +105,8 @@ Hệ thống hoạt động theo mô hình Client-Server rời rạc:
     * Dữ liệu chạy thử bao gồm: Danh mục sản phẩm, Biến thể sản phẩm, Tin tức mẫu, Banner mẫu, giúp kiểm thử ứng dụng ngay lập tức mà không cần tạo tay.
 * **Hệ Thống Lưu Trữ Hình Ảnh Base64 Tự Chứa (Self-Contained Base64 Image Storage)**:
   * Để đơn giản hóa kiến trúc lưu trữ mà không cần cấu hình thêm các dịch vụ lưu trữ ngoài (như AWS S3) hay lưu trữ thư mục tĩnh cục bộ phức tạp, dự án mã hóa mọi tệp tin hình ảnh tải lên từ phía Client thành các chuỗi **Base64 Data URLs**.
-  * Nhằm tránh lỗi tràn dung lượng bộ nhớ cột của MySQL (`Data truncation: Data too long for column`), toàn bộ các trường hình ảnh ở phía Backend (`User.java`, `Customer.java`, `Product.java`, `Blog.java`, `CategoryProduct.java`, `CategoryBlog.java`, `Banner.java`) đều được cấu hình bằng kiểu dữ liệu `@Column(columnDefinition = "LONGTEXT")`, hỗ trợ lưu trữ chuỗi dữ liệu lớn lên đến 4GB mỗi bản ghi.
+  * Nhằm tránh lỗi tràn dung lượng bộ nhớ cột của MySQL (`Data truncation: Data too long for column`), toàn bộ các trường hình ảnh ở phía Backend (`User.java`, `Customer.java`, `Product.java`, `Blog.java`, `CategoryProduct.java`, `CategoryBlog.java`, `Banner.java`, `ProductImage.java`) đều được cấu hình bằng kiểu dữ liệu `@Column(columnDefinition = "LONGTEXT")`, hỗ trợ lưu trữ chuỗi dữ liệu lớn lên đến 4GB mỗi bản ghi.
+  * **Cơ chế tự động dọn dẹp ảnh rác**: Do chuỗi ảnh được lưu trữ trực tiếp trong các hàng (rows) của bảng cơ sở dữ liệu (chứ không lưu dạng file tĩnh độc lập trên máy chủ), nên khi xóa bản ghi (như Xóa sản phẩm, Khách hàng, Bài viết) hoặc cập nhật ảnh mới, dữ liệu ảnh cũ sẽ **tự động bị xóa sạch/ghi đè hoàn toàn** cùng với bản ghi đó mà không bao giờ để lại các file ảnh mồ côi (orphaned files) gây lãng phí bộ nhớ lưu trữ vật lý của server.
 
 ---
 

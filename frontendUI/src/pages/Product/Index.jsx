@@ -10,7 +10,7 @@ import categoryProductService from '../../services/categoryProductService';
 // Import css
 import '../../assets/css/ProductView.css';
 
-const BASE_URL = "http://localhost:8080";
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
 
 export const formatPrice = (price) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);

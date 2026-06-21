@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Khởi tạo một thực thể axios với cấu hình base chung
 const axiosClient = axios.create({
-    baseURL: 'http://localhost:8080/api', // Đổi sang cổng Port Backend Spring Boot
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api', // Đổi sang cổng Port Backend Spring Boot
     headers: {
         'Content-Type': 'application/json',
     },

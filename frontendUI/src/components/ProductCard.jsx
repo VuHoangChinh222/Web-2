@@ -21,7 +21,7 @@ const ProductCard = ({ product }) => {
     if (img.startsWith('data:') || img.startsWith('http://') || img.startsWith('https://')) {
       return img;
     }
-    const backendBase = 'http://localhost:8080';
+    const backendBase = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
     return img.startsWith('/') ? `${backendBase}${img}` : `${backendBase}/${img}`;
   };
   const imageSrc = getProductImage();

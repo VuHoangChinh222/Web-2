@@ -103,7 +103,7 @@ const BlogView = ({ navigate }) => {
             const imageSrc = post.image || (post.imageUrl
               ? (post.imageUrl.startsWith('data:') || post.imageUrl.startsWith('http://') || post.imageUrl.startsWith('https://')
                 ? post.imageUrl
-                : `http://localhost:8080${post.imageUrl.startsWith('/') ? '' : '/'}${post.imageUrl}`)
+                : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}${post.imageUrl.startsWith('/') ? '' : '/'}${post.imageUrl}`)
               : 'src/assets/images/default_post.png');
 
             return (

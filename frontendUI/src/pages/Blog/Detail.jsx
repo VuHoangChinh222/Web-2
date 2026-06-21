@@ -5,7 +5,7 @@ import postService from '../../services/postService';
 import '../../assets/css/PostDetailView.css';
 
 // Cấu hình URL Backend để lấy hình ảnh từ wwwroot/uploads
-const BASE_URL = "http://localhost:8080";
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
 
 
 

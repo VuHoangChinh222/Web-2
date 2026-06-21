@@ -63,9 +63,10 @@ public class RoleController {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Role not found with id " + id));
         
-        // Cập nhật tên vai trò và mô tả chi tiết
+        // Cập nhật tên vai trò, mô tả chi tiết và danh sách quyền
         role.setName(roleDetails.getName());
         role.setDescription(roleDetails.getDescription());
+        role.setPermissions(roleDetails.getPermissions());
         
         // Lưu và trả về thực thể vai trò đã được cập nhật
         return roleRepository.save(role);

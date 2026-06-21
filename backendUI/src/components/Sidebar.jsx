@@ -12,32 +12,33 @@ const Sidebar = ({ activePage, setActivePage, isCollapsed, setIsCollapsed, curre
       title: "Core Commerce",
       items: [
         { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard, permission: 'dashboard_view' },
-        { id: 'products', name: 'Products', icon: ShoppingBag, permission: 'products_manage' },
-        { id: 'categories', name: 'Categories', icon: FolderKanban, permission: 'products_manage' },
-        { id: 'orders', name: 'Orders', icon: ShoppingCart, permission: 'orders_manage' },
-        { id: 'customers', name: 'Customers', icon: Users2, permission: 'customers_manage' },
+        { id: 'products', name: 'Products', icon: ShoppingBag, permission: 'manage_product' },
+        { id: 'categories', name: 'Categories', icon: FolderKanban, permission: 'manage_categoryproduct' },
+        { id: 'orders', name: 'Orders', icon: ShoppingCart, permission: 'manage_order' },
+        { id: 'customers', name: 'Customers', icon: Users2, permission: 'manage_customer' },
       ]
     },
     {
       title: "Content & Promo",
       items: [
-        { id: 'blogs', name: 'Blogs', icon: FileText, permission: 'blogs_manage' },
-        { id: 'banners', name: 'Banners', icon: Image, permission: 'banners_manage' },
+        { id: 'blogs', name: 'Blogs', icon: FileText, permission: 'manage_blog' },
+        { id: 'banners', name: 'Banners', icon: Image, permission: 'manage_banner' },
       ]
     },
     {
       title: "System & Access",
       items: [
-        { id: 'users', name: 'Staff Users', icon: UserCog, permission: 'users_manage' },
-        { id: 'roles', name: 'Roles & Permissions', icon: ShieldAlert, permission: 'users_manage' },
+        { id: 'users', name: 'Staff Users', icon: UserCog, permission: 'manage_user' },
+        { id: 'roles', name: 'Roles & Permissions', icon: ShieldAlert, permission: 'manage_role' },
       ]
     }
   ];
 
-  // Helper to check user permission (simplified check for mock frontend)
+  // Helper to check user permission
   const hasPermission = (itemPermission) => {
     if (!currentUser || !currentUser.role) return true;
-    return currentUser.role.permissions.includes(itemPermission);
+    const permissions = currentUser.role.permissions || [];
+    return permissions.includes(itemPermission);
   };
 
   return (

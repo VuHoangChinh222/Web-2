@@ -6,28 +6,54 @@ import GlassCard from '../components/GlassCard';
 const Roles = () => {
   const { roles, updateRolePermissions } = useAdmin();
 
-  // List of all system capabilities/permissions
+  // List of all system entities for dynamic permissions
+  const entities = [
+    { key: 'Product', label: 'Products Catalog', desc: 'Full CRUD control over the products inventory, stock levels, and detail sheets.' },
+    { key: 'CategoryProduct', label: 'Product Categories', desc: 'Classify and organize products catalog classifications.' },
+    { key: 'ProductVariant', label: 'Product Variants', desc: 'Define variants like colors, sizes, and price modifiers.' },
+    { key: 'ProductImage', label: 'Product Images', desc: 'Upload and manage image assets for products.' },
+    { key: 'Order', label: 'Customer Orders', desc: 'Process customer checkouts and update payment/shipping statuses.' },
+    { key: 'OrderDetail', label: 'Order Items & Details', desc: 'View specific products and quantities in customer orders.' },
+    { key: 'Customer', label: 'Customers Directory', desc: 'Manage customer accounts, addresses, and profiles.' },
+    { key: 'CategoryBlog', label: 'Blog Categories', desc: 'Group and classify marketing blog articles.' },
+    { key: 'Blog', label: 'Blog Posts', desc: 'Publish, edit, and manage articles and promotions.' },
+    { key: 'Banner', label: 'Banners & Promos', desc: 'Control homepage sliders and promotional images.' },
+    { key: 'User', label: 'Staff Users', desc: 'Manage backend console administrator and employee users.' },
+    { key: 'Role', label: 'Roles & Security', desc: 'Configure system roles, access policies, and permission groups.' }
+  ];
+
   const systemPermissions = [
     { key: 'dashboard_view', label: 'View Dashboard Analytics', description: 'Access the main sales dashboard, trends, and quick summaries.' },
-    { key: 'products_manage', label: 'Manage Products & Categories', description: 'Full CRUD control over the products catalog, stock counts, and classifications.' },
-    { key: 'orders_manage', label: 'Process Customer Orders', description: 'Access orders list, change status (Pending, Completed, Cancelled), and view invoices.' },
-    { key: 'customers_manage', label: 'Manage Customer Directory', description: 'Monitor customer profiles, contact credentials, and purchasing histories.' },
-    { key: 'blogs_manage', label: 'Publish Marketing Blogs', description: 'Create and edit blog posts, categories, and set publication statuses.' },
-    { key: 'banners_manage', label: 'Configure Banners & Promo', description: 'Design homepage promotional sliders, set redirect targets, and active states.' },
-    { key: 'users_manage', label: 'Administrate Staff Access', description: 'Add/suspend backend system users, adjust roles, and security policies.' }
+    ...entities.map(ent => ({
+      key: `manage_${ent.key.toLowerCase()}`,
+      label: `Manage ${ent.label}`,
+      description: ent.desc
+    }))
   ];
 
   // Active selected role for permission adjustment
-  const [selectedRoleId, setSelectedRoleId] = useState(roles[0]?.id || '');
+  const [selectedRoleId, setSelectedRoleId] = useState('');
   const activeRole = roles.find(r => r.id === selectedRoleId);
   
   // Temporary state for checkboxes
-  const [tempPermissions, setTempPermissions] = useState(activeRole?.permissions || []);
+  const [tempPermissions, setTempPermissions] = useState([]);
+
+  // Auto-select first role when loaded
+  React.useEffect(() => {
+    if (!selectedRoleId && roles.length > 0) {
+      setSelectedRoleId(roles[0].id);
+    }
+  }, [roles, selectedRoleId]);
+
+  // Sync checkboxes when active role changes
+  React.useEffect(() => {
+    if (activeRole) {
+      setTempPermissions(activeRole.permissions || []);
+    }
+  }, [activeRole]);
 
   const handleRoleChange = (roleId) => {
     setSelectedRoleId(roleId);
-    const roleObj = roles.find(r => r.id === roleId);
-    setTempPermissions(roleObj?.permissions || []);
   };
 
   const handleTogglePermission = (permissionKey) => {
@@ -38,9 +64,11 @@ const Roles = () => {
     );
   };
 
-  const handleSave = () => {
-    updateRolePermissions(selectedRoleId, tempPermissions);
-    alert(`Permissions for role "${activeRole?.name}" have been updated successfully.`);
+  const handleSave = async () => {
+    const res = await updateRolePermissions(selectedRoleId, tempPermissions);
+    if (res && res.success) {
+      alert(`Quyền truy cập cho vai trò "${activeRole?.name}" đã được lưu thành công vào cơ sở dữ liệu.`);
+    }
   };
 
   return (

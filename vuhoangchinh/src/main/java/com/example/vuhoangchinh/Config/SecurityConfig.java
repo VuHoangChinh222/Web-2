@@ -73,14 +73,15 @@ public class SecurityConfig {
                 // Cho phép gọi API đăng ký và đăng nhập của khách hàng tự do
                 .requestMatchers("/api/customers/login", "/api/customers/register").permitAll()
                 
-                // Bắt buộc phải đăng nhập (Authenticated) khi thực hiện bất cứ hành động nào với User hệ thống
-                .requestMatchers("/api/users/**").authenticated()
+                // Các API GET công khai phục vụ xem sản phẩm, danh mục, tin tức, banner ở trang Frontend
+                .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/category-products/**", "/api/blogs/**", "/api/category-blogs/**", "/api/banners/**").permitAll()
                 
-                // Bắt buộc phải đăng nhập khi quản lý vai trò Role hệ thống
-                .requestMatchers("/api/roles/**").authenticated()
+                // Cho phép khách hàng gửi đơn đặt hàng
+                .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
                 
-                // Mọi request còn lại khác (như API sản phẩm, blog, banner...) tạm thời mở công khai để phục vụ Frontend
-                .anyRequest().permitAll()
+                // Bắt buộc phải đăng nhập (Authenticated) đối với mọi yêu cầu thay đổi dữ liệu (POST, PUT, DELETE) hoặc quản trị viên hệ thống
+                .requestMatchers("/api/users/**", "/api/roles/**").authenticated()
+                .anyRequest().authenticated()
             );
 
         // 5. Nạp cấu hình filter JWT vào hoạt động TRƯỚC bộ lọc UsernamePasswordAuthenticationFilter của Spring.

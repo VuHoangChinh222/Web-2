@@ -25,24 +25,47 @@ const DashboardContent = () => {
   const [selectedOrderId, setSelectedOrderId] = useState('ord-1001');
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
+  // Sync activePage with URL pathname
+  React.useEffect(() => {
+    const handleLocationChange = () => {
+      const path = window.location.pathname.replace(/^\//, '') || 'dashboard';
+      const validPages = ['dashboard', 'products', 'categories', 'orders', 'customers', 'blogs', 'banners', 'users', 'roles'];
+      if (validPages.includes(path)) {
+        setActivePage(path);
+      }
+    };
+    handleLocationChange();
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
+
+  // Update URL pathname when activePage changes
+  React.useEffect(() => {
+    const newPath = activePage === 'dashboard' ? '/' : `/${activePage}`;
+    if (window.location.pathname !== newPath) {
+      window.history.pushState(null, '', newPath);
+    }
+  }, [activePage]);
+
   const handleChangeUser = (newUser) => {
     setCurrentUser(newUser);
     
     // Check if the page the user is viewing is allowed for the new role, if not fallback to dashboard
     const pagePermissions = {
       'dashboard': 'dashboard_view',
-      'products': 'products_manage',
-      'categories': 'products_manage',
-      'orders': 'orders_manage',
-      'customers': 'customers_manage',
-      'blogs': 'blogs_manage',
-      'banners': 'banners_manage',
-      'users': 'users_manage',
-      'roles': 'users_manage'
+      'products': 'manage_product',
+      'categories': 'manage_categoryproduct',
+      'orders': 'manage_order',
+      'customers': 'manage_customer',
+      'blogs': 'manage_blog',
+      'banners': 'manage_banner',
+      'users': 'manage_user',
+      'roles': 'manage_role'
     };
 
     const requiredPerm = pagePermissions[activePage];
-    if (requiredPerm && !newUser.role.permissions.includes(requiredPerm)) {
+    const userPermissions = newUser?.role?.permissions || [];
+    if (requiredPerm && !userPermissions.includes(requiredPerm)) {
       setActivePage('dashboard');
     }
   };

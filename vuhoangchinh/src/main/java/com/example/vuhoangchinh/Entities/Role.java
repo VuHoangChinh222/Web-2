@@ -32,4 +32,10 @@ public class Role {
     // Mô tả chi tiết vai trò, có thể null, dài tối đa 255 ký tự
     @Column(length = 255)
     private String description;
+
+    // Danh sách các quyền của vai trò này (Được lưu động ở bảng phụ role_permissions)
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "role_permissions", joinColumns = @JoinColumn(name = "role_id"))
+    @Column(name = "permission")
+    private java.util.List<String> permissions = new java.util.ArrayList<>();
 }

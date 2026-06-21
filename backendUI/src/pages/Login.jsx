@@ -34,11 +34,16 @@ const Login = () => {
     setError('');
 
     // Small delay to simulate network latency
-    setTimeout(() => {
-      const result = login(username, password);
-      setLoading(false);
-      if (!result.success) {
-        setError(result.message);
+    setTimeout(async () => {
+      try {
+        const result = await login(username, password);
+        setLoading(false);
+        if (!result.success) {
+          setError(result.message);
+        }
+      } catch (err) {
+        setLoading(false);
+        setError(err.message || 'Lỗi đăng nhập');
       }
     }, 600);
   };

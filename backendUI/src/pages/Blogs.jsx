@@ -7,6 +7,16 @@ import GlassModal from '../components/GlassModal';
 const Blogs = () => {
   const { blogs, categoriesBlog, users, addBlog, updateBlog, deleteBlog } = useAdmin();
 
+  const formatDate = (dateVal) => {
+    if (!dateVal) return 'N/A';
+    if (Array.isArray(dateVal)) {
+      const [year, month, day, hour = 0, minute = 0, second = 0] = dateVal;
+      return new Date(year, month - 1, day, hour, minute, second).toLocaleDateString();
+    }
+    const d = new Date(dateVal);
+    return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString();
+  };
+
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -169,7 +179,7 @@ const Blogs = () => {
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-slate-400 font-mono mb-2">
                     <span className="text-purple-400 font-semibold uppercase">{category ? category.name : 'General'}</span>
                     <span className="text-slate-600">•</span>
-                    <span className="flex items-center gap-1"><Calendar size={10} /> {new Date(blog.createdAt).toLocaleDateString()}</span>
+                    <span className="flex items-center gap-1"><Calendar size={10} /> {formatDate(blog.createdAt)}</span>
                   </div>
 
                   {/* Title & summary */}

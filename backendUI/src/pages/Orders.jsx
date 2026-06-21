@@ -10,6 +10,16 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
+  const formatDate = (dateVal) => {
+    if (!dateVal) return 'N/A';
+    if (Array.isArray(dateVal)) {
+      const [year, month, day, hour = 0, minute = 0, second = 0] = dateVal;
+      return new Date(year, month - 1, day, hour, minute, second).toLocaleString();
+    }
+    const d = new Date(dateVal);
+    return isNaN(d.getTime()) ? 'N/A' : d.toLocaleString();
+  };
+
   // Filter orders
   const filteredOrders = orders.filter(o => {
     const cust = customers.find(c => c.id === o.customerId);
@@ -130,7 +140,7 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
                         </div>
                       </td>
                       <td className="py-3.5 text-slate-400">
-                        {new Date(order.orderDate).toLocaleString()}
+                        {formatDate(order.orderDate)}
                       </td>
                       <td className="py-3.5 font-bold text-white">
                         ${order.totalAmount.toFixed(2)}
@@ -210,7 +220,7 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
                 </div>
                 <div className="text-xs">
                   <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Checkout Date</p>
-                  <p className="font-semibold text-slate-200">{new Date(activeOrder.orderDate).toLocaleString()}</p>
+                  <p className="font-semibold text-slate-200">{formatDate(activeOrder.orderDate)}</p>
                 </div>
               </div>
 

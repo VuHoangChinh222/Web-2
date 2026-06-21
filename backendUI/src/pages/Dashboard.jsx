@@ -62,6 +62,16 @@ const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) =
     setIsOrderModalOpen(true);
   };
 
+  const formatDate = (dateVal) => {
+    if (!dateVal) return 'N/A';
+    if (Array.isArray(dateVal)) {
+      const [year, month, day] = dateVal;
+      return new Date(year, month - 1, day).toLocaleDateString();
+    }
+    const d = new Date(dateVal);
+    return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString();
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Banner Message */}
@@ -252,7 +262,7 @@ const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) =
                     <tr key={order.id} className="hover:bg-white/[0.01] transition-colors">
                       <td className="py-3 pr-2 font-mono text-purple-400 font-semibold">{order.id}</td>
                       <td className="py-3 font-medium text-white">{cust ? cust.fullname : 'Unknown'}</td>
-                      <td className="py-3 text-slate-400">{new Date(order.orderDate).toLocaleDateString()}</td>
+                      <td className="py-3 text-slate-400">{formatDate(order.orderDate)}</td>
                       <td className="py-3 font-semibold text-white">${order.totalAmount.toFixed(2)}</td>
                       <td className="py-3">{getStatusBadge(order.status)}</td>
                       <td className="py-3 text-right">

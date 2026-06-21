@@ -18,7 +18,7 @@ const Banners = () => {
     subtitle: '',
     image: '',
     link: '',
-    position: 'Home Main',
+    position: 1,
     status: 'Active'
   });
 
@@ -32,7 +32,7 @@ const Banners = () => {
       subtitle: '',
       image: '',
       link: '',
-      position: 'Home Main',
+      position: 1,
       status: 'Active'
     });
     setModalType('add');
@@ -100,7 +100,7 @@ const Banners = () => {
           <GlassCard key={ban.id} hoverEffect={true} className="flex flex-col justify-between h-full group relative overflow-hidden">
             {/* Status indicators */}
             <div className="absolute top-4 right-4 z-10 flex gap-2">
-              <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-600/30 text-purple-300 border border-purple-500/20 uppercase font-mono">{ban.position}</span>
+              <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-600/30 text-purple-300 border border-purple-500/20 uppercase font-mono">Thứ tự: {ban.position}</span>
               {ban.status === 'Active' ? (
                 <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Active</span>
               ) : (
@@ -215,17 +215,16 @@ const Banners = () => {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Banner Position *</label>
-              <select
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Thứ tự hiển thị *</label>
+              <input 
+                type="number"
+                min="1"
+                required
+                placeholder="Ví dụ: 1"
                 value={currentBanner.position}
                 onChange={(e) => setCurrentBanner({...currentBanner, position: e.target.value})}
-                className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224]"
-              >
-                <option value="Home Main">Home Main</option>
-                <option value="Sidebar Promo">Sidebar Promo</option>
-                <option value="Home Banner Carousel">Home Banner Carousel</option>
-                <option value="Footer Banner">Footer Banner</option>
-              </select>
+                className="w-full px-3 py-2 rounded-lg text-xs glass-input"
+              />
             </div>
           </div>
 

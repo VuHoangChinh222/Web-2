@@ -153,31 +153,20 @@ export const AdminProvider = ({ children }) => {
 
   const mapBannerFromBackend = (ban) => {
     if (!ban) return null;
-    const positionMap = {
-      1: 'Home Main',
-      2: 'Sidebar Promo',
-      3: 'Home Banner Carousel',
-      4: 'Footer Banner'
-    };
     return {
       id: ban.id,
       title: ban.title,
       subtitle: ban.title,
       image: ban.imageUrl || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=300&q=80',
       link: '#',
-      position: positionMap[ban.position] || 'Home Main',
+      position: ban.position || 1,
       status: ban.status === 1 ? 'Active' : 'Inactive'
     };
   };
 
-  const positionStringToId = (posString) => {
-    const positionMap = {
-      'Home Main': 1,
-      'Sidebar Promo': 2,
-      'Home Banner Carousel': 3,
-      'Footer Banner': 4
-    };
-    return positionMap[posString] || 1;
+  const positionStringToId = (posVal) => {
+    const parsed = parseInt(posVal, 10);
+    return isNaN(parsed) ? 1 : parsed;
   };
 
   // --- Core Loading Hook ---

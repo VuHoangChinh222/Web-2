@@ -103,6 +103,9 @@ Hệ thống hoạt động theo mô hình Client-Server rời rạc:
     * Các vai trò chuẩn hệ thống: `ROLE_ADMIN`, `ROLE_EDITOR`, `ROLE_EMPLOYEE` kèm phân quyền tương ứng.
     * Tài khoản Admin tối cao: `admin_duong` (mật khẩu mặc định `chinh123`).
     * Dữ liệu chạy thử bao gồm: Danh mục sản phẩm, Biến thể sản phẩm, Tin tức mẫu, Banner mẫu, giúp kiểm thử ứng dụng ngay lập tức mà không cần tạo tay.
+* **Hệ Thống Lưu Trữ Hình Ảnh Base64 Tự Chứa (Self-Contained Base64 Image Storage)**:
+  * Để đơn giản hóa kiến trúc lưu trữ mà không cần cấu hình thêm các dịch vụ lưu trữ ngoài (như AWS S3) hay lưu trữ thư mục tĩnh cục bộ phức tạp, dự án mã hóa mọi tệp tin hình ảnh tải lên từ phía Client thành các chuỗi **Base64 Data URLs**.
+  * Nhằm tránh lỗi tràn dung lượng bộ nhớ cột của MySQL (`Data truncation: Data too long for column`), toàn bộ các trường hình ảnh ở phía Backend (`User.java`, `Customer.java`, `Product.java`, `Blog.java`, `CategoryProduct.java`, `CategoryBlog.java`, `Banner.java`) đều được cấu hình bằng kiểu dữ liệu `@Column(columnDefinition = "LONGTEXT")`, hỗ trợ lưu trữ chuỗi dữ liệu lớn lên đến 4GB mỗi bản ghi.
 
 ---
 
@@ -112,6 +115,10 @@ Hệ thống hoạt động theo mô hình Client-Server rời rạc:
   * Kỹ thuật này giúp thay đổi đường dẫn URL trên thanh trình duyệt một cách mượt mà và tự nhiên nhất (từ `/` sang `/products`, `/roles`, `/orders`) đồng thời cho phép người dùng F5 tải lại trang ở bất cứ liên kết nào mà không gặp hiện tượng bị đưa về trang chủ.
 * **React Context API State Management**:
   * Sử dụng `AdminContext.jsx` để tập trung hóa việc quản lý dữ liệu. Các danh sách (Sản phẩm, Đơn hàng, Vai trò, Khách hàng) được lưu trữ tại Context và cung cấp xuống các thành phần UI thông qua React Hook `useAdmin()`. Khi có sự thay đổi dữ liệu (như Thêm/Sửa/Xóa), Context sẽ kích hoạt render lại các thành phần liên quan một cách phản ứng (Reactive).
+* **FileReader API & Image Live Previews**:
+  * Tích hợp đối tượng `FileReader` chuẩn của HTML5 để đọc trực tiếp các tệp tin hình ảnh cục bộ mà quản trị viên tải lên, hiển thị trực quan lên giao diện xem trước (Live Preview) thời gian thực trước khi lưu trữ (áp dụng ở Sản phẩm, Khách hàng, Tin tức và Danh mục sản phẩm/tin tức).
+* **Safe Date Parsing & Rendering Helpers**:
+  * Giải quyết xung đột tuần tự hóa ngày tháng của Jackson (khi `LocalDateTime` của Java được trả về dưới dạng mảng JSON `[năm, tháng, ngày, giờ, phút, giây]`). Dự án sử dụng hàm phân rã mảng ngày tháng an toàn trên Frontend để tránh ném ra ngoại lệ `RangeError: Invalid time value` làm sập giao diện React.
 * **Hiệu Ứng Glassmorphism Cao Cấp & Cấu Trúc CSS**:
   * Thiết kế giao diện tối (Dark Mode) huyền bí. Áp dụng hiệu ứng mờ hậu cảnh (`backdrop-filter: blur()`), kết hợp đường viền mờ (`border: 1px solid rgba(255,255,255,0.05)`) và dải màu chuyển sắc (Gradients) từ tím sang hồng neon.
   * Sử dụng các micro-animations cho các nút bấm (nhấp nháy chậm, phóng to nhẹ khi di chuột) để mang lại cảm giác sống động, hiện đại và cao cấp.

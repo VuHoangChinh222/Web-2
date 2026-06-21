@@ -6,7 +6,7 @@ import GlassModal from '../components/GlassModal';
 
 const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
   const { orders, orderDetails, customers, products, updateOrderStatus } = useAdmin();
-  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -24,8 +24,8 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
   const filteredOrders = orders.filter(o => {
     const cust = customers.find(c => c.id === o.customerId);
     const customerName = cust ? cust.fullname.toLowerCase() : '';
-    const matchesSearch = o.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          customerName.includes(searchTerm.toLowerCase());
+    const matchesSearch = o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customerName.includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || o.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -73,9 +73,9 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
           {/* Search */}
           <div className="relative flex-1 min-w-[200px] md:w-64">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-            <input 
-              type="text" 
-              placeholder="Search by ID or customer..." 
+            <input
+              type="text"
+              placeholder="Search by ID or customer..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-4 py-1.5 rounded-lg text-xs glass-input"
@@ -89,8 +89,8 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all
-                  ${statusFilter === status 
-                    ? 'bg-purple-600/30 text-purple-300' 
+                  ${statusFilter === status
+                    ? 'bg-purple-600/30 text-purple-300'
                     : 'text-slate-500 hover:text-slate-300'}`}
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -250,10 +250,10 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
                   return (
                     <div key={item.id} className="flex items-center justify-between p-2 rounded-lg border border-white/5 bg-white/[0.01]">
                       <div className="flex items-center gap-3">
-                        <img 
-                          src={prod?.image} 
-                          alt="" 
-                          className="w-10 h-8 rounded object-cover border border-white/10" 
+                        <img
+                          src={prod?.image}
+                          alt=""
+                          className="w-10 h-8 rounded object-cover border border-white/10"
                         />
                         <div>
                           <p className="text-xs font-bold text-white truncate max-w-[200px]">{prod ? prod.name : 'Deleted Product'}</p>
@@ -291,8 +291,8 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
 
             {/* Action buttons */}
             <div className="flex justify-end pt-4 border-t border-white/5">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setIsOpen(false)}
                 className="glass-btn-primary px-6 py-2 rounded-xl text-xs font-semibold"
               >

@@ -25,11 +25,29 @@ const Customers = () => {
 
 
 
+  // Filter and enrich customers
+  const enrichedCustomers = (customers || []).map(cust => {
+    const custOrders = (orders || []).filter(o => o.customerId === cust.id);
+    const completedOrders = custOrders.filter(o => o.status === 'Completed');
+    const totalSpent = completedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+    return {
+      id: cust.id,
+      fullname: cust.fullName || cust.fullname || 'No Name',
+      email: cust.email || '',
+      phone: cust.phone || '',
+      address: custOrders[0]?.shippingAddress || 'No address registered',
+      active: cust.status === 1 || cust.active === true,
+      avatar: cust.imageUrl || cust.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+      orderCount: custOrders.length,
+      totalSpent: totalSpent
+    };
+  });
+
   // Filtering
-  const filteredCustomers = customers.filter(c => 
-    c.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.phone.includes(searchTerm)
+  const filteredCustomers = enrichedCustomers.filter(c => 
+    (c.fullname || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (c.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (c.phone || '').includes(searchTerm)
   );
 
   // Open Actions

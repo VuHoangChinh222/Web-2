@@ -657,10 +657,10 @@ export const AdminProvider = ({ children }) => {
   const addCustomer = async (customer) => {
     try {
       const body = {
-        fullname: customer.fullname,
+        fullName: customer.fullname,
         email: customer.email,
         phone: customer.phone,
-        address: customer.address || '',
+        password: customer.password || '123456',
         imageUrl: customer.avatar || customer.imageUrl || '',
         status: customer.active ? 1 : 0
       };
@@ -680,13 +680,15 @@ export const AdminProvider = ({ children }) => {
   const updateCustomer = async (customer) => {
     try {
       const body = {
-        fullname: customer.fullname,
+        fullName: customer.fullname,
         email: customer.email,
         phone: customer.phone,
-        address: customer.address || '',
         imageUrl: customer.avatar || customer.imageUrl || '',
         status: customer.active ? 1 : 0
       };
+      if (customer.password && customer.password.trim() !== '') {
+        body.password = customer.password;
+      }
       const updated = await apiCall(`/customers/${customer.id}`, {
         method: 'PUT',
         body: JSON.stringify(body)

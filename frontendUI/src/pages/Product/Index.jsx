@@ -10,7 +10,7 @@ import categoryProductService from '../../services/categoryProductService';
 // Import css
 import '../../assets/css/ProductView.css';
 
-const BASE_URL = "https://localhost:7291"; // Cấu hình lấy ảnh từ wwwroot/uploads của Backend
+const BASE_URL = "http://localhost:8080";
 
 export const formatPrice = (price) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
@@ -119,7 +119,9 @@ const ProductView = ({ params, navigate }) => {
         return {
             ...cat,
             image: cat.imageUrl
-                ? (cat.imageUrl.startsWith('http') ? cat.imageUrl : `${BASE_URL}${cat.imageUrl}`)
+                ? (cat.imageUrl.startsWith('data:') || cat.imageUrl.startsWith('http://') || cat.imageUrl.startsWith('https://')
+                    ? cat.imageUrl
+                    : `${BASE_URL}${cat.imageUrl.startsWith('/') ? '' : '/'}${cat.imageUrl}`)
                 : 'src/assets/images/shoe_product_1_1778727884422.png'
         };
     });
@@ -176,7 +178,9 @@ const ProductView = ({ params, navigate }) => {
                                 const processedProduct = {
                                     ...product,
                                     image: product.imageUrl
-                                        ? (product.imageUrl.startsWith('http') ? product.imageUrl : `${BASE_URL}${product.imageUrl}`)
+                                        ? (product.imageUrl.startsWith('data:') || product.imageUrl.startsWith('http://') || product.imageUrl.startsWith('https://')
+                                            ? product.imageUrl
+                                            : `${BASE_URL}${product.imageUrl.startsWith('/') ? '' : '/'}${product.imageUrl}`)
                                         : 'src/assets/images/default_product.png'
                                 };
 

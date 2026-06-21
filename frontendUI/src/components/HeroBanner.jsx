@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import bannerService from '../services/bannerService';
 import '../assets/css/HeroBanner.css';
 
-const BASE_URL = "https://localhost:7291";
+const BASE_URL = "http://localhost:8080";
 
 const HeroBanner = ({ tag, title, desc, image, buttonText, onButtonClick }) => {
   const [banners, setBanners] = useState([]);
@@ -43,7 +43,10 @@ const HeroBanner = ({ tag, title, desc, image, buttonText, onButtonClick }) => {
 
   const getImageUrl = (url) => {
     if (!url) return '';
-    return url.startsWith('http') ? url : `${BASE_URL}${url}`;
+    if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return url.startsWith('/') ? `${BASE_URL}${url}` : `${BASE_URL}/${url}`;
   };
 
   const handlePrev = (e) => {

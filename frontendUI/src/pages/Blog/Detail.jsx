@@ -5,7 +5,7 @@ import postService from '../../services/postService';
 import '../../assets/css/PostDetailView.css';
 
 // Cấu hình URL Backend để lấy hình ảnh từ wwwroot/uploads
-const BASE_URL = "https://localhost:7291";
+const BASE_URL = "http://localhost:8080";
 
 
 
@@ -39,7 +39,10 @@ const PostDetailView = ({ id, navigate }) => {
     // Hàm bổ trợ xử lý ghép link domain Backend cho ảnh
     const processImage = (imageUrl) => {
         if (!imageUrl) return '';
-        return imageUrl.startsWith('http') ? imageUrl : `${BASE_URL}${imageUrl}`;
+        if (imageUrl.startsWith('data:') || imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+            return imageUrl;
+        }
+        return imageUrl.startsWith('/') ? `${BASE_URL}${imageUrl}` : `${BASE_URL}/${imageUrl}`;
     };
 
     // 1. Trạng thái đang tải dữ liệu

@@ -10,7 +10,7 @@ import { getCookie } from '../../utils/cookieHelper';
 import '../../assets/css/ProductDetailView.css';
 
 // Cấu hình URL Backend để lấy hình ảnh từ wwwroot/uploads
-const BASE_URL = "https://localhost:7291";
+const BASE_URL = "http://localhost:8080";
 
 export const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
@@ -106,7 +106,11 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image || (product.imageUrl ? (product.imageUrl.startsWith('http') ? product.imageUrl : `${BASE_URL}${product.imageUrl}`) : 'src/assets/images/default_product.png'),
+      image: product.image || (product.imageUrl
+        ? (product.imageUrl.startsWith('data:') || product.imageUrl.startsWith('http://') || product.imageUrl.startsWith('https://')
+          ? product.imageUrl
+          : `${BASE_URL}${product.imageUrl.startsWith('/') ? '' : '/'}${product.imageUrl}`)
+        : 'src/assets/images/default_product.png'),
       categoryName: product.categoryName,
       stockQuantity: product.stockQuantity
     };
@@ -115,7 +119,11 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
     navigate('cart');
   };
 
-  const imageSrc = product.image || (product.imageUrl ? (product.imageUrl.startsWith('http') ? product.imageUrl : `${BASE_URL}${product.imageUrl}`) : 'src/assets/images/default_product.png');
+  const imageSrc = product.image || (product.imageUrl
+    ? (product.imageUrl.startsWith('data:') || product.imageUrl.startsWith('http://') || product.imageUrl.startsWith('https://')
+      ? product.imageUrl
+      : `${BASE_URL}${product.imageUrl.startsWith('/') ? '' : '/'}${product.imageUrl}`)
+    : 'src/assets/images/default_product.png');
 
   return (
     <div className="page-container page-transition">

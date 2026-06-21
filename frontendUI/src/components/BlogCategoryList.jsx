@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import postService from '../services/postService';
 import '../assets/css/BlogCategoryList.css';
 
-const BASE_URL = "https://localhost:7291";
+const BASE_URL = "http://localhost:8080";
 
 const BlogCategoryList = ({ activeCategoryId, onSelectCategory, onCategoriesLoaded }) => {
   const [categories, setCategories] = useState([]);
@@ -56,7 +56,9 @@ const BlogCategoryList = ({ activeCategoryId, onSelectCategory, onCategoriesLoad
           const imageSrc = cat.id === 'all'
             ? 'src/assets/images/hero_basketball_1778727871576.png'
             : (cat.imageUrl
-              ? (cat.imageUrl.startsWith('http') ? cat.imageUrl : `${BASE_URL}${cat.imageUrl}`)
+              ? (cat.imageUrl.startsWith('data:') || cat.imageUrl.startsWith('http://') || cat.imageUrl.startsWith('https://')
+                ? cat.imageUrl
+                : `${BASE_URL}${cat.imageUrl.startsWith('/') ? '' : '/'}${cat.imageUrl}`)
               : 'src/assets/images/shoe_product_1_1778727884422.png');
 
           return (

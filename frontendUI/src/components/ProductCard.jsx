@@ -15,7 +15,16 @@ export const categories = ['Tất cả', 'Giày bóng rổ', 'Áo', 'Quần', 'V
 export const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
 const ProductCard = ({ product }) => {
-  const imageSrc = product.image || (product.imageUrl ? (product.imageUrl.startsWith('http') ? product.imageUrl : `https://localhost:7291${product.imageUrl}`) : 'src/assets/images/default_product.png');
+  const getProductImage = () => {
+    const img = product.image || product.imageUrl;
+    if (!img) return 'src/assets/images/default_product.png';
+    if (img.startsWith('data:') || img.startsWith('http://') || img.startsWith('https://')) {
+      return img;
+    }
+    const backendBase = 'http://localhost:8080';
+    return img.startsWith('/') ? `${backendBase}${img}` : `${backendBase}/${img}`;
+  };
+  const imageSrc = getProductImage();
 
   return (
     <Link

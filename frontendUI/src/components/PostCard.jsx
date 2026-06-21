@@ -2,7 +2,16 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const PostCard = ({ post }) => {
-    const imageSrc = post.image || (post.imageUrl ? (post.imageUrl.startsWith('http') ? post.imageUrl : `https://localhost:7291${post.imageUrl}`) : 'src/assets/images/default_post.png');
+    const getPostImage = () => {
+        const img = post.image || post.imageUrl;
+        if (!img) return 'src/assets/images/default_post.png';
+        if (img.startsWith('data:') || img.startsWith('http://') || img.startsWith('https://')) {
+            return img;
+        }
+        const backendBase = 'http://localhost:8080';
+        return img.startsWith('/') ? `${backendBase}${img}` : `${backendBase}/${img}`;
+    };
+    const imageSrc = getPostImage();
 
     return (
         <Link

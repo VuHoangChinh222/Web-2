@@ -4,6 +4,18 @@ import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import BannerFormModal from './BannerFormModal';
 
+const mapBannerFromBackend = (banner) => {
+  if (!banner) return null;
+  return {
+    id: banner.id,
+    title: banner.title || '',
+    subtitle: banner.subtitle || '',
+    image: banner.imageUrl || '',
+    link: banner.linkUrl || '',
+    active: banner.status === 1
+  };
+};
+
 const Banners = () => {
   const { banners, addBanner, updateBanner, deleteBanner, uploadImage, resolveImageUrl } = useAdmin();
 
@@ -11,6 +23,9 @@ const Banners = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('add');
   const [currentBanner, setCurrentBanner] = useState(null);
+
+  // Map banners locally
+  const mappedBanners = (banners || []).map(mapBannerFromBackend).filter(Boolean);
 
   const handleOpenAdd = () => {
     setCurrentBanner(null);
@@ -25,11 +40,19 @@ const Banners = () => {
   };
 
   // Submit Operations
-  const handleFormSubmit = (formData) => {
+  const handleFormSubmit = async (formData) => {
+    const body = {
+      title: formData.title,
+      subtitle: formData.subtitle,
+      imageUrl: formData.image || formData.imageUrl || '',
+      linkUrl: formData.link || formData.linkUrl || '',
+      status: formData.active ? 1 : 0
+    };
+
     if (modalType === 'add') {
-      addBanner(formData);
+      await addBanner(body);
     } else {
-      updateBanner(formData);
+      await updateBanner(formData.id, body);
     }
     setIsModalOpen(false);
   };
@@ -58,13 +81,13 @@ const Banners = () => {
 
       {/* Grid of Banners */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {banners.length === 0 ? (
+        {mappedBanners.length === 0 ? (
           <div className="col-span-full h-40 flex flex-col items-center justify-center text-slate-500 border border-white/5 rounded-2xl bg-[#0F1224]/10">
             <Layout size={24} className="text-slate-600 mb-2" />
             <p className="text-xs font-semibold">No banners configured yet.</p>
           </div>
         ) : (
-          banners.map((banner) => (
+          mappedBanners.map((banner) => (
             <GlassCard key={banner.id} hoverEffect={true} className="flex flex-col justify-between h-full relative overflow-hidden group">
               {/* Status Badge */}
               <div className="absolute top-4 right-4 z-10">

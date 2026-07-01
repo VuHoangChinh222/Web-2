@@ -94,10 +94,10 @@ public class Order {
     @Size(max = 50, message = "Trạng thái thanh toán tối đa 50 ký tự")
     private String paymentStatus = "PENDING";
 
-    // Trạng thái đơn hàng (PENDING, CONFIRMED, SHIPPING, DELIVERED, CANCELLED), mặc định ban đầu là PENDING
+    // Trạng thái đơn hàng (0 - Processing, 1 - Shipped, 2 - Completed, 3 - Cancelled), mặc định ban đầu là 0
     @Column(name = "order_status", length = 50)
     @Size(max = 50, message = "Trạng thái đơn hàng tối đa 50 ký tự")
-    private String orderStatus = "PENDING";
+    private String orderStatus = "0";
 
     // Ghi chú của khách hàng gửi tới cửa hàng
     @Column(columnDefinition = "TEXT")

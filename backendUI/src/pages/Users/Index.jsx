@@ -5,6 +5,28 @@ import GlassCard from '../../components/GlassCard';
 import UserFormModal from './UserFormModal';
 import RelatedContentModal from './RelatedContentModal';
 
+const mapUserFromBackend = (user) => {
+  if (!user) return null;
+  const active = user.status === 1;
+  return {
+    id: user.id,
+    username: user.username,
+    fullname: user.fullName || user.username,
+    email: user.email,
+    phone: user.phone || '',
+    roleId: user.role ? user.role.id : null,
+    role: user.role ? {
+      id: user.role.id,
+      name: user.role.name,
+      description: user.role.description,
+      permissions: user.role.permissions || []
+    } : null,
+    active: active,
+    avatar: user.imageUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80',
+    status: user.status
+  };
+};
+
 const Users = () => {
   const { 
     users, 
@@ -32,7 +54,9 @@ const Users = () => {
   // Form State
   const [currentUserForm, setCurrentUserForm] = useState(null);
 
-  const filteredUsers = users.filter(usr => 
+  const mappedUsers = (users || []).map(mapUserFromBackend).filter(Boolean);
+
+  const filteredUsers = mappedUsers.filter(usr => 
     usr.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
     usr.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     usr.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -51,11 +75,37 @@ const Users = () => {
   };
 
   // Submit Operations
-  const handleFormSubmit = (formData) => {
+  const handleFormSubmit = async (formData) => {
+    // Safety check: Cannot change own status or role
+    let targetRoleId = parseInt(formData.roleId);
+    let targetStatus = formData.active ? 1 : 0;
+    
+    if (formData.id === currentUser?.id) {
+      targetStatus = 1; // Force active status
+      if (currentUser.role) {
+        targetRoleId = currentUser.role.id; // Force original role
+      }
+    }
+
+    const body = {
+      username: formData.username,
+      fullName: formData.fullname,
+      email: formData.email,
+      phone: formData.phone || '0912345678',
+      imageUrl: formData.avatar || formData.imageUrl || '',
+      status: targetStatus,
+      role: {
+        id: targetRoleId
+      }
+    };
+    if (formData.password && formData.password.trim() !== '') {
+      body.password = formData.password;
+    }
+
     if (modalType === 'add') {
-      addUser(formData);
+      await addUser(body);
     } else {
-      updateUser(formData);
+      await updateUser(formData.id, body);
     }
     setIsModalOpen(false);
   };
@@ -67,7 +117,10 @@ const Users = () => {
     }
 
     // Check if user has related blogs
-    const relatedBlogs = blogs.filter(b => Number(b.authorId) === Number(usr.id));
+    const relatedBlogs = blogs.filter(b => {
+      const blogAuthorId = b.author ? b.author.id : b.userId;
+      return Number(blogAuthorId) === Number(usr.id);
+    });
     if (relatedBlogs.length > 0) {
       setSelectedUser(usr);
       setRelatedModalOpen(true);
@@ -75,10 +128,9 @@ const Users = () => {
     }
 
     if (confirm(`Are you sure you want to delete this staff user "${usr.fullname}"? This will revoke all terminal permissions.`)) {
-      deleteUser(usr.id, currentUser?.id);
+      deleteUser(usr.id);
     }
   };
-
 
   return (
     <div className="space-y-6">
@@ -86,7 +138,7 @@ const Users = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-wide">Console Users</h2>
-          <p className="text-xs text-slate-400">Total console users: {users.length} administrators & editors</p>
+          <p className="text-xs text-slate-400">Total console users: {mappedUsers.length} administrators & editors</p>
         </div>
         <button
           onClick={handleOpenAdd}
@@ -200,6 +252,7 @@ const Users = () => {
         resolveImageUrl={resolveImageUrl}
         uploadImage={uploadImage}
         onSubmit={handleFormSubmit}
+        currentUser={currentUser}
       />
 
       {/* Related Content / Constraint Modal */}

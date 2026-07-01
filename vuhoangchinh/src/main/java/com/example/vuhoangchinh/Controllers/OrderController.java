@@ -120,7 +120,7 @@ public class OrderController {
         private String paymentStatus = "PENDING"; // Trạng thái thanh toán
 
         @Size(max = 50, message = "Trạng thái đơn hàng tối đa 50 ký tự")
-        private String orderStatus = "PENDING"; // Trạng thái đơn hàng
+        private String orderStatus = "0"; // Trạng thái đơn hàng
 
         private String note; // Ghi chú đơn hàng từ khách hàng
 
@@ -230,7 +230,7 @@ public class OrderController {
         order.setGrandTotal(grandTotal);
         order.setPaymentMethod(request.getPaymentMethod());
         order.setPaymentStatus(request.getPaymentStatus() != null ? request.getPaymentStatus() : "PENDING");
-        order.setOrderStatus(request.getOrderStatus() != null ? request.getOrderStatus() : "PENDING");
+        order.setOrderStatus(request.getOrderStatus() != null ? request.getOrderStatus() : "0");
         order.setNote(request.getNote());
 
         Order savedOrder = orderRepository.save(order);
@@ -359,9 +359,14 @@ public class OrderController {
      * DELETE /api/orders/{id}
      */
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<?> deleteOrder(@PathVariable Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found with id " + id));
+        List<OrderDetail> details = orderDetailRepository.findByOrderId(id);
+        if (details != null && !details.isEmpty()) {
+            orderDetailRepository.deleteAll(details);
+        }
         orderRepository.delete(order);
         return ResponseEntity.ok("Xóa đơn hàng thành công");
     }

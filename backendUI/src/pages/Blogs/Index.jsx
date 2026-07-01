@@ -4,6 +4,20 @@ import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import BlogFormModal from './BlogFormModal';
 
+const mapBlogFromBackend = (blog) => {
+  if (!blog) return null;
+  return {
+    id: blog.id,
+    title: blog.title || '',
+    slug: blog.slug || '',
+    content: blog.content || '',
+    image: blog.thumbnail || blog.imageUrl || '',
+    categoryId: blog.categoryBlog ? blog.categoryBlog.id : (blog.category ? blog.category.id : ''),
+    authorId: blog.author ? blog.author.id : (blog.userId || ''),
+    createdDate: blog.createdAt
+  };
+};
+
 const Blogs = () => {
   const { blogs, categoriesBlog, users, addBlog, updateBlog, deleteBlog, uploadImage, resolveImageUrl } = useAdmin();
 
@@ -25,8 +39,16 @@ const Blogs = () => {
   const [modalType, setModalType] = useState('add');
   const [currentBlog, setCurrentBlog] = useState(null);
 
+  // Map raw data locally
+  const mappedBlogs = (blogs || []).map(mapBlogFromBackend).filter(Boolean);
+  const mappedUsers = (users || []).map(u => ({
+    id: u.id,
+    fullname: u.fullName || u.username,
+    username: u.username || ''
+  }));
+
   // Filter lists
-  const filteredBlogs = blogs.filter(b => {
+  const filteredBlogs = mappedBlogs.filter(b => {
     const matchesSearch = b.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
       b.content.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || b.categoryId === selectedCategory;
@@ -47,11 +69,22 @@ const Blogs = () => {
   };
 
   // Submit Operations
-  const handleFormSubmit = (formData) => {
+  const handleFormSubmit = async (formData) => {
+    const imgVal = formData.image || formData.thumbnail || '';
+    const body = {
+      categoryId: parseInt(formData.categoryId),
+      authorId: parseInt(formData.authorId),
+      title: formData.title,
+      slug: formData.slug || '',
+      content: formData.content,
+      thumbnail: imgVal,
+      imageUrl: imgVal
+    };
+
     if (modalType === 'add') {
-      addBlog(formData);
+      await addBlog(body);
     } else {
-      updateBlog(formData);
+      await updateBlog(formData.id, body);
     }
     setIsModalOpen(false);
   };
@@ -68,7 +101,7 @@ const Blogs = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-wide">Blogs & Articles</h2>
-          <p className="text-xs text-slate-400">Total posts: {blogs.length} articles published</p>
+          <p className="text-xs text-slate-400">Total posts: {mappedBlogs.length} articles published</p>
         </div>
         <button
           onClick={handleOpenAdd}
@@ -98,12 +131,12 @@ const Blogs = () => {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="pl-3 pr-8 py-1.5 rounded-lg text-xs glass-input appearance-none bg-no-repeat bg-right"
+              className="pl-3 pr-8 py-1.5 rounded-lg text-xs glass-input appearance-none bg-no-repeat bg-right bg-[#0F1224] text-white"
               style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394A3B8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`, backgroundSize: '16px', backgroundPosition: 'calc(100% - 8px) center' }}
             >
-              <option value="all">All Blog Categories</option>
+              <option value="all" className="bg-[#0F1224] text-white">All Blog Categories</option>
               {categoriesBlog.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                <option key={cat.id} value={cat.id} className="bg-[#0F1224] text-white">{cat.name}</option>
               ))}
             </select>
           </div>
@@ -119,7 +152,7 @@ const Blogs = () => {
           </div>
         ) : (
           filteredBlogs.map(blog => {
-            const author = users.find(u => u.id === blog.authorId);
+            const author = mappedUsers.find(u => u.id === blog.authorId);
             const category = categoriesBlog.find(c => c.id === blog.categoryId);
             return (
               <GlassCard key={blog.id} hoverEffect={true} className="flex flex-col justify-between group h-full">
@@ -198,7 +231,7 @@ const Blogs = () => {
         modalType={modalType}
         blogData={currentBlog}
         categoriesBlog={categoriesBlog}
-        users={users}
+        users={mappedUsers}
         resolveImageUrl={resolveImageUrl}
         uploadImage={uploadImage}
         onSubmit={handleFormSubmit}

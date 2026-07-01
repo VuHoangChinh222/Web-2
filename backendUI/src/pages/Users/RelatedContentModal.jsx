@@ -13,7 +13,15 @@ const RelatedContentModal = ({
   deleteUser,
   currentUser
 }) => {
-  const userBlogs = blogs.filter(b => Number(b.authorId) === Number(selectedUser?.id));
+  const userBlogs = (blogs || []).map(b => {
+    return {
+      id: b.id,
+      title: b.title || '',
+      image: b.thumbnail || b.imageUrl || '',
+      categoryId: b.categoryBlog ? b.categoryBlog.id : (b.category ? b.category.id : ''),
+      authorId: b.author ? b.author.id : (b.userId || '')
+    };
+  }).filter(b => Number(b.authorId) === Number(selectedUser?.id));
 
   return (
     <GlassModal

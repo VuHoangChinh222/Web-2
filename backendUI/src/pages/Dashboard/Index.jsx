@@ -10,15 +10,71 @@ import {
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 
+const mapOrderFromBackend = (order) => {
+  if (!order) return null;
+  return {
+    id: order.id,
+    customerId: order.customer ? order.customer.id : order.customerId,
+    orderCode: order.orderCode || `ORD-${order.id}`,
+    orderDate: order.createdAt || order.orderDate,
+    totalAmount: order.totalPrice ? parseFloat(order.totalPrice) : 0,
+    shippingAddress: order.shippingAddress || 'Hà Nội',
+    paymentMethod: order.paymentMethod || 'COD',
+    paymentStatus: order.paymentStatus || 'PENDING',
+    status: order.orderStatus,
+    note: order.note || ''
+  };
+};
+
+const mapProductFromBackend = (prod) => {
+  if (!prod) return null;
+  return {
+    id: prod.id,
+    name: prod.name,
+    slug: prod.slug || '',
+    description: prod.description || '',
+    shortDescription: prod.shortDescription || '',
+    price: prod.basePrice ? parseFloat(prod.basePrice) : 0,
+    salePrice: prod.discountPrice ? parseFloat(prod.discountPrice) : (prod.basePrice ? parseFloat(prod.basePrice) : 0),
+    stock: 120, // default stock count as it is variant-based on DB
+    categoryId: prod.category ? prod.category.id : '',
+    category: prod.category,
+    image: prod.thumbnail || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80',
+    status: prod.status === 1 ? 'Active' : 'Draft',
+    createdAt: prod.createdAt
+  };
+};
+
+const mapCustomerFromBackend = (cust) => {
+  if (!cust) return null;
+  const active = cust.status === 1;
+  return {
+    id: cust.id,
+    fullname: cust.fullName || cust.fullname || cust.username || cust.email || 'Unknown',
+    username: cust.username || cust.email || '',
+    email: cust.email,
+    phone: cust.phone || '',
+    address: cust.address || '',
+    avatar: cust.imageUrl || cust.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+    active: active,
+    status: cust.status
+  };
+};
+
 const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) => {
-  const { products, orders, customers, categoriesProduct } = useAdmin();
+  const { products, orders, customers, categoriesProduct, resolveImageUrl } = useAdmin();
+
+  // Map collections locally
+  const mappedOrders = (orders || []).map(mapOrderFromBackend).filter(Boolean);
+  const mappedProducts = (products || []).map(mapProductFromBackend).filter(Boolean);
+  const mappedCustomers = (customers || []).map(mapCustomerFromBackend).filter(Boolean);
 
   // 1. Calculate general statistics
-  const completedOrders = orders.filter(o => o.status === 'Completed');
+  const completedOrders = mappedOrders.filter(o => o.status === '2' || o.status === 'Completed');
   const totalRevenue = completedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
-  const pendingOrdersCount = orders.filter(o => o.status === 'Pending').length;
-  const activeCustomersCount = customers.filter(c => c.active).length;
-  const lowStockProducts = products.filter(p => p.stock <= 10);
+  const processingOrdersCount = mappedOrders.filter(o => o.status === '0' || o.status === 'Processing').length;
+  const activeCustomersCount = mappedCustomers.filter(c => c.active).length;
+  const lowStockProducts = mappedProducts.filter(p => p.stock <= 10);
 
   // 2. Prepare sales chart data (last 7 days simulation)
   const salesChartData = [
@@ -33,23 +89,29 @@ const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) =
 
   // 3. Prepare category chart data
   const COLORS = ['#8B5CF6', '#EC4899', '#3B82F6', '#10B981', '#F59E0B'];
-  const categoryData = categoriesProduct.map((cat, idx) => ({
-    name: cat.name,
-    count: cat.productCount,
-    color: COLORS[idx % COLORS.length]
-  }));
+  const categoryData = categoriesProduct.map((cat, idx) => {
+    // Count products under this category
+    const productCount = mappedProducts.filter(p => p.categoryId === cat.id).length;
+    return {
+      name: cat.name,
+      count: productCount,
+      color: COLORS[idx % COLORS.length]
+    };
+  });
 
   // Helper for Order Status colors
   const getStatusBadge = (status) => {
     switch (status) {
+      case '2':
       case 'Completed':
         return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Completed</span>;
+      case '0':
       case 'Processing':
         return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">Processing</span>;
+      case '1':
       case 'Shipped':
         return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30">Shipped</span>;
-      case 'Pending':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">Pending</span>;
+      case '3':
       case 'Cancelled':
         return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30">Cancelled</span>;
       default:
@@ -116,13 +178,13 @@ const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) =
             <ShoppingCart size={100} />
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pending Orders</span>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Processing Orders</span>
             <div className="p-2 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20">
               <Clock size={18} />
             </div>
           </div>
           <div className="mt-4">
-            <h3 className="text-2xl font-bold text-white">{pendingOrdersCount}</h3>
+            <h3 className="text-2xl font-bold text-white">{processingOrdersCount}</h3>
             <p className="text-xs text-slate-400 mt-1">
               Requires immediate action
             </p>
@@ -141,7 +203,7 @@ const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) =
             </div>
           </div>
           <div className="mt-4">
-            <h3 className="text-2xl font-bold text-white">{products.length}</h3>
+            <h3 className="text-2xl font-bold text-white">{mappedProducts.length}</h3>
             <p className="text-xs text-amber-400 flex items-center gap-1 mt-1 font-semibold">
               <AlertTriangle size={12} />
               <span>{lowStockProducts.length} low-stock items</span>
@@ -163,7 +225,7 @@ const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) =
           <div className="mt-4">
             <h3 className="text-2xl font-bold text-white">{activeCustomersCount}</h3>
             <p className="text-xs text-emerald-400 flex items-center gap-1 mt-1 font-semibold font-mono">
-              <span>{Math.round((activeCustomersCount / customers.length) * 100)}% active rate</span>
+              <span>{mappedCustomers.length ? Math.round((activeCustomersCount / mappedCustomers.length) * 100) : 0}% active rate</span>
             </p>
           </div>
         </GlassCard>
@@ -174,7 +236,7 @@ const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) =
         {/* Sales Trend Chart */}
         <GlassCard hoverEffect={false} title="Revenue Analytics" className="lg:col-span-2">
           <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" h="100%">
+            <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={salesChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
@@ -256,8 +318,8 @@ const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) =
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {orders.slice(0, 4).map((order) => {
-                  const cust = customers.find(c => c.id === order.customerId);
+                {mappedOrders.slice(0, 4).map((order) => {
+                  const cust = mappedCustomers.find(c => c.id === order.customerId);
                   return (
                     <tr key={order.id} className="hover:bg-white/[0.01] transition-colors">
                       <td className="py-3 pr-2 font-mono text-purple-400 font-semibold">{order.id}</td>
@@ -292,7 +354,7 @@ const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) =
             ) : (
               lowStockProducts.map((prod) => (
                 <div key={prod.id} className="flex items-center gap-3 p-2.5 rounded-xl border border-white/5 bg-white/[0.01] hover:border-white/10 transition-colors">
-                  <img src={prod.image} alt={prod.name} className="w-10 h-10 rounded-lg object-cover border border-white/10" />
+                  <img src={resolveImageUrl(prod.image)} alt={prod.name} className="w-10 h-10 rounded-lg object-cover border border-white/10" />
                   <div className="flex-1 min-w-0">
                     <h4 className="text-xs font-semibold text-white truncate">{prod.name}</h4>
                     <p className="text-[10px] text-slate-400 truncate">Category: {categoriesProduct.find(c => c.id === prod.categoryId)?.name || 'N/A'}</p>

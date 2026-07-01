@@ -108,10 +108,10 @@ const BannerFormModal = ({
           <select
             value={form.active}
             onChange={(e) => setForm({ ...form, active: e.target.value === 'true' })}
-            className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224]"
+            className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
           >
-            <option value="true">Active (Display on Homepage Slider)</option>
-            <option value="false">Disabled (Hidden from Slider)</option>
+            <option value="true" className="bg-[#0F1224] text-white">Active (Display on Homepage Slider)</option>
+            <option value="false" className="bg-[#0F1224] text-white">Disabled (Hidden from Slider)</option>
           </select>
         </div>
 

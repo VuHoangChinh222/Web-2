@@ -147,10 +147,10 @@ const ProductFormModal = ({
             <select
               value={form.categoryId}
               onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224]"
+              className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
             >
               {categoriesProduct.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                <option key={cat.id} value={cat.id} className="bg-[#0F1224] text-white">{cat.name}</option>
               ))}
             </select>
           </div>

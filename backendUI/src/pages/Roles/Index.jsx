@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Shield, ShieldAlert, CheckSquare, Square, Save } from 'lucide-react';
+import { Shield, ShieldAlert, CheckSquare, Square, Save, Plus, Edit2, Trash2 } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
+import RoleFormModal from './RoleFormModal';
 
 const Roles = () => {
-  const { roles, updateRolePermissions } = useAdmin();
+  const { roles, users, addRole, updateRole, deleteRole, updateRolePermissions } = useAdmin();
 
   // List of all system entities for dynamic permissions
   const entities = [
@@ -38,6 +39,11 @@ const Roles = () => {
   // Temporary state for checkboxes
   const [tempPermissions, setTempPermissions] = useState([]);
 
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState('add'); // add or edit
+  const [currentRole, setCurrentRole] = useState(null);
+
   // Auto-select first role when loaded
   React.useEffect(() => {
     if (!selectedRoleId && roles.length > 0) {
@@ -57,6 +63,11 @@ const Roles = () => {
   };
 
   const handleTogglePermission = (permissionKey) => {
+    // Prevent removing dashboard_view or basic rights from ROLE_ADMIN for absolute security
+    if (activeRole?.name === 'ROLE_ADMIN' && permissionKey === 'manage_role') {
+      alert("Cannot revoke Roles Management from standard system admin role.");
+      return;
+    }
     setTempPermissions(prev => 
       prev.includes(permissionKey)
         ? prev.filter(k => k !== permissionKey)
@@ -65,18 +76,78 @@ const Roles = () => {
   };
 
   const handleSave = async () => {
+    if (!selectedRoleId) return;
     const res = await updateRolePermissions(selectedRoleId, tempPermissions);
     if (res && res.success) {
-      alert(`Quyền truy cập cho vai trò "${activeRole?.name}" đã được lưu thành công vào cơ sở dữ liệu.`);
+      alert(`Permissions configuration for role "${activeRole?.name}" has been saved successfully.`);
     }
+  };
+
+  // CRUD handlers
+  const handleOpenAdd = () => {
+    setModalType('add');
+    setCurrentRole(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (role) => {
+    if (role.name === 'ROLE_ADMIN') {
+      alert("Cannot edit standard system admin role.");
+      return;
+    }
+    setModalType('edit');
+    setCurrentRole(role);
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteRole = (role) => {
+    if (role.name === 'ROLE_ADMIN') {
+      alert("Cannot delete standard system admin role.");
+      return;
+    }
+    const hasAssignedUsers = (users || []).some(u => u.roleId === role.id || u.role?.id === role.id);
+    if (hasAssignedUsers) {
+      alert("Cannot delete role: There are staff users currently assigned to this security role.");
+      return;
+    }
+    if (confirm(`Are you sure you want to delete role "${role.name}"?`)) {
+      deleteRole(role.id);
+    }
+  };
+
+  const handleFormSubmit = async (formData) => {
+    if (modalType === 'add') {
+      const body = {
+        name: formData.name,
+        description: formData.description,
+        permissions: []
+      };
+      await addRole(body);
+    } else {
+      const body = {
+        name: formData.name,
+        description: formData.description,
+        permissions: formData.permissions || []
+      };
+      await updateRole(formData.id, body);
+    }
+    setIsModalOpen(false);
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-xl font-bold text-white tracking-wide">Roles & Security</h2>
-        <p className="text-xs text-slate-400">Configure administrative access boundaries and security roles</p>
+      {/* Header and Add Action */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-white tracking-wide">Roles & Security</h2>
+          <p className="text-xs text-slate-400">Configure administrative access boundaries and security roles</p>
+        </div>
+        <button
+          onClick={handleOpenAdd}
+          className="glass-btn-primary px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 self-end sm:self-auto"
+        >
+          <Plus size={16} /> Create Role
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -86,21 +157,41 @@ const Roles = () => {
           <div className="space-y-3">
             {roles.map((r) => {
               const isActive = r.id === selectedRoleId;
+              const isSystemAdmin = r.name === 'ROLE_ADMIN';
               return (
-                <button
+                <div
                   key={r.id}
-                  onClick={() => handleRoleChange(r.id)}
-                  className={`w-full text-left p-4 rounded-xl transition-all border
+                  className={`w-full p-4 rounded-xl border flex items-start justify-between gap-3 transition-all
                     ${isActive 
                       ? 'bg-purple-900/10 border-purple-500/40 text-purple-300 shadow-md shadow-purple-500/5' 
                       : 'bg-[#0F1224]/30 border-white/5 text-slate-400 hover:border-white/10 hover:text-slate-200'}`}
                 >
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Shield size={16} className={isActive ? 'text-purple-400' : 'text-slate-500'} />
-                    <span className="font-bold text-sm text-white">{r.name}</span>
+                  <div className="cursor-pointer flex-1" onClick={() => handleRoleChange(r.id)}>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Shield size={16} className={isActive ? 'text-purple-400' : 'text-slate-500'} />
+                      <span className="font-bold text-sm text-white">{r.name}</span>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-normal">{r.description}</p>
                   </div>
-                  <p className="text-xs text-slate-400 leading-normal">{r.description}</p>
-                </button>
+                  {!isSystemAdmin && (
+                    <div className="flex flex-col gap-2 flex-shrink-0 justify-center">
+                      <button
+                        onClick={() => handleOpenEdit(r)}
+                        className="p-1.5 rounded glass-btn text-blue-400 hover:border-blue-500/40"
+                        title="Edit Role Name/Desc"
+                      >
+                        <Edit2 size={11} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteRole(r)}
+                        className="p-1.5 rounded glass-btn text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30"
+                        title="Delete Role"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -109,7 +200,7 @@ const Roles = () => {
         {/* Right Side: Permissions Checklist */}
         <div className="lg:col-span-2 space-y-4">
           <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">
-            Permissions for: <strong className="text-purple-400">{activeRole?.name}</strong>
+            Permissions for: <strong className="text-purple-400">{activeRole?.name || 'No Role Selected'}</strong>
           </h3>
           
           <GlassCard hoverEffect={false} className="space-y-5">
@@ -146,7 +237,8 @@ const Roles = () => {
             <div className="pt-4 border-t border-white/5 flex justify-end">
               <button
                 onClick={handleSave}
-                className="glass-btn-primary px-5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5"
+                disabled={!selectedRoleId}
+                className="glass-btn-primary px-5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save size={14} /> Save Permissions Configuration
               </button>
@@ -154,6 +246,15 @@ const Roles = () => {
           </GlassCard>
         </div>
       </div>
+
+      {/* Role Add/Edit Modal */}
+      <RoleFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        modalType={modalType}
+        roleData={currentRole}
+        onSubmit={handleFormSubmit}
+      />
     </div>
   );
 };

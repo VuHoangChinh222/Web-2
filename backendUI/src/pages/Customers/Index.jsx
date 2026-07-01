@@ -3,9 +3,23 @@ import { Search, Edit2, Trash2, Mail, Phone, MapPin, UserPlus, ShoppingBag } fro
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import CustomerFormModal from './CustomerFormModal';
+import RelatedOrdersModal from './RelatedOrdersModal';
+
 
 const Customers = () => {
-  const { customers, orders, addCustomer, updateCustomer, deleteCustomer, uploadImage, resolveImageUrl } = useAdmin();
+  const { 
+    customers, 
+    orders, 
+    addCustomer, 
+    updateCustomer, 
+    deleteCustomer, 
+    uploadImage, 
+    resolveImageUrl, 
+    deleteOrder,
+    userAddresses,
+    addUserAddress,
+    updateUserAddress
+  } = useAdmin();
 
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,10 +27,50 @@ const Customers = () => {
   const [modalType, setModalType] = useState('add');
   const [currentCustomer, setCurrentCustomer] = useState(null);
 
+  // Related orders modal state
+  const [relatedModalOpen, setRelatedModalOpen] = useState(false);
+  const [selectedCustomerForDelete, setSelectedCustomerForDelete] = useState(null);
+
+  // Map customers locally
+  const mappedCustomers = (customers || []).map(cust => {
+    if (!cust) return null;
+    const active = cust.status === 1;
+
+    // Find default address from userAddresses state
+    const defaultAddr = (userAddresses || []).find(addr => 
+      (addr.customerId === cust.id || addr.customer?.id === cust.id) && addr.isDefault
+    ) || (userAddresses || []).find(addr => 
+      (addr.customerId === cust.id || addr.customer?.id === cust.id)
+    );
+
+    const addressText = defaultAddr ? 
+      [defaultAddr.addressLine, defaultAddr.ward, defaultAddr.district, defaultAddr.city]
+        .filter(part => part && part !== 'N/A')
+        .join(', ') 
+      : '';
+
+    return {
+      id: cust.id,
+      fullname: cust.fullName || cust.fullname || cust.username || cust.email || 'Unknown',
+      username: cust.username || cust.email || '',
+      email: cust.email,
+      phone: cust.phone || '',
+      address: addressText,
+      avatar: cust.imageUrl || cust.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+      active: active,
+      status: cust.status
+    };
+  }).filter(Boolean);
+
   // Filter and enrich customers
-  const enrichedCustomers = (customers || []).map(cust => {
-    const custOrders = (orders || []).filter(o => o.customerId === cust.id);
-    const spending = custOrders.filter(o => o.status === 'Completed').reduce((sum, o) => sum + o.totalAmount, 0);
+  const enrichedCustomers = mappedCustomers.map(cust => {
+    // Note: raw orders from database uses customerId or customer object.
+    // Let's check both: o.customerId or o.customer?.id
+    const custOrders = (orders || []).filter(o => o.customerId === cust.id || o.customer?.id === cust.id);
+    const spending = custOrders
+      .filter(o => o.orderStatus === 'Completed' || o.orderStatus === '2')
+      .reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+
     return {
       ...cust,
       orderCount: custOrders.length,
@@ -24,7 +78,7 @@ const Customers = () => {
     };
   });
 
-  const filteredCustomers = enrichedCustomers.filter(cust => 
+  const filteredCustomers = enrichedCustomers.filter(cust =>
     cust.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cust.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cust.phone.includes(searchTerm)
@@ -43,17 +97,74 @@ const Customers = () => {
   };
 
   // Submit Operations
-  const handleFormSubmit = (formData) => {
-    if (modalType === 'add') {
-      addCustomer(formData);
-    } else {
-      updateCustomer(formData);
+  const handleFormSubmit = async (formData) => {
+    const body = {
+      username: formData.username,
+      fullName: formData.fullname,
+      email: formData.email,
+      phone: formData.phone || '',
+      imageUrl: formData.avatar || formData.imageUrl || '',
+      status: formData.active ? 1 : 0
+    };
+    if (formData.password && formData.password.trim() !== '') {
+      body.password = formData.password;
     }
+
+    let customerId = formData.id;
+    let res = null;
+
+    if (modalType === 'add') {
+      res = await addCustomer(body);
+      if (res && res.success && res.data) {
+        customerId = res.data.id;
+      }
+    } else {
+      res = await updateCustomer(formData.id, body);
+    }
+
+    // Save or update address
+    if (customerId) {
+      const addressText = (formData.address || '').trim();
+      const existingAddr = (userAddresses || []).find(addr => 
+        (addr.customerId === customerId || addr.customer?.id === customerId) && addr.isDefault
+      ) || (userAddresses || []).find(addr => 
+        (addr.customerId === customerId || addr.customer?.id === customerId)
+      );
+
+      if (addressText) {
+        const addressBody = {
+          customerId: customerId,
+          recipientName: formData.fullname || body.fullName || 'Recipient',
+          recipientPhone: formData.phone || body.phone || '0912345678',
+          addressLine: addressText,
+          ward: existingAddr?.ward || 'N/A',
+          district: existingAddr?.district || 'N/A',
+          city: existingAddr?.city || 'N/A',
+          isDefault: true
+        };
+
+        if (existingAddr) {
+          await updateUserAddress(existingAddr.id, addressBody);
+        } else {
+          await addUserAddress(addressBody);
+        }
+      }
+    }
+
     setIsModalOpen(false);
   };
 
   const handleDelete = (id) => {
-    if (confirm("Are you sure you want to delete this customer record?")) {
+    const customer = mappedCustomers.find(c => c.id === id);
+    if (!customer) return;
+
+    const hasOrders = orders.some(o => o.customerId === id || o.customer?.id === id);
+    if (hasOrders) {
+      setSelectedCustomerForDelete(customer);
+      setRelatedModalOpen(true);
+      return;
+    }
+    if (confirm(`Are you sure you want to delete customer record "${customer.fullname}"?`)) {
       deleteCustomer(id);
     }
   };
@@ -64,7 +175,7 @@ const Customers = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-wide">Customers Directory</h2>
-          <p className="text-xs text-slate-400">Total customers: {customers.length} subscribers</p>
+          <p className="text-xs text-slate-400">Total customers: {mappedCustomers.length} subscribers</p>
         </div>
         <button
           onClick={handleOpenAdd}
@@ -183,6 +294,19 @@ const Customers = () => {
         resolveImageUrl={resolveImageUrl}
         uploadImage={uploadImage}
         onSubmit={handleFormSubmit}
+      />
+
+      {/* Related Orders Dependency Modal */}
+      <RelatedOrdersModal
+        isOpen={relatedModalOpen}
+        onClose={() => {
+          setRelatedModalOpen(false);
+          setSelectedCustomerForDelete(null);
+        }}
+        selectedCustomer={selectedCustomerForDelete}
+        orders={orders}
+        deleteOrder={deleteOrder}
+        deleteCustomer={deleteCustomer}
       />
     </div>
   );

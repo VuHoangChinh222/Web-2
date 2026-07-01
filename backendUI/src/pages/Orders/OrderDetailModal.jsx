@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, MapPin, CreditCard, Calendar } from 'lucide-react';
+import { ShoppingBag, MapPin, CreditCard, Calendar, Trash2 } from 'lucide-react';
 import GlassModal from '../../components/GlassModal';
 
 const OrderDetailModal = ({
@@ -10,13 +10,35 @@ const OrderDetailModal = ({
   activeItems,
   products,
   updateOrderStatus,
-  formatDate
+  deleteOrderDetail,
+  deleteOrder,
+  formatDate,
+  mode = 'view'
 }) => {
+  const getStatusBadgeLabel = (status) => {
+    switch (status) {
+      case '2':
+      case 'Completed':
+        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Completed</span>;
+      case '0':
+      case 'Processing':
+        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">Processing</span>;
+      case '1':
+      case 'Shipped':
+        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30">Shipped</span>;
+      case '3':
+      case 'Cancelled':
+        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30">Cancelled</span>;
+      default:
+        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-500/20 text-slate-400">{status}</span>;
+    }
+  };
+
   return (
     <GlassModal
       isOpen={isOpen}
       onClose={onClose}
-      title={activeOrder ? `Invoice: ${activeOrder.id}` : 'Order Detail'}
+      title={activeOrder ? (mode === 'edit' ? `Edit Order: ${activeOrder.id}` : `Invoice: ${activeOrder.id}`) : 'Order Detail'}
       maxWidth="max-w-2xl"
     >
       {activeOrder && activeCustomer && (
@@ -68,48 +90,102 @@ const OrderDetailModal = ({
               </div>
             </div>
 
-            {/* Dynamic Status Update */}
+            {/* Dynamic Status Update / View Status */}
             <div className="flex items-center gap-2 border-l border-white/10 pl-4">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Status:</span>
-              <select
-                value={activeOrder.status}
-                onChange={(e) => updateOrderStatus(activeOrder.id, e.target.value)}
-                className="px-2.5 py-1 text-xs rounded-md glass-input bg-[#0F1224] border border-purple-500/20 text-purple-300 font-semibold"
-              >
-                <option value="Pending">Pending</option>
-                <option value="Processing">Processing</option>
-                <option value="Shipped">Shipped</option>
-                <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
+              {mode === 'edit' ? (
+                <select
+                  value={activeOrder.status}
+                  onChange={(e) => updateOrderStatus(activeOrder.id, e.target.value)}
+                  className="px-2.5 py-1 text-xs rounded-md glass-input bg-[#0F1224] border border-purple-500/20 text-purple-300 font-semibold text-white"
+                >
+                  <option value="0" className="bg-[#0F1224] text-white">Processing</option>
+                  <option value="1" className="bg-[#0F1224] text-white">Shipped</option>
+                  <option value="2" className="bg-[#0F1224] text-white">Completed</option>
+                  <option value="3" className="bg-[#0F1224] text-white">Cancelled</option>
+                </select>
+              ) : (
+                getStatusBadgeLabel(activeOrder.status)
+              )}
             </div>
           </div>
 
           {/* Items List */}
           <div>
             <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3">Order Items</h4>
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-1 glass-scrollbar">
-              {activeItems.map((item) => {
-                const prod = products.find(p => p.id === item.productId);
-                return (
-                  <div key={item.id} className="flex items-center justify-between p-2 rounded-lg border border-white/5 bg-white/[0.01]">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={prod?.image}
-                        alt=""
-                        className="w-10 h-8 rounded object-cover border border-white/10"
-                      />
-                      <div>
-                        <p className="text-xs font-bold text-white truncate max-w-[200px]">{prod ? prod.name : 'Deleted Product'}</p>
-                        <p className="text-[10px] text-slate-500 font-mono">${item.price.toFixed(2)} x {item.quantity}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-xs font-bold text-white">${item.total.toFixed(2)}</span>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="overflow-x-auto glass-scrollbar max-h-56 pr-1">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-white/5 text-slate-400 font-medium">
+                    <th className="py-2 pb-1.5 pl-2">Product</th>
+                    <th className="py-2 pb-1.5 text-center">Price</th>
+                    <th className="py-2 pb-1.5 text-center">Qty</th>
+                    <th className="py-2 pb-1.5 text-right">Total</th>
+                    {mode === 'edit' && <th className="py-2 pb-1.5 text-right pr-2">Action</th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {activeItems.map((item) => {
+                    const prod = products.find(p => p.id === item.productId);
+                    const isProcessing = activeOrder.status === '0' || activeOrder.status === 'Processing';
+                    const canDelete = mode === 'edit' && isProcessing;
+
+                    const handleDeleteItem = async () => {
+                      if (activeItems.length === 1) {
+                        if (confirm("Deleting this item will delete the entire order because it is the only item in the order. Do you want to proceed?")) {
+                          const success = await deleteOrder(activeOrder.id);
+                          if (success) {
+                            onClose();
+                          }
+                        }
+                      } else {
+                        if (confirm(`Are you sure you want to delete "${prod ? prod.name : 'Deleted Product'}" from this order?`)) {
+                          await deleteOrderDetail(item.id);
+                        }
+                      }
+                    };
+
+                    return (
+                      <tr key={item.id} className="hover:bg-white/[0.01] transition-colors">
+                        <td className="py-2.5 pl-2 flex items-center gap-2">
+                          <img
+                            src={prod?.image}
+                            alt=""
+                            className="w-9 h-7 rounded object-cover border border-white/10 animate-fade-in"
+                          />
+                          <span className="font-semibold text-white truncate max-w-[180px]" title={prod ? prod.name : 'Deleted Product'}>
+                            {prod ? prod.name : 'Deleted Product'}
+                          </span>
+                        </td>
+                        <td className="py-2.5 text-center text-slate-300 font-mono">
+                          ${item.price.toFixed(2)}
+                        </td>
+                        <td className="py-2.5 text-center text-slate-300 font-mono">
+                          {item.quantity}
+                        </td>
+                        <td className="py-2.5 text-right font-semibold text-white font-mono">
+                          ${item.total.toFixed(2)}
+                        </td>
+                        {mode === 'edit' && (
+                          <td className="py-2.5 text-right pr-2">
+                            {canDelete ? (
+                              <button
+                                onClick={handleDeleteItem}
+                                className="p-1 rounded hover:bg-rose-500/10 text-rose-400 hover:border-rose-500/30 transition-all border border-transparent"
+                                title="Delete item from order"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            ) : (
+                              <span className="text-[9px] text-slate-500">Locked</span>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
 

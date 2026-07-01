@@ -15,29 +15,191 @@ Hệ thống hoạt động theo mô hình Client-Server rời rạc:
 * **Frontend** gửi các yêu cầu HTTP mang theo JWT Bearer Token trong Header để tương tác dữ liệu.
 * **Backend** tiếp nhận yêu cầu, xử lý nghiệp vụ, kiểm tra phân quyền JWT Token thông qua Security Filter, tương tác MySQL qua JPA Hibernate và phản hồi dữ liệu JSON.
 
+```mermaid
+graph TD
+    subgraph Clients ["Phân Hệ Giao Diện (Client Side)"]
+        A["Admin Dashboard<br/>(backendUI)<br/>React, Vite, Tailwind"]
+        B["Client Store<br/>(frontendUI)<br/>React, Vite, Axios"]
+    end
+
+    subgraph Service ["Phân Hệ Máy Chủ (Server Side - vuhoangchinh)"]
+        direction TB
+        C["API Controllers<br/>(REST API)"]
+        D["Spring Security & JWT Filter"]
+        E["Service Layer<br/>(Business Logic)"]
+        F["Repository Layer<br/>(Spring Data JPA)"]
+        
+        C --> D
+        D --> E
+        E --> F
+    end
+
+    subgraph Database ["Cơ Sở Dữ Liệu"]
+        G[("MySQL Database")]
+    end
+
+    A -- "HTTP Requests & JWT Bearer" --> C
+    B -- "HTTP Requests" --> C
+    F --> G
 ```
-                ┌─────────────────────────────────────────────────────────┐
-                │                     Backend API                         │
-                │                   (vuhoangchinh)                        │
-                │             Spring Boot, JPA, Security                  │
-                └───────────┬───────────────────────────────┬─────────────┘
-                            ▲                               ▲
-                            │ HTTP & JWT                    │ HTTP Requests
-                            │ JSON Response                 │ JSON Response
-                            ▼                               ▼
-     ┌─────────────────────────────────┐           ┌─────────────────────────────────┐
-     │       Admin Dashboard           │           │          Client Store           │
-     │         (backendUI)             │           │          (frontendUI)           │
-     │    React, Vite, Tailwind CSS    │           │      React, Vite, Axios         │
-     └─────────────────────────────────┘           └─────────────────────────────────┘
-                                     │               │
-                                     └───────┬───────┘
-                                             │ JPA / Hibernate
-                                             ▼
-                                    ┌─────────────────┐
-                                    │    Database     │
-                                    │      MySQL      │
-                                    └─────────────────┘
+
+---
+
+## 🗃️ Sơ Đồ Quan Hệ Thực Thể (Database ERD Diagram)
+
+Dưới đây là sơ đồ quan hệ của toàn bộ 13 thực thể (Entities) của hệ thống được ánh xạ từ Java Spring Boot (`com.example.vuhoangchinh.Entities`) xuống cơ sở dữ liệu MySQL:
+
+```mermaid
+erDiagram
+    ROLE ||--o{ USER : "has"
+    USER ||--o{ BLOG : "writes"
+    CategoryBlog ||--o{ BLOG : "contains"
+    CategoryProduct ||--o{ PRODUCT : "contains"
+    PRODUCT ||--o{ ProductImage : "has"
+    PRODUCT ||--o{ ProductVariant : "has"
+    CUSTOMER ||--o{ UserAddress : "has"
+    CUSTOMER ||--o{ ORDER : "places"
+    ORDER ||--o{ OrderDetail : "contains"
+    ProductVariant ||--o{ OrderDetail : "ordered_in"
+
+    ROLE {
+        Long id PK
+        String name "unique, nullable=false"
+        String description
+    }
+
+    USER {
+        Long id PK
+        String username "unique, nullable=false"
+        String password "nullable=false"
+        String fullName "nullable=false"
+        String email "unique, nullable=false"
+        String phone "nullable=false"
+        String imageUrl "LONGTEXT"
+        Integer status "default=1"
+        LocalDateTime createdAt
+        LocalDateTime updatedAt
+    }
+
+    CategoryBlog {
+        Long id PK
+        String name "nullable=false"
+        String slug "unique, nullable=false"
+        String imageUrl "LONGTEXT"
+    }
+
+    BLOG {
+        Long id PK
+        Long category_id FK
+        Long author_id FK
+        String title "nullable=false"
+        String slug "unique, nullable=false"
+        String summary
+        String content "LONGTEXT"
+        String thumbnail "LONGTEXT"
+        String imageUrl "LONGTEXT"
+        Integer status "default=1"
+        LocalDateTime createdAt
+        LocalDateTime updatedAt
+    }
+
+    CategoryProduct {
+        Long id PK
+        String name "nullable=false"
+        String slug "unique, nullable=false"
+        String description "TEXT"
+        String imageUrl "LONGTEXT"
+        Integer status "default=1"
+    }
+
+    PRODUCT {
+        Long id PK
+        Long category_id FK
+        String name "nullable=false"
+        String slug "unique, nullable=false"
+        String shortDescription
+        String description "TEXT"
+        String thumbnail "LONGTEXT"
+        BigDecimal basePrice "nullable=false"
+        BigDecimal discountPrice
+        Integer status "default=1"
+        LocalDateTime createdAt
+        LocalDateTime updatedAt
+    }
+
+    ProductImage {
+        Long id PK
+        Long product_id FK
+        String imageUrl "LONGTEXT"
+    }
+
+    ProductVariant {
+        Long id PK
+        Long product_id FK
+        String size
+        String color
+        BigDecimal price
+        Integer stockQuantity "default=0"
+        String sku "unique"
+    }
+
+    CUSTOMER {
+        Long id PK
+        String email "unique, nullable=false"
+        String password "nullable=false"
+        String fullName "nullable=false"
+        String phone "nullable=false"
+        String imageUrl "LONGTEXT"
+        Integer status "default=1"
+        LocalDateTime createdAt
+        LocalDateTime updatedAt
+    }
+
+    UserAddress {
+        Long id PK
+        Long customer_id FK
+        String recipientName "nullable=false"
+        String recipientPhone "nullable=false"
+        String addressLine "nullable=false"
+        String ward
+        String district
+        String city
+        Boolean isDefault "default=false"
+    }
+
+    ORDER {
+        Long id PK
+        Long customer_id FK "nullable=true"
+        String orderCode "unique, nullable=false"
+        String recipientName "nullable=false"
+        String recipientPhone "nullable=false"
+        String shippingAddress "nullable=false"
+        BigDecimal totalPrice "nullable=false"
+        BigDecimal shippingFee "default=0"
+        BigDecimal grandTotal "nullable=false"
+        String paymentMethod
+        String paymentStatus "default=PENDING"
+        String orderStatus "default=0"
+        String note "TEXT"
+        LocalDateTime createdAt
+        LocalDateTime updatedAt
+    }
+
+    OrderDetail {
+        Long id PK
+        Long order_id FK
+        Long product_variant_id FK
+        BigDecimal price "nullable=false"
+        Integer quantity "nullable=false"
+    }
+
+    BANNER {
+        Long id PK
+        String title
+        String imageUrl "LONGTEXT"
+        Integer position
+        Integer status "default=1"
+    }
 ```
 
 ---

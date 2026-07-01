@@ -105,10 +105,10 @@ const BlogFormModal = ({
             <select
               value={form.categoryId}
               onChange={(e) => setForm({...form, categoryId: e.target.value})}
-              className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224]"
+              className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
             >
               {categoriesBlog.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                <option key={cat.id} value={cat.id} className="bg-[#0F1224] text-white">{cat.name}</option>
               ))}
             </select>
           </div>
@@ -120,10 +120,10 @@ const BlogFormModal = ({
           <select
             value={form.authorId}
             onChange={(e) => setForm({...form, authorId: e.target.value})}
-            className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224]"
+            className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
           >
             {users.map(usr => (
-              <option key={usr.id} value={usr.id}>{usr.fullname} ({usr.username})</option>
+              <option key={usr.id} value={usr.id} className="bg-[#0F1224] text-white">{usr.fullname} ({usr.username})</option>
             ))}
           </select>
         </div>

@@ -4,8 +4,27 @@ import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import ProductFormModal from './ProductFormModal';
 
+const mapProductFromBackend = (prod) => {
+  if (!prod) return null;
+  return {
+    id: prod.id,
+    name: prod.name,
+    slug: prod.slug || '',
+    description: prod.description || '',
+    shortDescription: prod.shortDescription || '',
+    price: prod.basePrice ? parseFloat(prod.basePrice) : 0,
+    salePrice: prod.discountPrice ? parseFloat(prod.discountPrice) : (prod.basePrice ? parseFloat(prod.basePrice) : 0),
+    stock: 120, // default stock count as it is variant-based on DB
+    categoryId: prod.category ? prod.category.id : '',
+    category: prod.category,
+    image: prod.thumbnail || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80',
+    status: prod.status === 1 ? 'Active' : 'Draft',
+    createdAt: prod.createdAt
+  };
+};
+
 const Products = () => {
-  const { products, categoriesProduct, addProduct, updateProduct, deleteProduct, uploadImage, resolveImageUrl } = useAdmin();
+  const { products, categoriesProduct, orderDetails, addProduct, updateProduct, deleteProduct, uploadImage, resolveImageUrl } = useAdmin();
 
   // States
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,8 +34,11 @@ const Products = () => {
   const [modalType, setModalType] = useState('add'); // add or edit
   const [currentProduct, setCurrentProduct] = useState(null);
 
+  // Map products locally
+  const mappedProducts = (products || []).map(mapProductFromBackend).filter(Boolean);
+
   // Filtering
-  const filteredProducts = products.filter(p => {
+  const filteredProducts = mappedProducts.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || p.categoryId === selectedCategory;
@@ -38,17 +60,34 @@ const Products = () => {
   };
 
   // Submit Handler
-  const handleFormSubmit = (formData) => {
+  const handleFormSubmit = async (formData) => {
+    const body = {
+      categoryId: parseInt(formData.categoryId),
+      name: formData.name,
+      slug: formData.slug || '',
+      shortDescription: formData.shortDescription || '',
+      description: formData.description || '',
+      thumbnail: formData.thumbnail || formData.image || '',
+      basePrice: parseFloat(formData.price),
+      discountPrice: parseFloat(formData.salePrice || formData.price),
+      status: formData.status === 'Active' ? 1 : 0
+    };
+
     if (modalType === 'add') {
-      addProduct(formData);
+      await addProduct(body);
     } else {
-      updateProduct(formData);
+      await updateProduct(formData.id, body);
     }
     setIsModalOpen(false);
   };
 
   // Delete Handler
   const handleDelete = (id) => {
+    const hasOrders = orderDetails.some(det => det.productId === id);
+    if (hasOrders) {
+      alert("Không thể xóa sản phẩm: Đã có đơn hàng chứa mặt hàng này.");
+      return;
+    }
     if (confirm("Are you sure you want to delete this product?")) {
       deleteProduct(id);
     }
@@ -70,7 +109,7 @@ const Products = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-wide">Products Catalog</h2>
-          <p className="text-xs text-slate-400">Total products: {products.length} items</p>
+          <p className="text-xs text-slate-400">Total products: {mappedProducts.length} items</p>
         </div>
         <button
           onClick={handleOpenAdd}
@@ -100,12 +139,12 @@ const Products = () => {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="pl-3 pr-8 py-1.5 rounded-lg text-xs glass-input appearance-none bg-no-repeat bg-right"
+              className="pl-3 pr-8 py-1.5 rounded-lg text-xs glass-input appearance-none bg-no-repeat bg-right bg-[#0F1224] text-white"
               style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394A3B8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`, backgroundSize: '16px', backgroundPosition: 'calc(100% - 8px) center' }}
             >
-              <option value="all">All Categories</option>
+              <option value="all" className="bg-[#0F1224] text-white">All Categories</option>
               {categoriesProduct.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                <option key={cat.id} value={cat.id} className="bg-[#0F1224] text-white">{cat.name}</option>
               ))}
             </select>
           </div>

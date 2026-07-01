@@ -6,7 +6,7 @@ import CategoryFormModal from './CategoryFormModal';
 
 const Categories = () => {
   const { 
-    categoriesProduct, categoriesBlog,
+    categoriesProduct, categoriesBlog, products, blogs,
     addCategoryProduct, updateCategoryProduct, deleteCategoryProduct,
     addCategoryBlog, updateCategoryBlog, deleteCategoryBlog,
     uploadImage, resolveImageUrl
@@ -21,7 +21,28 @@ const Categories = () => {
   const [modalType, setModalType] = useState('add'); // add or edit
   const [currentCategory, setCurrentCategory] = useState(null);
 
-  const activeList = activeTab === 'product' ? categoriesProduct : categoriesBlog;
+  // Map collections locally and calculate counts
+  const mappedCategoriesProduct = (categoriesProduct || []).map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug || '',
+    description: cat.description || '',
+    imageUrl: cat.imageUrl || '',
+    status: cat.status,
+    productCount: (products || []).filter(p => p.category?.id === cat.id || p.categoryId === cat.id).length
+  }));
+
+  const mappedCategoriesBlog = (categoriesBlog || []).map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug || '',
+    description: cat.description || '',
+    imageUrl: cat.imageUrl || '',
+    status: cat.status,
+    postCount: (blogs || []).filter(b => b.category?.id === cat.id || b.categoryId === cat.id).length
+  }));
+
+  const activeList = activeTab === 'product' ? mappedCategoriesProduct : mappedCategoriesBlog;
 
   // Filter list
   const filteredList = activeList.filter(c => 
@@ -41,28 +62,48 @@ const Categories = () => {
     setIsModalOpen(true);
   };
 
-  const handleFormSubmit = (formData) => {
+  const handleFormSubmit = async (formData) => {
+    const body = {
+      name: formData.name,
+      slug: formData.slug || '',
+      description: formData.description || '',
+      imageUrl: formData.imageUrl || formData.image || '',
+      status: formData.status !== undefined ? formData.status : 1
+    };
+
     if (activeTab === 'product') {
       if (modalType === 'add') {
-        addCategoryProduct(formData);
+        await addCategoryProduct(body);
       } else {
-        updateCategoryProduct(formData);
+        await updateCategoryProduct(formData.id, body);
       }
     } else {
       if (modalType === 'add') {
-        addCategoryBlog(formData);
+        await addCategoryBlog(body);
       } else {
-        updateCategoryBlog(formData);
+        await updateCategoryBlog(formData.id, body);
       }
     }
     setIsModalOpen(false);
   };
 
   const handleDelete = (id) => {
-    if (confirm("Are you sure you want to delete this category?")) {
-      if (activeTab === 'product') {
+    if (activeTab === 'product') {
+      const hasProducts = products.some(p => p.category?.id === id || p.categoryId === id);
+      if (hasProducts) {
+        alert("Không thể xóa danh mục: Có sản phẩm đang thuộc danh mục này.");
+        return;
+      }
+      if (confirm("Are you sure you want to delete this category?")) {
         deleteCategoryProduct(id);
-      } else {
+      }
+    } else {
+      const hasBlogs = blogs.some(b => b.category?.id === id || b.categoryId === id);
+      if (hasBlogs) {
+        alert("Không thể xóa danh mục: Có bài viết đang thuộc danh mục này.");
+        return;
+      }
+      if (confirm("Are you sure you want to delete this category?")) {
         deleteCategoryBlog(id);
       }
     }
@@ -88,7 +129,7 @@ const Categories = () => {
       <div className="flex border-b border-white/5 gap-2">
         <button
           onClick={() => setActiveTab('product')}
-          className={`px-5 py-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all
+          className={`toggle-tab px-5 py-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all
             ${activeTab === 'product' 
               ? 'border-purple-500 text-purple-300 bg-gradient-to-t from-purple-500/5 to-transparent' 
               : 'border-transparent text-slate-400 hover:text-slate-200'}`}
@@ -97,7 +138,7 @@ const Categories = () => {
         </button>
         <button
           onClick={() => setActiveTab('blog')}
-          className={`px-5 py-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all
+          className={`toggle-tab px-5 py-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all
             ${activeTab === 'blog' 
               ? 'border-purple-500 text-purple-300 bg-gradient-to-t from-purple-500/5 to-transparent' 
               : 'border-transparent text-slate-400 hover:text-slate-200'}`}

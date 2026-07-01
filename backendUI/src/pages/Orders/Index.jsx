@@ -1,14 +1,78 @@
 import React, { useState } from 'react';
-import { Search, Eye } from 'lucide-react';
+import { Search, Eye, Edit2, Trash2 } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import OrderDetailModal from './OrderDetailModal';
 
+const mapOrderFromBackend = (order) => {
+  if (!order) return null;
+  return {
+    id: order.id,
+    customerId: order.customer ? order.customer.id : order.customerId,
+    orderCode: order.orderCode || `ORD-${order.id}`,
+    orderDate: order.createdAt || order.orderDate,
+    totalAmount: order.totalPrice ? parseFloat(order.totalPrice) : 0,
+    shippingAddress: order.shippingAddress || 'Hà Nội',
+    paymentMethod: order.paymentMethod || 'COD',
+    paymentStatus: order.paymentStatus || 'PENDING',
+    status: order.orderStatus,
+    note: order.note || ''
+  };
+};
+
+const mapOrderDetailFromBackend = (detail) => {
+  if (!detail) return null;
+  return {
+    id: detail.id,
+    orderId: detail.order ? detail.order.id : detail.orderId,
+    productId: detail.productId || (detail.productVariant ? (detail.productVariant.product ? detail.productVariant.product.id : detail.productVariant.productId) : 1),
+    price: detail.price ? parseFloat(detail.price) : 0,
+    quantity: detail.quantity || 1,
+    total: (detail.price ? parseFloat(detail.price) : 0) * (detail.quantity || 1)
+  };
+};
+
+const mapCustomerFromBackend = (cust) => {
+  if (!cust) return null;
+  const active = cust.status === 1;
+  return {
+    id: cust.id,
+    fullname: cust.fullName || cust.fullname || cust.username || cust.email || 'Unknown',
+    username: cust.username || cust.email || '',
+    email: cust.email,
+    phone: cust.phone || '',
+    address: cust.address || '',
+    avatar: cust.imageUrl || cust.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+    active: active,
+    status: cust.status
+  };
+};
+
+const mapProductFromBackend = (prod) => {
+  if (!prod) return null;
+  return {
+    id: prod.id,
+    name: prod.name,
+    slug: prod.slug || '',
+    description: prod.description || '',
+    shortDescription: prod.shortDescription || '',
+    price: prod.basePrice ? parseFloat(prod.basePrice) : 0,
+    salePrice: prod.discountPrice ? parseFloat(prod.discountPrice) : (prod.basePrice ? parseFloat(prod.basePrice) : 0),
+    stock: 120, // default stock count as it is variant-based on DB
+    categoryId: prod.category ? prod.category.id : '',
+    category: prod.category,
+    image: prod.thumbnail || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80',
+    status: prod.status === 1 ? 'Active' : 'Draft',
+    createdAt: prod.createdAt
+  };
+};
+
 const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
-  const { orders, orderDetails, customers, products, updateOrderStatus } = useAdmin();
+  const { orders, orderDetails, customers, products, updateOrder, deleteOrderDetail, deleteOrder } = useAdmin();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [modalMode, setModalMode] = useState('view'); // 'view' or 'edit'
 
   const formatDate = (dateVal) => {
     if (!dateVal) return 'N/A';
@@ -20,34 +84,106 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
     return isNaN(d.getTime()) ? 'N/A' : d.toLocaleString();
   };
 
+  // Map collections locally
+  const mappedOrders = (orders || []).map(mapOrderFromBackend).filter(Boolean);
+  const mappedOrderDetails = (orderDetails || []).map(mapOrderDetailFromBackend).filter(Boolean);
+  const mappedCustomers = (customers || []).map(mapCustomerFromBackend).filter(Boolean);
+  const mappedProducts = (products || []).map(mapProductFromBackend).filter(Boolean);
+
   // Filter orders
-  const filteredOrders = orders.filter(o => {
-    const cust = customers.find(c => c.id === o.customerId);
+  const filteredOrders = mappedOrders.filter(o => {
+    const cust = mappedCustomers.find(c => c.id === o.customerId);
     const customerName = cust ? cust.fullname.toLowerCase() : '';
     const matchesSearch = String(o.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
       (o.orderCode && o.orderCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
       customerName.includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || o.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' ||
+      o.status === statusFilter ||
+      (statusFilter === '0' && o.status === 'Processing') ||
+      (statusFilter === '1' && o.status === 'Shipped') ||
+      (statusFilter === '2' && o.status === 'Completed') ||
+      (statusFilter === '3' && o.status === 'Cancelled');
     return matchesSearch && matchesStatus;
   });
 
-  // Open Order Detail modal
+  // Open Order Detail modal in view mode
   const handleOpenDetail = (id) => {
     setSelectedOrderId(id);
+    setModalMode('view');
     setIsOpen(true);
+  };
+
+  // Open Order Detail modal in edit mode
+  const handleOpenEdit = (id) => {
+    setSelectedOrderId(id);
+    setModalMode('edit');
+    setIsOpen(true);
+  };
+
+  // Local helper to update status with formatted payload
+  const updateOrderStatus = async (orderId, newStatus) => {
+    const orderObj = mappedOrders.find(o => o.id === orderId);
+    if (!orderObj) return;
+    const body = {
+      customerId: orderObj.customerId,
+      orderCode: orderObj.orderCode,
+      recipientName: orderObj.recipientName || (mappedCustomers.find(c => c.id === orderObj.customerId)?.fullname) || 'Customer',
+      recipientPhone: orderObj.recipientPhone || (mappedCustomers.find(c => c.id === orderObj.customerId)?.phone) || '',
+      shippingAddress: orderObj.shippingAddress,
+      totalPrice: orderObj.totalAmount,
+      shippingFee: 0,
+      paymentMethod: orderObj.paymentMethod,
+      paymentStatus: orderObj.paymentStatus,
+      orderStatus: newStatus,
+      note: orderObj.note
+    };
+    await updateOrder(orderId, body);
+  };
+
+  // Local helper to delete detail item and update order price
+  const handleDeleteOrderDetail = async (detailId) => {
+    const detail = mappedOrderDetails.find(d => d.id === detailId);
+    if (!detail) return;
+
+    const success = await deleteOrderDetail(detailId);
+    if (!success) return;
+
+    const activeOrderObj = mappedOrders.find(o => o.id === selectedOrderId);
+    if (!activeOrderObj) return;
+
+    const remainingDetails = mappedOrderDetails.filter(d => d.orderId === activeOrderObj.id && d.id !== detailId);
+    const newTotalAmt = remainingDetails.reduce((sum, item) => sum + item.total, 0);
+
+    const body = {
+      customerId: activeOrderObj.customerId,
+      orderCode: activeOrderObj.orderCode,
+      recipientName: activeOrderObj.recipientName || (mappedCustomers.find(c => c.id === activeOrderObj.customerId)?.fullname) || 'Customer',
+      recipientPhone: activeOrderObj.recipientPhone || (mappedCustomers.find(c => c.id === activeOrderObj.customerId)?.phone) || '',
+      shippingAddress: activeOrderObj.shippingAddress,
+      totalPrice: newTotalAmt,
+      shippingFee: 0,
+      paymentMethod: activeOrderObj.paymentMethod,
+      paymentStatus: activeOrderObj.paymentStatus,
+      orderStatus: activeOrderObj.status,
+      note: activeOrderObj.note
+    };
+
+    await updateOrder(activeOrderObj.id, body);
   };
 
   // Status Styling Badge
   const getStatusBadge = (status) => {
     switch (status) {
+      case '2':
       case 'Completed':
         return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Completed</span>;
+      case '0':
       case 'Processing':
         return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">Processing</span>;
+      case '1':
       case 'Shipped':
         return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30">Shipped</span>;
-      case 'Pending':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">Pending</span>;
+      case '3':
       case 'Cancelled':
         return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30">Cancelled</span>;
       default:
@@ -56,16 +192,16 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
   };
 
   // Find active order details
-  const activeOrder = orders.find(o => o.id === selectedOrderId);
-  const activeCustomer = activeOrder ? customers.find(c => c.id === activeOrder.customerId) : null;
-  const activeItems = activeOrder ? orderDetails.filter(d => d.orderId === activeOrder.id) : [];
+  const activeOrder = mappedOrders.find(o => o.id === selectedOrderId);
+  const activeCustomer = activeOrder ? mappedCustomers.find(c => c.id === activeOrder.customerId) : null;
+  const activeItems = activeOrder ? mappedOrderDetails.filter(d => d.orderId === activeOrder.id) : [];
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h2 className="text-xl font-bold text-white tracking-wide">Orders Registry</h2>
-        <p className="text-xs text-slate-400">Total orders tracked: {orders.length} checkouts</p>
+        <p className="text-xs text-slate-400">Total orders tracked: {mappedOrders.length} checkouts</p>
       </div>
 
       {/* Filter Toolbar */}
@@ -85,16 +221,22 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
 
           {/* Status filter */}
           <div className="flex flex-wrap gap-1 border border-white/5 rounded-lg p-1 bg-white/[0.02]">
-            {['all', 'Pending', 'Processing', 'Shipped', 'Completed', 'Cancelled'].map(status => (
+            {[
+              { value: 'all', label: 'All' },
+              { value: '0', label: 'Processing' },
+              { value: '1', label: 'Shipped' },
+              { value: '2', label: 'Completed' },
+              { value: '3', label: 'Cancelled' }
+            ].map(status => (
               <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
+                key={status.value}
+                onClick={() => setStatusFilter(status.value)}
                 className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-all
-                  ${statusFilter === status
+                  ${statusFilter === status.value
                     ? 'bg-purple-600/30 text-purple-300'
                     : 'text-slate-500 hover:text-slate-300'}`}
               >
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+                {status.label}
               </button>
             ))}
           </div>
@@ -125,7 +267,7 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
                 </tr>
               ) : (
                 filteredOrders.map(order => {
-                  const cust = customers.find(c => c.id === order.customerId);
+                  const cust = mappedCustomers.find(c => c.id === order.customerId);
                   return (
                     <tr key={order.id} className="hover:bg-white/[0.01] transition-colors">
                       <td className="py-3.5 font-mono text-purple-400 font-bold text-sm">
@@ -153,12 +295,31 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
                         {getStatusBadge(order.status)}
                       </td>
                       <td className="py-3.5 text-right">
-                        <button
-                          onClick={() => handleOpenDetail(order.id)}
-                          className="glass-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 hover:border-purple-500/40 hover:text-purple-300 ml-auto"
-                        >
-                          <Eye size={12} /> View Details
-                        </button>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleOpenDetail(order.id)}
+                            className="glass-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 hover:border-purple-500/40 hover:text-purple-300"
+                          >
+                            <Eye size={12} /> View Details
+                          </button>
+                          <button
+                            onClick={() => handleOpenEdit(order.id)}
+                            className="glass-btn-primary px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 hover:opacity-90"
+                          >
+                            <Edit2 size={12} /> Edit
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (confirm(`Are you sure you want to delete order "${order.orderCode || order.id}"?`)) {
+                                await deleteOrder(order.id);
+                              }
+                            }}
+                            className="glass-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30"
+                            title="Delete Order"
+                          >
+                            <Trash2 size={12} /> Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -176,9 +337,12 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
         activeOrder={activeOrder}
         activeCustomer={activeCustomer}
         activeItems={activeItems}
-        products={products}
+        products={mappedProducts}
         updateOrderStatus={updateOrderStatus}
+        deleteOrderDetail={handleDeleteOrderDetail}
+        deleteOrder={deleteOrder}
         formatDate={formatDate}
+        mode={modalMode}
       />
     </div>
   );

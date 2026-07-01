@@ -1,4 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import bannerService from '../services/bannerService';
+import categoryProductService from '../services/categoryProductService';
+import categoryBlogService from '../services/categoryBlogService';
+import customerService from '../services/customerService';
+import orderService from '../services/orderService';
+import blogService from '../services/blogService';
+import productService from '../services/productService';
+import userService from '../services/userService';
+import roleService from '../services/roleService';
+import userAddressService from '../services/userAddressService';
 
 const AdminContext = createContext();
 
@@ -9,27 +19,6 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 const getAuthHeaders = () => {
   const token = localStorage.getItem('chinh_admin_token');
   return token ? { 'Authorization': `Bearer ${token}` } : {};
-};
-
-const apiCall = async (endpoint, options = {}) => {
-  const url = `${API_BASE}${endpoint}`;
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...getAuthHeaders(),
-      ...options.headers,
-    },
-  });
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || 'Yêu cầu API thất bại');
-  }
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
-    return await response.json();
-  }
-  return await response.text();
 };
 
 export const AdminProvider = ({ children }) => {
@@ -55,133 +44,8 @@ export const AdminProvider = ({ children }) => {
   const [orderDetails, setOrderDetails] = useState([]);
   const [banners, setBanners] = useState([]);
   const [blogs, setBlogs] = useState([]);
+  const [userAddresses, setUserAddresses] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // --- Helper Mappers (Backend <=> Frontend) ---
-
-  const mapUserFromBackend = (user) => {
-    if (!user) return null;
-    const active = user.status === 1;
-    return {
-      id: user.id,
-      username: user.username,
-      fullname: user.fullName || user.username,
-      email: user.email,
-      phone: user.phone || '',
-      roleId: user.role ? user.role.id : null,
-      role: user.role ? {
-        id: user.role.id,
-        name: user.role.name,
-        description: user.role.description,
-        permissions: user.role.permissions || []
-      } : null,
-      active: active,
-      avatar: user.imageUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80',
-      status: user.status
-    };
-  };
-
-  const mapProductFromBackend = (prod) => {
-    if (!prod) return null;
-    return {
-      id: prod.id,
-      name: prod.name,
-      slug: prod.slug || '',
-      description: prod.description || '',
-      shortDescription: prod.shortDescription || '',
-      price: prod.basePrice ? parseFloat(prod.basePrice) : 0,
-      salePrice: prod.discountPrice ? parseFloat(prod.discountPrice) : (prod.basePrice ? parseFloat(prod.basePrice) : 0),
-      stock: 120, // default stock count as it is variant-based on DB
-      categoryId: prod.category ? prod.category.id : '',
-      category: prod.category,
-      image: prod.thumbnail || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80',
-      status: prod.status === 1 ? 'Active' : 'Draft',
-      createdAt: prod.createdAt
-    };
-  };
-
-  const mapOrderFromBackend = (order) => {
-    if (!order) return null;
-    return {
-      id: order.id,
-      orderCode: order.orderCode,
-      customerId: order.customer ? order.customer.id : null,
-      customerName: order.customer ? order.customer.fullName : order.recipientName,
-      recipientName: order.recipientName,
-      recipientPhone: order.recipientPhone,
-      shippingAddress: order.shippingAddress,
-      totalPrice: order.totalPrice,
-      shippingFee: order.shippingFee,
-      grandTotal: order.grandTotal,
-      totalAmount: order.grandTotal,
-      orderDate: order.createdAt,
-      status: order.orderStatus,
-      paymentMethod: order.paymentMethod,
-      paymentStatus: order.paymentStatus,
-      note: order.note
-    };
-  };
-
-  const mapCustomerFromBackend = (customer) => {
-    if (!customer) return null;
-    return {
-      id: customer.id,
-      fullname: customer.fullName || customer.fullname || '',
-      email: customer.email || '',
-      phone: customer.phone || '',
-      address: customer.address || '',
-      active: customer.status === 1 || customer.status === true,
-      avatar: customer.imageUrl || customer.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-      createdAt: customer.createdAt || customer.createdDate
-    };
-  };
-
-  const mapOrderDetailFromBackend = (detail) => {
-    if (!detail) return null;
-    return {
-      id: detail.id,
-      orderId: detail.order ? detail.order.id : null,
-      productId: detail.productVariant && detail.productVariant.product ? detail.productVariant.product.id : null,
-      productName: detail.productVariant && detail.productVariant.product ? detail.productVariant.product.name : 'Sản phẩm',
-      price: detail.price,
-      quantity: detail.quantity,
-      total: parseFloat(detail.price) * parseInt(detail.quantity)
-    };
-  };
-
-  const mapBlogFromBackend = (blog) => {
-    if (!blog) return null;
-    return {
-      id: blog.id,
-      title: blog.title,
-      slug: blog.slug || '',
-      summary: blog.summary || '',
-      content: blog.content || '',
-      categoryId: blog.categoryBlog ? blog.categoryBlog.id : '',
-      authorId: blog.author ? blog.author.id : '',
-      image: blog.thumbnail || 'https://images.unsplash.com/photo-1432821596592-e2c18b78144f?auto=format&fit=crop&w=300&q=80',
-      status: blog.status === 1 ? 'Published' : 'Draft',
-      createdAt: blog.createdAt
-    };
-  };
-
-  const mapBannerFromBackend = (ban) => {
-    if (!ban) return null;
-    return {
-      id: ban.id,
-      title: ban.title,
-      subtitle: ban.title,
-      image: ban.imageUrl || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=300&q=80',
-      link: '#',
-      position: ban.position || 1,
-      status: ban.status === 1 ? 'Active' : 'Inactive'
-    };
-  };
-
-  const positionStringToId = (posVal) => {
-    const parsed = parseInt(posVal, 10);
-    return isNaN(parsed) ? 1 : parsed;
-  };
 
   // --- Core Loading Hook ---
 
@@ -192,32 +56,31 @@ export const AdminProvider = ({ children }) => {
 
       // Fetch Roles
       try {
-        const rolesData = await apiCall('/roles');
-        const filteredRoles = (rolesData || []).filter(r => r.name !== 'Admin' && r.name !== 'Employee');
-        setRoles(filteredRoles);
+        const rolesData = await roleService.getAll();
+        setRoles(rolesData || []);
       } catch (e) {
         console.error("Error fetching roles:", e);
       }
 
       // Fetch Users
       try {
-        const usersData = await apiCall('/users?size=1000');
-        setUsers((usersData.content || []).map(mapUserFromBackend));
+        const usersData = await userService.getAll();
+        setUsers(usersData.content || []);
       } catch (e) {
         console.error("Error fetching users:", e);
       }
 
       // Fetch Customers
       try {
-        const customersData = await apiCall('/customers?size=1000');
-        setCustomers((customersData.content || []).map(mapCustomerFromBackend));
+        const customersData = await customerService.getAll();
+        setCustomers(customersData.content || []);
       } catch (e) {
         console.error("Error fetching customers:", e);
       }
 
       // Fetch Product Categories
       try {
-        const catProdData = await apiCall('/category-products?size=1000');
+        const catProdData = await categoryProductService.getAll();
         setCategoriesProduct(catProdData.content || []);
       } catch (e) {
         console.error("Error fetching product categories:", e);
@@ -225,7 +88,7 @@ export const AdminProvider = ({ children }) => {
 
       // Fetch Blog Categories
       try {
-        const catBlogData = await apiCall('/category-blogs?size=1000');
+        const catBlogData = await categoryBlogService.getAll();
         setCategoriesBlog(catBlogData.content || []);
       } catch (e) {
         console.error("Error fetching blog categories:", e);
@@ -233,42 +96,50 @@ export const AdminProvider = ({ children }) => {
 
       // Fetch Products
       try {
-        const productsData = await apiCall('/products?size=1000');
-        setProducts((productsData.content || []).map(mapProductFromBackend));
+        const productsData = await productService.getAll();
+        setProducts(productsData.content || []);
       } catch (e) {
         console.error("Error fetching products:", e);
       }
 
       // Fetch Orders
       try {
-        const ordersData = await apiCall('/orders?size=1000');
-        setOrders((ordersData.content || []).map(mapOrderFromBackend));
+        const ordersData = await orderService.getAll();
+        setOrders(ordersData.content || []);
       } catch (e) {
         console.error("Error fetching orders:", e);
       }
 
       // Fetch Order Details
       try {
-        const detailsData = await apiCall('/order-details?size=1000');
-        setOrderDetails((detailsData.content || []).map(mapOrderDetailFromBackend));
+        const detailsData = await orderService.getAllDetails();
+        setOrderDetails(detailsData.content || []);
       } catch (e) {
         console.error("Error fetching order details:", e);
       }
 
       // Fetch Banners
       try {
-        const bannersData = await apiCall('/banners');
-        setBanners((bannersData || []).map(mapBannerFromBackend));
+        const bannersData = await bannerService.getAll();
+        setBanners(bannersData || []);
       } catch (e) {
         console.error("Error fetching banners:", e);
       }
 
       // Fetch Blogs
       try {
-        const blogsData = await apiCall('/blogs?size=1000');
-        setBlogs((blogsData.content || []).map(mapBlogFromBackend));
+        const blogsData = await blogService.getAll();
+        setBlogs(blogsData.content || []);
       } catch (e) {
         console.error("Error fetching blogs:", e);
+      }
+
+      // Fetch User Addresses
+      try {
+        const addrData = await userAddressService.getAll();
+        setUserAddresses(addrData || []);
+      } catch (e) {
+        console.error("Error fetching user addresses:", e);
       }
 
     } catch (error) {
@@ -282,25 +153,37 @@ export const AdminProvider = ({ children }) => {
     loadData();
   }, [currentUser]);
 
-  // --- Auth Handlers ---
-
+  // Auth Operations
   const login = async (username, password) => {
     try {
-      const res = await apiCall('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ username, password })
-      });
+      const res = await userService.login({ username, password });
 
       if (res && res.token) {
         localStorage.setItem('chinh_admin_token', res.token);
 
-        // Load user profile
-        const usersPage = await apiCall('/users?size=1000');
+        // Load user profile from the list of users
+        const usersPage = await userService.getAll();
         const usersList = usersPage.content || [];
         const foundUser = usersList.find(u => u.username === username);
 
         if (foundUser) {
-          const mappedUser = mapUserFromBackend(foundUser);
+          const mappedUser = {
+            id: foundUser.id,
+            username: foundUser.username,
+            fullname: foundUser.fullName || foundUser.username,
+            email: foundUser.email,
+            phone: foundUser.phone || '',
+            roleId: foundUser.role ? foundUser.role.id : null,
+            role: foundUser.role ? {
+              id: foundUser.role.id,
+              name: foundUser.role.name,
+              description: foundUser.role.description,
+              permissions: foundUser.role.permissions || []
+            } : null,
+            active: foundUser.status === 1,
+            avatar: foundUser.imageUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80',
+            status: foundUser.status
+          };
           if (!mappedUser.active) {
             localStorage.removeItem('chinh_admin_token');
             return { success: false, message: 'Tài khoản của bạn đã bị khóa.' };
@@ -352,24 +235,6 @@ export const AdminProvider = ({ children }) => {
     localStorage.removeItem('chinh_admin_token');
   };
 
-  // --- Category Counts Calculators (Reactive UI Helpers) ---
-
-  useEffect(() => {
-    setCategoriesProduct(prev => (prev || []).map(cat => {
-      const count = (products || []).filter(p => p.categoryId === cat.id).length;
-      return { ...cat, productCount: count };
-    }));
-  }, [products]);
-
-  useEffect(() => {
-    setCategoriesBlog(prev => (prev || []).map(cat => {
-      const count = (blogs || []).filter(b => b.categoryId === cat.id).length;
-      return { ...cat, blogCount: count };
-    }));
-  }, [blogs]);
-
-  // --- CRUD ACTIONS ---
-
   // Upload image to backend static folder
   const uploadImage = async (file) => {
     try {
@@ -387,7 +252,7 @@ export const AdminProvider = ({ children }) => {
         const errorText = await response.text();
         throw new Error(errorText || 'Upload failed');
       }
-      return await response.text(); // Returns "/image/uuid.png"
+      return await response.text();
     } catch (err) {
       console.error("Lỗi upload ảnh:", err);
       throw err;
@@ -403,25 +268,13 @@ export const AdminProvider = ({ children }) => {
     return url.startsWith('/') ? `${base}${url}` : `${base}/${url}`;
   };
 
+  // --- CRUD ACTIONS ---
+
   // Products
-  const addProduct = async (product) => {
+  const addProduct = async (body) => {
     try {
-      const body = {
-        categoryId: parseInt(product.categoryId),
-        name: product.name,
-        slug: product.slug || '',
-        shortDescription: product.shortDescription || '',
-        description: product.description || '',
-        thumbnail: product.thumbnail || product.image || '',
-        basePrice: parseFloat(product.price),
-        discountPrice: parseFloat(product.salePrice || product.price),
-        status: product.status === 'Active' ? 1 : 0
-      };
-      const newProduct = await apiCall('/products', {
-        method: 'POST',
-        body: JSON.stringify(body)
-      });
-      setProducts(prev => [mapProductFromBackend(newProduct), ...prev]);
+      const newProduct = await productService.create(body);
+      setProducts(prev => [newProduct, ...prev]);
       return { success: true };
     } catch (err) {
       console.error(err);
@@ -430,24 +283,10 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
-  const updateProduct = async (updatedProduct) => {
+  const updateProduct = async (id, body) => {
     try {
-      const body = {
-        categoryId: parseInt(updatedProduct.categoryId),
-        name: updatedProduct.name,
-        slug: updatedProduct.slug || '',
-        shortDescription: updatedProduct.shortDescription || '',
-        description: updatedProduct.description || '',
-        thumbnail: updatedProduct.thumbnail || updatedProduct.image || '',
-        basePrice: parseFloat(updatedProduct.price),
-        discountPrice: parseFloat(updatedProduct.salePrice || updatedProduct.price),
-        status: updatedProduct.status === 'Active' ? 1 : 0
-      };
-      const updated = await apiCall(`/products/${updatedProduct.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(body)
-      });
-      setProducts(prev => prev.map(p => p.id === updatedProduct.id ? mapProductFromBackend(updated) : p));
+      const updated = await productService.update(id, body);
+      setProducts(prev => prev.map(p => p.id === id ? updated : p));
       return { success: true };
     } catch (err) {
       console.error(err);
@@ -458,14 +297,7 @@ export const AdminProvider = ({ children }) => {
 
   const deleteProduct = async (id) => {
     try {
-      const hasOrders = orderDetails.some(det => det.productId === id);
-      if (hasOrders) {
-        alert("Không thể xóa sản phẩm: Đã có đơn hàng chứa mặt hàng này.");
-        return false;
-      }
-      await apiCall(`/products/${id}`, {
-        method: 'DELETE'
-      });
+      await productService.delete(id);
       setProducts(prev => prev.filter(p => p.id !== id));
       return true;
     } catch (err) {
@@ -476,19 +308,9 @@ export const AdminProvider = ({ children }) => {
   };
 
   // Product Categories
-  const addCategoryProduct = async (cat) => {
+  const addCategoryProduct = async (body) => {
     try {
-      const body = {
-        name: cat.name,
-        slug: cat.slug || '',
-        description: cat.description || '',
-        imageUrl: cat.imageUrl || cat.image || '',
-        status: 1
-      };
-      const newCat = await apiCall('/category-products', {
-        method: 'POST',
-        body: JSON.stringify(body)
-      });
+      const newCat = await categoryProductService.create(body);
       setCategoriesProduct(prev => [...prev, newCat]);
       return { success: true };
     } catch (err) {
@@ -498,20 +320,10 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
-  const updateCategoryProduct = async (cat) => {
+  const updateCategoryProduct = async (id, body) => {
     try {
-      const body = {
-        name: cat.name,
-        slug: cat.slug || '',
-        description: cat.description || '',
-        imageUrl: cat.imageUrl || cat.image || '',
-        status: 1
-      };
-      const updated = await apiCall(`/category-products/${cat.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(body)
-      });
-      setCategoriesProduct(prev => prev.map(c => c.id === cat.id ? updated : c));
+      const updated = await categoryProductService.update(id, body);
+      setCategoriesProduct(prev => prev.map(c => c.id === id ? updated : c));
       return { success: true };
     } catch (err) {
       console.error(err);
@@ -522,14 +334,7 @@ export const AdminProvider = ({ children }) => {
 
   const deleteCategoryProduct = async (id) => {
     try {
-      const count = products.filter(p => p.categoryId === id).length;
-      if (count > 0) {
-        alert("Không thể xóa danh mục: Vẫn còn sản phẩm thuộc danh mục này.");
-        return false;
-      }
-      await apiCall(`/category-products/${id}`, {
-        method: 'DELETE'
-      });
+      await categoryProductService.delete(id);
       setCategoriesProduct(prev => prev.filter(c => c.id !== id));
       return true;
     } catch (err) {
@@ -540,18 +345,9 @@ export const AdminProvider = ({ children }) => {
   };
 
   // Blog Categories
-  const addCategoryBlog = async (cat) => {
+  const addCategoryBlog = async (body) => {
     try {
-      const body = {
-        name: cat.name,
-        slug: cat.slug || '',
-        description: cat.description || '',
-        imageUrl: cat.imageUrl || cat.image || ''
-      };
-      const newCat = await apiCall('/category-blogs', {
-        method: 'POST',
-        body: JSON.stringify(body)
-      });
+      const newCat = await categoryBlogService.create(body);
       setCategoriesBlog(prev => [...prev, newCat]);
       return { success: true };
     } catch (err) {
@@ -561,19 +357,10 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
-  const updateCategoryBlog = async (cat) => {
+  const updateCategoryBlog = async (id, body) => {
     try {
-      const body = {
-        name: cat.name,
-        slug: cat.slug || '',
-        description: cat.description || '',
-        imageUrl: cat.imageUrl || cat.image || ''
-      };
-      const updated = await apiCall(`/category-blogs/${cat.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(body)
-      });
-      setCategoriesBlog(prev => prev.map(c => c.id === cat.id ? updated : c));
+      const updated = await categoryBlogService.update(id, body);
+      setCategoriesBlog(prev => prev.map(c => c.id === id ? updated : c));
       return { success: true };
     } catch (err) {
       console.error(err);
@@ -584,14 +371,7 @@ export const AdminProvider = ({ children }) => {
 
   const deleteCategoryBlog = async (id) => {
     try {
-      const count = blogs.filter(b => b.categoryId === id).length;
-      if (count > 0) {
-        alert("Không thể xóa danh mục: Vẫn còn bài viết thuộc danh mục này.");
-        return false;
-      }
-      await apiCall(`/category-blogs/${id}`, {
-        method: 'DELETE'
-      });
+      await categoryBlogService.delete(id);
       setCategoriesBlog(prev => prev.filter(c => c.id !== id));
       return true;
     } catch (err) {
@@ -602,85 +382,33 @@ export const AdminProvider = ({ children }) => {
   };
 
   // Orders
-  const addOrder = async (orderData, items) => {
+  const addOrder = async (body) => {
     try {
-      const cust = customers.find(c => c.id === orderData.customerId);
-      const totalAmt = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-      const body = {
-        customerId: orderData.customerId ? parseInt(orderData.customerId) : null,
-        recipientName: cust ? cust.fullname : 'Khách Vãng Lai',
-        recipientPhone: cust ? cust.phone : '0912345678',
-        shippingAddress: orderData.shippingAddress || (cust ? cust.address : 'Hà Nội'),
-        totalPrice: totalAmt,
-        shippingFee: 0,
-        paymentMethod: orderData.paymentMethod || 'COD',
-        paymentStatus: 'PENDING',
-        orderStatus: 'PENDING',
-        note: 'Đơn hàng tạo từ trang quản trị'
-      };
-
-      const newOrder = await apiCall('/orders', {
-        method: 'POST',
-        body: JSON.stringify(body)
-      });
-
-      // Save items
-      for (const item of items) {
-        try {
-          const detailBody = {
-            orderId: newOrder.id,
-            productVariantId: 1, // Default fallback variant
-            price: item.price,
-            quantity: item.quantity
-          };
-          await apiCall('/order-details', {
-            method: 'POST',
-            body: JSON.stringify(detailBody)
-          });
-        } catch (e) {
-          console.error("Lỗi khi tạo chi tiết đơn hàng cho", item, e);
-        }
-      }
-
-      // Refresh
-      const ordersData = await apiCall('/orders?size=1000');
-      setOrders((ordersData.content || []).map(mapOrderFromBackend));
-      const detailsData = await apiCall('/order-details?size=1000');
-      setOrderDetails((detailsData.content || []).map(mapOrderDetailFromBackend));
-      return { success: true };
+      const newOrder = await orderService.create(body);
+      setOrders(prev => [newOrder, ...prev]);
+      return newOrder;
     } catch (err) {
       console.error(err);
-      alert("Lỗi khi thêm đơn hàng: " + err.message);
-      return { success: false };
+      alert("Lỗi khi tạo đơn hàng: " + err.message);
+      return null;
     }
   };
 
-  const updateOrderStatus = async (orderId, newStatus) => {
+  const addOrderDetail = async (body) => {
     try {
-      const order = orders.find(o => o.id === orderId);
-      if (!order) return;
+      const newDetail = await orderService.createDetail(body);
+      setOrderDetails(prev => [...prev, newDetail]);
+      return newDetail;
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  };
 
-      const body = {
-        customerId: order.customerId,
-        orderCode: order.orderCode,
-        recipientName: order.recipientName,
-        recipientPhone: order.recipientPhone,
-        shippingAddress: order.shippingAddress,
-        totalPrice: parseFloat(order.totalPrice || order.totalAmount),
-        shippingFee: parseFloat(order.shippingFee || 0),
-        paymentMethod: order.paymentMethod,
-        paymentStatus: order.paymentStatus,
-        orderStatus: newStatus,
-        note: order.note
-      };
-
-      const updated = await apiCall(`/orders/${orderId}`, {
-        method: 'PUT',
-        body: JSON.stringify(body)
-      });
-
-      setOrders(prev => prev.map(o => o.id === orderId ? mapOrderFromBackend(updated) : o));
+  const updateOrder = async (id, body) => {
+    try {
+      const updated = await orderService.update(id, body);
+      setOrders(prev => prev.map(o => o.id === id ? updated : o));
       return { success: true };
     } catch (err) {
       console.error(err);
@@ -689,23 +417,36 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
-  // Customers
-  const addCustomer = async (customer) => {
+  const deleteOrder = async (id) => {
     try {
-      const body = {
-        fullName: customer.fullname,
-        email: customer.email,
-        phone: customer.phone,
-        password: customer.password || '123456',
-        imageUrl: customer.avatar || customer.imageUrl || '',
-        status: customer.active ? 1 : 0
-      };
-      const newCust = await apiCall('/customers', {
-        method: 'POST',
-        body: JSON.stringify(body)
-      });
-      setCustomers(prev => [...prev, mapCustomerFromBackend(newCust)]);
+      await orderService.delete(id);
+      setOrders(prev => prev.filter(o => o.id !== id));
+      return true;
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi xóa đơn hàng: " + err.message);
+      return false;
+    }
+  };
+
+  const deleteOrderDetail = async (id) => {
+    try {
+      await orderService.deleteDetail(id);
+      setOrderDetails(prev => prev.filter(d => d.id !== id));
       return { success: true };
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi xóa sản phẩm khỏi đơn hàng: " + err.message);
+      return { success: false };
+    }
+  };
+
+  // Customers
+  const addCustomer = async (body) => {
+    try {
+      const newCustomer = await customerService.create(body);
+      setCustomers(prev => [...prev, newCustomer]);
+      return { success: true, data: newCustomer };
     } catch (err) {
       console.error(err);
       alert("Lỗi khi thêm khách hàng: " + err.message);
@@ -713,23 +454,10 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
-  const updateCustomer = async (customer) => {
+  const updateCustomer = async (id, body) => {
     try {
-      const body = {
-        fullName: customer.fullname,
-        email: customer.email,
-        phone: customer.phone,
-        imageUrl: customer.avatar || customer.imageUrl || '',
-        status: customer.active ? 1 : 0
-      };
-      if (customer.password && customer.password.trim() !== '') {
-        body.password = customer.password;
-      }
-      const updated = await apiCall(`/customers/${customer.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(body)
-      });
-      setCustomers(prev => prev.map(c => c.id === customer.id ? mapCustomerFromBackend(updated) : c));
+      const updated = await customerService.update(id, body);
+      setCustomers(prev => prev.map(c => c.id === id ? updated : c));
       return { success: true };
     } catch (err) {
       console.error(err);
@@ -740,14 +468,7 @@ export const AdminProvider = ({ children }) => {
 
   const deleteCustomer = async (id) => {
     try {
-      const hasOrders = orders.some(o => o.customerId === id);
-      if (hasOrders) {
-        alert("Không thể xóa khách hàng: Khách đã có lịch sử đặt hàng.");
-        return false;
-      }
-      await apiCall(`/customers/${id}`, {
-        method: 'DELETE'
-      });
+      await customerService.delete(id);
       setCustomers(prev => prev.filter(c => c.id !== id));
       return true;
     } catch (err) {
@@ -757,26 +478,34 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
-  // Users
-  const addUser = async (user) => {
+  // User Addresses
+  const addUserAddress = async (body) => {
     try {
-      const body = {
-        username: user.username,
-        password: user.password,
-        fullName: user.fullname,
-        email: user.email,
-        phone: user.phone || '0912345678',
-        imageUrl: user.avatar || '',
-        status: user.active ? 1 : 0,
-        role: {
-          id: parseInt(user.roleId)
-        }
-      };
-      const newUser = await apiCall('/users', {
-        method: 'POST',
-        body: JSON.stringify(body)
-      });
-      setUsers(prev => [...prev, mapUserFromBackend(newUser)]);
+      const newAddr = await userAddressService.create(body);
+      setUserAddresses(prev => [...prev, newAddr]);
+      return newAddr;
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  };
+
+  const updateUserAddress = async (id, body) => {
+    try {
+      const updated = await userAddressService.update(id, body);
+      setUserAddresses(prev => prev.map(a => a.id === id ? updated : a));
+      return updated;
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  };
+
+  // Users
+  const addUser = async (body) => {
+    try {
+      const newUser = await userService.create(body);
+      setUsers(prev => [...prev, newUser]);
       return { success: true };
     } catch (err) {
       console.error(err);
@@ -785,27 +514,10 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
-  const updateUser = async (user) => {
+  const updateUser = async (id, body) => {
     try {
-      const body = {
-        username: user.username,
-        fullName: user.fullname,
-        email: user.email,
-        phone: user.phone || '0912345678',
-        imageUrl: user.avatar || user.imageUrl || '',
-        status: user.active ? 1 : 0,
-        role: {
-          id: parseInt(user.roleId)
-        }
-      };
-      if (user.password && user.password.trim() !== '') {
-        body.password = user.password;
-      }
-      const updated = await apiCall(`/users/${user.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(body)
-      });
-      setUsers(prev => prev.map(u => u.id === user.id ? mapUserFromBackend(updated) : u));
+      const updated = await userService.update(id, body);
+      setUsers(prev => prev.map(u => u.id === id ? updated : u));
       return { success: true };
     } catch (err) {
       console.error(err);
@@ -814,15 +526,9 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
-  const deleteUser = async (id, loggedInUserId) => {
-    if (id === loggedInUserId) {
-      alert("Quy tắc bảo mật: Bạn không thể tự xóa chính mình.");
-      return false;
-    }
+  const deleteUser = async (id) => {
     try {
-      await apiCall(`/users/${id}`, {
-        method: 'DELETE'
-      });
+      await userService.delete(id);
       setUsers(prev => prev.filter(u => u.id !== id));
       return true;
     } catch (err) {
@@ -833,19 +539,10 @@ export const AdminProvider = ({ children }) => {
   };
 
   // Banners
-  const addBanner = async (banner) => {
+  const addBanner = async (body) => {
     try {
-      const body = {
-        title: banner.title,
-        imageUrl: banner.image || banner.imageUrl || '',
-        position: positionStringToId(banner.position),
-        status: banner.status === 'Active' ? 1 : 0
-      };
-      const newBanner = await apiCall('/banners', {
-        method: 'POST',
-        body: JSON.stringify(body)
-      });
-      setBanners(prev => [mapBannerFromBackend(newBanner), ...prev]);
+      const newBanner = await bannerService.create(body);
+      setBanners(prev => [newBanner, ...prev]);
       return { success: true };
     } catch (err) {
       console.error(err);
@@ -854,19 +551,10 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
-  const updateBanner = async (banner) => {
+  const updateBanner = async (id, body) => {
     try {
-      const body = {
-        title: banner.title,
-        imageUrl: banner.image || banner.imageUrl || '',
-        position: positionStringToId(banner.position),
-        status: banner.status === 'Active' ? 1 : 0
-      };
-      const updated = await apiCall(`/banners/${banner.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(body)
-      });
-      setBanners(prev => prev.map(b => b.id === banner.id ? mapBannerFromBackend(updated) : b));
+      const updated = await bannerService.update(id, body);
+      setBanners(prev => prev.map(b => b.id === id ? updated : b));
       return { success: true };
     } catch (err) {
       console.error(err);
@@ -877,9 +565,7 @@ export const AdminProvider = ({ children }) => {
 
   const deleteBanner = async (id) => {
     try {
-      await apiCall(`/banners/${id}`, {
-        method: 'DELETE'
-      });
+      await bannerService.delete(id);
       setBanners(prev => prev.filter(b => b.id !== id));
       return true;
     } catch (err) {
@@ -890,24 +576,10 @@ export const AdminProvider = ({ children }) => {
   };
 
   // Blogs
-  const addBlog = async (blog) => {
+  const addBlog = async (body) => {
     try {
-      const body = {
-        categoryId: parseInt(blog.categoryId),
-        authorId: parseInt(blog.authorId || currentUser.id) || 1,
-        title: blog.title,
-        slug: blog.slug || '',
-        summary: blog.summary || '',
-        content: blog.content || '',
-        thumbnail: blog.thumbnail || blog.image || '',
-        imageUrl: blog.image || blog.thumbnail || '',
-        status: blog.status === 'Published' ? 1 : 0
-      };
-      const newBlog = await apiCall('/blogs', {
-        method: 'POST',
-        body: JSON.stringify(body)
-      });
-      setBlogs(prev => [mapBlogFromBackend(newBlog), ...prev]);
+      const newBlog = await blogService.create(body);
+      setBlogs(prev => [newBlog, ...prev]);
       return { success: true };
     } catch (err) {
       console.error(err);
@@ -916,24 +588,10 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
-  const updateBlog = async (blog) => {
+  const updateBlog = async (id, body) => {
     try {
-      const body = {
-        categoryId: parseInt(blog.categoryId),
-        authorId: parseInt(blog.authorId || currentUser.id) || 1,
-        title: blog.title,
-        slug: blog.slug || '',
-        summary: blog.summary || '',
-        content: blog.content || '',
-        thumbnail: blog.thumbnail || blog.image || '',
-        imageUrl: blog.image || blog.thumbnail || '',
-        status: blog.status === 'Published' ? 1 : 0
-      };
-      const updated = await apiCall(`/blogs/${blog.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(body)
-      });
-      setBlogs(prev => prev.map(b => b.id === blog.id ? mapBlogFromBackend(updated) : b));
+      const updated = await blogService.update(id, body);
+      setBlogs(prev => prev.map(b => b.id === id ? updated : b));
       return { success: true };
     } catch (err) {
       console.error(err);
@@ -944,9 +602,7 @@ export const AdminProvider = ({ children }) => {
 
   const deleteBlog = async (id) => {
     try {
-      await apiCall(`/blogs/${id}`, {
-        method: 'DELETE'
-      });
+      await blogService.delete(id);
       setBlogs(prev => prev.filter(b => b.id !== id));
       return true;
     } catch (err) {
@@ -966,16 +622,50 @@ export const AdminProvider = ({ children }) => {
         description: roleObj.description,
         permissions: permissions
       };
-      const updated = await apiCall(`/roles/${roleId}`, {
-        method: 'PUT',
-        body: JSON.stringify(body)
-      });
+      const updated = await roleService.updatePermissions(roleId, body);
       setRoles(prev => prev.map(r => r.id === roleId ? { ...r, permissions: updated.permissions || [] } : r));
       return { success: true };
     } catch (err) {
       console.error("Error updating role permissions:", err);
       alert("Lỗi cập nhật quyền: " + err.message);
       return { success: false };
+    }
+  };
+
+  // Roles CRUD
+  const addRole = async (body) => {
+    try {
+      const newRole = await roleService.create(body);
+      setRoles(prev => [...prev, newRole]);
+      return { success: true, data: newRole };
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi thêm vai trò: " + err.message);
+      return { success: false, error: err.message };
+    }
+  };
+
+  const updateRole = async (id, body) => {
+    try {
+      const updated = await roleService.update(id, body);
+      setRoles(prev => prev.map(r => r.id === id ? updated : r));
+      return { success: true, data: updated };
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi cập nhật vai trò: " + err.message);
+      return { success: false, error: err.message };
+    }
+  };
+
+  const deleteRole = async (id) => {
+    try {
+      await roleService.delete(id);
+      setRoles(prev => prev.filter(r => r.id !== id));
+      return { success: true };
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi xóa vai trò: " + err.message);
+      return { success: false, error: err.message };
     }
   };
 
@@ -1006,11 +696,17 @@ export const AdminProvider = ({ children }) => {
       deleteCategoryBlog,
 
       addOrder,
-      updateOrderStatus,
+      addOrderDetail,
+      updateOrder,
+      deleteOrder,
+      deleteOrderDetail,
 
       addCustomer,
       updateCustomer,
       deleteCustomer,
+      userAddresses,
+      addUserAddress,
+      updateUserAddress,
 
       addUser,
       updateUser,
@@ -1025,6 +721,9 @@ export const AdminProvider = ({ children }) => {
       deleteBlog,
 
       updateRolePermissions,
+      addRole,
+      updateRole,
+      deleteRole,
       currentUser,
       setCurrentUser,
       login,

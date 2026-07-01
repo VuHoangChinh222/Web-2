@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Layout, Link as LinkIcon, Eye } from 'lucide-react';
+import { Plus, Edit2, Trash2, Layout, Link as LinkIcon } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
-import GlassModal from '../../components/GlassModal';
+import BannerFormModal from './BannerFormModal';
 
 const Banners = () => {
   const { banners, addBanner, updateBanner, deleteBanner, uploadImage, resolveImageUrl } = useAdmin();
@@ -10,26 +10,10 @@ const Banners = () => {
   // Modal controls
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('add');
-
-  // Form State
-  const [currentBanner, setCurrentBanner] = useState({
-    id: '',
-    title: '',
-    subtitle: '',
-    image: '',
-    link: '',
-    active: true
-  });
+  const [currentBanner, setCurrentBanner] = useState(null);
 
   const handleOpenAdd = () => {
-    setCurrentBanner({
-      id: '',
-      title: '',
-      subtitle: '',
-      image: '',
-      link: '',
-      active: true
-    });
+    setCurrentBanner(null);
     setModalType('add');
     setIsModalOpen(true);
   };
@@ -40,30 +24,12 @@ const Banners = () => {
     setIsModalOpen(true);
   };
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      try {
-        const url = await uploadImage(file);
-        setCurrentBanner(prev => ({ ...prev, image: url }));
-      } catch (err) {
-        alert("Lỗi tải lên hình ảnh: " + err.message);
-      }
-    }
-  };
-
   // Submit Operations
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!currentBanner.title || !currentBanner.image) {
-      alert("Title and Image are required.");
-      return;
-    }
-
+  const handleFormSubmit = (formData) => {
     if (modalType === 'add') {
-      addBanner(currentBanner);
+      addBanner(formData);
     } else {
-      updateBanner(currentBanner);
+      updateBanner(formData);
     }
     setIsModalOpen(false);
   };
@@ -154,100 +120,15 @@ const Banners = () => {
       </div>
 
       {/* Add / Edit Banner Modal */}
-      <GlassModal
+      <BannerFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={modalType === 'add' ? 'Create Promo Banner' : 'Edit Banner Details'}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
-          {/* Title & Subtitle */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Banner Title *</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Summer Super Sale"
-                value={currentBanner.title}
-                onChange={(e) => setCurrentBanner({ ...currentBanner, title: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg text-xs glass-input"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Subtitle Description</label>
-              <input
-                type="text"
-                placeholder="e.g. Up to 50% discount on collections"
-                value={currentBanner.subtitle}
-                onChange={(e) => setCurrentBanner({ ...currentBanner, subtitle: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg text-xs glass-input"
-              />
-            </div>
-          </div>
-
-          {/* Hyperlink Destination */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Redirect Link (URL)</label>
-            <input
-              type="text"
-              placeholder="e.g. /product-category/summer-sales or https://..."
-              value={currentBanner.link}
-              onChange={(e) => setCurrentBanner({ ...currentBanner, link: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg text-xs glass-input"
-            />
-          </div>
-
-          {/* Status Selection */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Visibility Status</label>
-            <select
-              value={currentBanner.active}
-              onChange={(e) => setCurrentBanner({ ...currentBanner, active: e.target.value === 'true' })}
-              className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224]"
-            >
-              <option value="true">Active (Display on Homepage Slider)</option>
-              <option value="false">Disabled (Hidden from Slider)</option>
-            </select>
-          </div>
-
-          {/* Image File Input */}
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Banner Background Image *</label>
-            <div className="flex items-center gap-4">
-              {currentBanner.image && (
-                <img src={resolveImageUrl(currentBanner.image)} alt="Preview" className="w-20 h-10 rounded object-cover border border-purple-500/20" />
-              )}
-              <div className="flex-1">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-purple-600/20 file:text-purple-300 hover:file:bg-purple-600/30 file:cursor-pointer glass-input cursor-pointer"
-                />
-                <span className="text-[9px] text-slate-500 block mt-1">Select a wide aspect ratio image file.</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Submit Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(false)}
-              className="glass-btn px-4 py-2 rounded-xl text-xs font-semibold"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="glass-btn-primary px-5 py-2 rounded-xl text-xs font-semibold"
-            >
-              Save Banner
-            </button>
-          </div>
-        </form>
-      </GlassModal>
+        modalType={modalType}
+        bannerData={currentBanner}
+        resolveImageUrl={resolveImageUrl}
+        uploadImage={uploadImage}
+        onSubmit={handleFormSubmit}
+      />
     </div>
   );
 };

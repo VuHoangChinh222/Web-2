@@ -106,7 +106,7 @@ export const AdminProvider = ({ children }) => {
       id: order.id,
       orderCode: order.orderCode,
       customerId: order.customer ? order.customer.id : null,
-      customerName: order.customer ? order.customer.fullname : order.recipientName,
+      customerName: order.customer ? order.customer.fullName : order.recipientName,
       recipientName: order.recipientName,
       recipientPhone: order.recipientPhone,
       shippingAddress: order.shippingAddress,
@@ -119,6 +119,20 @@ export const AdminProvider = ({ children }) => {
       paymentMethod: order.paymentMethod,
       paymentStatus: order.paymentStatus,
       note: order.note
+    };
+  };
+
+  const mapCustomerFromBackend = (customer) => {
+    if (!customer) return null;
+    return {
+      id: customer.id,
+      fullname: customer.fullName || customer.fullname || '',
+      email: customer.email || '',
+      phone: customer.phone || '',
+      address: customer.address || '',
+      active: customer.status === 1 || customer.status === true,
+      avatar: customer.imageUrl || customer.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+      createdAt: customer.createdAt || customer.createdDate
     };
   };
 
@@ -175,7 +189,7 @@ export const AdminProvider = ({ children }) => {
     if (!currentUser) return;
     try {
       setLoading(true);
-      
+
       // Fetch Roles
       try {
         const rolesData = await apiCall('/roles');
@@ -196,7 +210,7 @@ export const AdminProvider = ({ children }) => {
       // Fetch Customers
       try {
         const customersData = await apiCall('/customers?size=1000');
-        setCustomers(customersData.content || []);
+        setCustomers((customersData.content || []).map(mapCustomerFromBackend));
       } catch (e) {
         console.error("Error fetching customers:", e);
       }
@@ -256,7 +270,7 @@ export const AdminProvider = ({ children }) => {
       } catch (e) {
         console.error("Error fetching blogs:", e);
       }
-      
+
     } catch (error) {
       console.error("General error loading admin dashboard data:", error);
     } finally {
@@ -276,15 +290,15 @@ export const AdminProvider = ({ children }) => {
         method: 'POST',
         body: JSON.stringify({ username, password })
       });
-      
+
       if (res && res.token) {
         localStorage.setItem('chinh_admin_token', res.token);
-        
+
         // Load user profile
         const usersPage = await apiCall('/users?size=1000');
         const usersList = usersPage.content || [];
         const foundUser = usersList.find(u => u.username === username);
-        
+
         if (foundUser) {
           const mappedUser = mapUserFromBackend(foundUser);
           if (!mappedUser.active) {
@@ -592,7 +606,7 @@ export const AdminProvider = ({ children }) => {
     try {
       const cust = customers.find(c => c.id === orderData.customerId);
       const totalAmt = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      
+
       const body = {
         customerId: orderData.customerId ? parseInt(orderData.customerId) : null,
         recipientName: cust ? cust.fullname : 'Khách Vãng Lai',
@@ -605,12 +619,12 @@ export const AdminProvider = ({ children }) => {
         orderStatus: 'PENDING',
         note: 'Đơn hàng tạo từ trang quản trị'
       };
-      
+
       const newOrder = await apiCall('/orders', {
         method: 'POST',
         body: JSON.stringify(body)
       });
-      
+
       // Save items
       for (const item of items) {
         try {
@@ -628,7 +642,7 @@ export const AdminProvider = ({ children }) => {
           console.error("Lỗi khi tạo chi tiết đơn hàng cho", item, e);
         }
       }
-      
+
       // Refresh
       const ordersData = await apiCall('/orders?size=1000');
       setOrders((ordersData.content || []).map(mapOrderFromBackend));
@@ -646,7 +660,7 @@ export const AdminProvider = ({ children }) => {
     try {
       const order = orders.find(o => o.id === orderId);
       if (!order) return;
-      
+
       const body = {
         customerId: order.customerId,
         orderCode: order.orderCode,
@@ -660,12 +674,12 @@ export const AdminProvider = ({ children }) => {
         orderStatus: newStatus,
         note: order.note
       };
-      
+
       const updated = await apiCall(`/orders/${orderId}`, {
         method: 'PUT',
         body: JSON.stringify(body)
       });
-      
+
       setOrders(prev => prev.map(o => o.id === orderId ? mapOrderFromBackend(updated) : o));
       return { success: true };
     } catch (err) {
@@ -690,7 +704,7 @@ export const AdminProvider = ({ children }) => {
         method: 'POST',
         body: JSON.stringify(body)
       });
-      setCustomers(prev => [...prev, newCust]);
+      setCustomers(prev => [...prev, mapCustomerFromBackend(newCust)]);
       return { success: true };
     } catch (err) {
       console.error(err);
@@ -715,7 +729,7 @@ export const AdminProvider = ({ children }) => {
         method: 'PUT',
         body: JSON.stringify(body)
       });
-      setCustomers(prev => prev.map(c => c.id === customer.id ? updated : c));
+      setCustomers(prev => prev.map(c => c.id === customer.id ? mapCustomerFromBackend(updated) : c));
       return { success: true };
     } catch (err) {
       console.error(err);
@@ -880,7 +894,7 @@ export const AdminProvider = ({ children }) => {
     try {
       const body = {
         categoryId: parseInt(blog.categoryId),
-        authorId: parseInt(currentUser.id) || 1,
+        authorId: parseInt(blog.authorId || currentUser.id) || 1,
         title: blog.title,
         slug: blog.slug || '',
         summary: blog.summary || '',
@@ -978,11 +992,11 @@ export const AdminProvider = ({ children }) => {
       banners,
       blogs,
       loading,
-      
+
       addProduct,
       updateProduct,
       deleteProduct,
-      
+
       addCategoryProduct,
       updateCategoryProduct,
       deleteCategoryProduct,

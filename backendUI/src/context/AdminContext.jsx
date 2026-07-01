@@ -356,6 +356,39 @@ export const AdminProvider = ({ children }) => {
 
   // --- CRUD ACTIONS ---
 
+  // Upload image to backend static folder
+  const uploadImage = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const url = `${API_BASE}/uploads/image`;
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          ...getAuthHeaders()
+        }
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Upload failed');
+      }
+      return await response.text(); // Returns "/image/uuid.png"
+    } catch (err) {
+      console.error("Lỗi upload ảnh:", err);
+      throw err;
+    }
+  };
+
+  const resolveImageUrl = (url, defaultImage = '') => {
+    if (!url) return defaultImage;
+    if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    const base = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+    return url.startsWith('/') ? `${base}${url}` : `${base}/${url}`;
+  };
+
   // Products
   const addProduct = async (product) => {
     try {
@@ -981,7 +1014,9 @@ export const AdminProvider = ({ children }) => {
       currentUser,
       setCurrentUser,
       login,
-      logout
+      logout,
+      uploadImage,
+      resolveImageUrl
     }}>
       {children}
     </AdminContext.Provider>

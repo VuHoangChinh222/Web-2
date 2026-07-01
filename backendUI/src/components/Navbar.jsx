@@ -3,7 +3,7 @@ import { Bell, Search, RefreshCw, UserCheck, Shield } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 
 const Navbar = ({ activePage, currentUser, onChangeUser }) => {
-  const { users, roles } = useAdmin();
+  const { users, roles, resolveImageUrl } = useAdmin();
   const [showNotification, setShowNotification] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -66,18 +66,18 @@ const Navbar = ({ activePage, currentUser, onChangeUser }) => {
                   const roleObj = roles.find(r => r.id === u.roleId);
                   return (
                     <button
-                      key={u.id}
-                      onClick={() => {
-                        onChangeUser({ ...u, role: roleObj });
-                        setShowUserMenu(false);
-                      }}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-xs transition-colors
-                        ${currentUser.id === u.id 
-                          ? 'bg-purple-600/25 text-purple-300 border border-purple-500/30' 
-                          : 'text-slate-300 hover:bg-white/5 hover:text-white'
-                        }`}
-                    >
-                      <img src={u.avatar} alt={u.fullname} className="w-6 h-6 rounded-full object-cover" />
+                       key={u.id}
+                       onClick={() => {
+                         onChangeUser({ ...u, role: roleObj });
+                         setShowUserMenu(false);
+                       }}
+                       className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-xs transition-colors
+                         ${currentUser.id === u.id 
+                           ? 'bg-purple-600/25 text-purple-300 border border-purple-500/30' 
+                           : 'text-slate-300 hover:bg-white/5 hover:text-white'
+                         }`}
+                     >
+                      <img src={resolveImageUrl(u.avatar)} alt={u.fullname} className="w-6 h-6 rounded-full object-cover" />
                       <div className="overflow-hidden">
                         <p className="font-semibold truncate">{u.fullname}</p>
                         <p className="text-[10px] text-slate-400 truncate">{roleObj?.name}</p>

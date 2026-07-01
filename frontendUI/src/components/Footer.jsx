@@ -7,6 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import categoryProductService from '../services/categoryProductService';
+import '../assets/css/footerCSS/Footer.css';
 
 const Footer = () => {
   const [categories, setCategories] = useState([]);
@@ -28,7 +29,7 @@ const Footer = () => {
       <div className="footer-content">
         <div className="footer-col">
           <Link to="/" className="logo" style={{ marginBottom: '1rem', fontSize: '1.5rem', textDecoration: 'none', color: 'inherit' }}>
-            <i className="fa-solid fa-basketball"></i> Chinh <span>HOOPS</span>
+            <i className="fa-solid fa-basketball"></i> CHINH <span>HOOPS</span>
           </Link>
           <p>Nâng tầm đam mê bóng rổ của bạn với những trang bị chất lượng hàng đầu. Chúng tôi cung cấp những sản phẩm chính hãng tốt nhất.</p>
           <div className="social-links">
@@ -59,8 +60,9 @@ const Footer = () => {
           <h3>Hỗ trợ</h3>
           <div className="footer-links">
             <Link to="/about">Về chúng tôi</Link>
-            <a href="#">Chính sách đổi trả</a>
-            <a href="#">Hướng dẫn chọn size</a>
+            <Link to="/return-policy">Chính sách đổi trả</Link>
+            <Link to="/size-guide">Hướng dẫn chọn size</Link>
+            <Link to="/privacy-policy">Chính sách bảo mật</Link>
           </div>
         </div>
         <div className="footer-col">

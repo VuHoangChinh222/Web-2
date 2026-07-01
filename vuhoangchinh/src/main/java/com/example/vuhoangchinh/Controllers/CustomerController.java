@@ -123,11 +123,21 @@ public class CustomerController {
         // Tạo chuỗi Bearer JWT Token đại diện cho phiên làm việc dựa trên Email khách hàng
         String token = tokenProvider.generateToken(email);
 
-        // Chuẩn bị dữ liệu trả về Frontend gồm token, email và tên đầy đủ
+        // Tạo một đối tượng sao chép của customer để gửi về frontend mà không chứa password
+        Customer responseCustomer = new Customer();
+        responseCustomer.setId(customer.getId());
+        responseCustomer.setEmail(customer.getEmail());
+        responseCustomer.setFullName(customer.getFullName());
+        responseCustomer.setPhone(customer.getPhone());
+        responseCustomer.setImageUrl(customer.getImageUrl());
+        responseCustomer.setStatus(customer.getStatus());
+        responseCustomer.setCreatedAt(customer.getCreatedAt());
+        responseCustomer.setUpdatedAt(customer.getUpdatedAt());
+
+        // Chuẩn bị dữ liệu trả về Frontend gồm token và đối tượng customer
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
-        response.put("email", customer.getEmail());
-        response.put("fullName", customer.getFullName());
+        response.put("customer", responseCustomer);
 
         return ResponseEntity.ok(response);
     }

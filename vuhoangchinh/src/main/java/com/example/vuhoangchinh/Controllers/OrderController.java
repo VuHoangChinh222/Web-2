@@ -3,8 +3,17 @@ package com.example.vuhoangchinh.Controllers;
 // Import các thực thể và kho lưu trữ CSDL liên quan
 import com.example.vuhoangchinh.Entities.Customer; // Thực thể khách hàng
 import com.example.vuhoangchinh.Entities.Order; // Thực thể đơn hàng
+import com.example.vuhoangchinh.Entities.OrderDetail;
+import com.example.vuhoangchinh.Entities.Product;
+import com.example.vuhoangchinh.Entities.ProductVariant;
 import com.example.vuhoangchinh.Repositories.CustomerRepository; // Repository khách hàng
 import com.example.vuhoangchinh.Repositories.OrderRepository; // Repository đơn hàng
+import com.example.vuhoangchinh.Repositories.OrderDetailRepository;
+import com.example.vuhoangchinh.Repositories.ProductRepository;
+import com.example.vuhoangchinh.Repositories.ProductVariantRepository;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.Optional;
 
 // Import Lombok giúp tự sinh code gọn gàng
 import lombok.*; // Annotations @Data, @NoArgsConstructor, @AllArgsConstructor
@@ -48,6 +57,30 @@ public class OrderController {
     @Autowired
     private CustomerRepository customerRepository;
 
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
+
+    @Autowired
+    private ProductVariantRepository productVariantRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OrderItemRequest {
+        @NotNull(message = "Mã ID sản phẩm là bắt buộc")
+        private Long productId;
+
+        @NotNull(message = "Số lượng mua là bắt buộc")
+        @Min(value = 1, message = "Số lượng mua tối thiểu là 1")
+        private Integer quantity;
+
+        private String size; // Kích cỡ sản phẩm
+        private BigDecimal price; // Giá tại thời điểm mua
+    }
+
     /**
      * DTO (Data Transfer Object) phẳng dùng để nhận thông tin đơn hàng được gửi từ Client lên.
      * Cấu trúc phẳng đơn giản hóa việc gửi dữ liệu từ Form mua hàng.
@@ -66,7 +99,7 @@ public class OrderController {
         private String recipientName; // Tên người nhận
 
         @NotBlank(message = "Số điện thoại nhận hàng không được để trống")
-        @Pattern(regexp = "^(0|\\+84)(\\d{9})$", message = "Số điện thoại người nhận không đúng định dạng (10 số bắt đầu bằng 0 hoặc +84)")
+        @Pattern(regexp = "^(0|\\+84)(3|5|7|8|9)[0-9]{8}$", message = "Số điện thoại người nhận không đúng định dạng (Ví dụ: 0912345678)")
         private String recipientPhone; // Số điện thoại nhận hàng
 
         @NotBlank(message = "Địa chỉ nhận hàng không được để trống")
@@ -90,6 +123,8 @@ public class OrderController {
         private String orderStatus = "PENDING"; // Trạng thái đơn hàng
 
         private String note; // Ghi chú đơn hàng từ khách hàng
+
+        private List<OrderItemRequest> items; // Danh sách các mặt hàng mua
     }
 
     /**
@@ -156,6 +191,7 @@ public class OrderController {
      * POST /api/orders
      */
     @PostMapping
+    @Transactional
     public ResponseEntity<?> createOrder(@Valid @RequestBody OrderRequest request) {
         Customer customer = null;
         
@@ -198,6 +234,70 @@ public class OrderController {
         order.setNote(request.getNote());
 
         Order savedOrder = orderRepository.save(order);
+
+        // Lưu các chi tiết đơn hàng (items) nếu có gửi lên
+        if (request.getItems() != null && !request.getItems().isEmpty()) {
+            for (OrderItemRequest itemReq : request.getItems()) {
+                OrderDetail detail = new OrderDetail();
+                detail.setOrder(savedOrder);
+                
+                // Tìm ProductVariant phù hợp theo productId và size
+                List<ProductVariant> variants = productVariantRepository.findByProductId(itemReq.getProductId());
+                ProductVariant selectedVariant = null;
+                if (!variants.isEmpty()) {
+                    if (itemReq.getSize() != null && !itemReq.getSize().trim().isEmpty()) {
+                        for (ProductVariant v : variants) {
+                            if (itemReq.getSize().equalsIgnoreCase(v.getSize())) {
+                                selectedVariant = v;
+                                break;
+                            }
+                        }
+                    }
+                    if (selectedVariant == null) {
+                        selectedVariant = variants.get(0); // Lấy biến thể đầu tiên làm mặc định
+                    }
+                } else {
+                    // Tự động tạo một biến thể mặc định nếu sản phẩm chưa có biến thể nào trong DB
+                    Product product = productRepository.findById(itemReq.getProductId())
+                            .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID " + itemReq.getProductId()));
+                    
+                    ProductVariant defaultVariant = new ProductVariant();
+                    defaultVariant.setProduct(product);
+                    defaultVariant.setSize(itemReq.getSize() != null && !itemReq.getSize().trim().isEmpty() ? itemReq.getSize().trim() : "M");
+                    defaultVariant.setColor("Mặc định");
+                    defaultVariant.setPrice(product.getDiscountPrice() != null ? product.getDiscountPrice() : product.getBasePrice());
+                    defaultVariant.setStockQuantity(100); // Tồn kho mặc định ảo
+                    defaultVariant.setSku("AUTO-SKU-" + product.getId() + "-" + (itemReq.getSize() != null && !itemReq.getSize().trim().isEmpty() ? itemReq.getSize().toUpperCase().trim() : "M"));
+                    
+                    Optional<ProductVariant> existingSku = productVariantRepository.findBySku(defaultVariant.getSku());
+                    if (existingSku.isPresent()) {
+                        selectedVariant = existingSku.get();
+                    } else {
+                        selectedVariant = productVariantRepository.save(defaultVariant);
+                    }
+                }
+                
+                if (selectedVariant == null) {
+                    throw new RuntimeException("Không tìm thấy biến thể sản phẩm cho productId " + itemReq.getProductId());
+                }
+
+                detail.setProductVariant(selectedVariant);
+                detail.setQuantity(itemReq.getQuantity());
+                
+                // Sử dụng đơn giá gửi lên hoặc đơn giá của biến thể/sản phẩm
+                BigDecimal itemPrice = itemReq.getPrice();
+                if (itemPrice == null) {
+                    itemPrice = selectedVariant.getPrice();
+                    if (itemPrice == null) {
+                        itemPrice = selectedVariant.getProduct().getBasePrice();
+                    }
+                }
+                detail.setPrice(itemPrice);
+
+                orderDetailRepository.save(detail);
+            }
+        }
+
         return ResponseEntity.ok(savedOrder);
     }
 

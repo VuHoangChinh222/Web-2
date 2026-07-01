@@ -1,21 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+import { IMAGE_BASE_URL, resolveImageUrl } from '../config';
+
 const PostCard = ({ post }) => {
-    const getPostImage = () => {
-        const img = post.image || post.imageUrl;
-        if (!img) return 'src/assets/images/default_post.png';
-        if (img.startsWith('data:') || img.startsWith('http://') || img.startsWith('https://')) {
-            return img;
-        }
-        const backendBase = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
-        return img.startsWith('/') ? `${backendBase}${img}` : `${backendBase}/${img}`;
-    };
-    const imageSrc = getPostImage();
+    const imageSrc = resolveImageUrl(post.image || post.imageUrl, 'src/assets/images/default_post.png');
 
     return (
         <Link
-            to={`/blog/${post.id}`}
+            to={`/blog/${post.slug || post.id}`}
             className="product-card post-card-sync"
             style={{ textDecoration: 'none', color: 'inherit' }}
         >

@@ -1,0 +1,188 @@
+/* 
+ * RETURN POLICY VIEW - STYLESHEET
+ * Sinh viên: Vũ Hoàng Chính
+ * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Mô tả: Định nghĩa style cho trang chính sách đổi trả với thiết kế Glassmorphism và responsive
+ */
+
+.policy-content-wrapper {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2.5rem;
+    margin-top: 2rem;
+}
+
+/* Responsive cho màn hình máy tính bảng và di động */
+@media (max-width: 992px) {
+    .policy-content-wrapper {
+        grid-template-columns: 1fr; /* Chuyển thành bố cục 1 cột */
+    }
+}
+
+.policy-main-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.policy-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Khung card đựng nội dung chính sách */
+.policy-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* Hiệu ứng nhấc nhẹ và đổi màu viền khi hover */
+.policy-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    border-color: rgba(249, 115, 22, 0.3);
+}
+
+/* Tiêu đề của từng phần chính sách */
+.policy-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin: 0 0 1.2rem 0;
+    color: var(--text-main);
+    font-size: 1.25rem;
+    font-weight: 700;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.8rem;
+}
+
+.policy-card-title i {
+    color: var(--accent); /* Biểu tượng icon màu cam */
+    font-size: 1.4rem;
+}
+
+/* Danh sách chính sách dạng liệt kê */
+.policy-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.policy-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.policy-list li i {
+    color: var(--accent);
+    margin-top: 4px;
+    font-size: 0.9rem;
+}
+
+/* Thiết kế tiến trình các bước đổi trả dạng trục thời gian (Timeline) */
+.policy-step-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: relative;
+}
+
+/* Đường trục thẳng đứng nối giữa các bước */
+.policy-step-list::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    left: 15px;
+    width: 2px;
+    background: var(--border-color);
+    z-index: 1;
+}
+
+.policy-step-item {
+    display: flex;
+    gap: 1.2rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* Vòng tròn số thứ tự bước */
+.policy-step-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    box-shadow: 0 0 10px rgba(249, 115, 22, 0.4);
+}
+
+.policy-step-content {
+    padding-top: 4px;
+}
+
+.policy-step-title {
+    margin: 0 0 0.4rem 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.policy-step-desc {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* Hộp liên hệ hỗ trợ đổi trả */
+.policy-contact-box {
+    background: rgba(249, 115, 22, 0.05);
+    border-left: 4px solid var(--accent);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.policy-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.policy-contact-item:hover {
+    color: var(--accent);
+}
+
+.policy-contact-item i {
+    color: var(--accent);
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}

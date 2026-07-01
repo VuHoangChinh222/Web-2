@@ -90,52 +90,7 @@
     display: block;
 }
 
-/* Pagination Styles */
-.blog-pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin-top: 3rem;
-}
 
-.blog-page-btn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.blog-page-btn:hover:not(:disabled) {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-}
-
-.blog-page-btn.active {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-    font-weight: 600;
-}
-
-.blog-page-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.blog-page-info {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    margin: 0 10px;
-}
 
 @media (max-width: 992px) {
     .blog-layout {

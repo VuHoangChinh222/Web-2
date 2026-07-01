@@ -9,17 +9,20 @@ import { Link } from 'react-router-dom';
 import BlogCategoryList from '../../components/BlogCategoryList';
 import PostCard from '../../components/PostCard';
 import postService from '../../services/postService';
+import IsLoading from '../../components/IsLoading';
 
 // Import CSS
 import '../../assets/css/BlogView.css';
+import { IMAGE_BASE_URL, resolveImageUrl } from '../../config';
 
 const BlogView = ({ navigate }) => {
   const [activeCategoryId, setActiveCategoryId] = useState('all');
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const pageSize = 6; // 6 bài viết mỗi trang để grid cân đối
+  const pageSize = 8; // Yêu cầu: Hiển thị tối đa 8 bài viết trên 1 trang
 
   // States dành cho Slider bài viết nổi bật (Bản tin mới nhất)
   const [featuredPosts, setFeaturedPosts] = useState([]);
@@ -32,6 +35,14 @@ const BlogView = ({ navigate }) => {
   const handleCategorySelect = (categoryId) => {
     setActiveCategoryId(categoryId);
     setCurrentPage(1);
+  };
+
+  // Hàm xử lý chuyển trang điều hướng
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      document.querySelector('.blog-layout')?.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   // Nạp 5 bài viết mới nhất cho Slider khi load trang
@@ -78,14 +89,17 @@ const BlogView = ({ navigate }) => {
         if (response) {
           setPosts(response.data || response.Data || []);
           setTotalPages(response.totalPages || response.TotalPages || 1);
+          setHasError(false);
         } else {
           setPosts([]);
           setTotalPages(1);
+          setHasError(false);
         }
       } catch (err) {
         console.error("Lỗi khi tải danh sách bài viết:", err);
         setPosts([]);
         setTotalPages(1);
+        setHasError(true);
       } finally {
         setLoading(false);
       }
@@ -100,16 +114,12 @@ const BlogView = ({ navigate }) => {
       {featuredPosts.length > 0 ? (
         <div className="blog-hero-slider">
           {featuredPosts.map((post, index) => {
-            const imageSrc = post.image || (post.imageUrl
-              ? (post.imageUrl.startsWith('data:') || post.imageUrl.startsWith('http://') || post.imageUrl.startsWith('https://')
-                ? post.imageUrl
-                : `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}${post.imageUrl.startsWith('/') ? '' : '/'}${post.imageUrl}`)
-              : 'src/assets/images/default_post.png');
+            const imageSrc = resolveImageUrl(post.image || post.imageUrl, 'src/assets/images/default_post.png');
 
             return (
               <Link
                 key={post.id}
-                to={`/blog/${post.id}`}
+                to={`/blog/${post.slug || post.id}`}
                 className={`blog-slide ${index === activeSlide ? 'active' : ''}`}
                 style={{ backgroundImage: `url(${imageSrc})`, textDecoration: 'none', color: 'inherit' }}
               >
@@ -165,9 +175,11 @@ const BlogView = ({ navigate }) => {
         {/* CỘT PHẢI: GRID BÀI VIẾT VÀ PHÂN TRANG */}
         <main className="blog-main">
           {loading ? (
-            <div className="blog-loading">
-              <i className="fa-solid fa-circle-notch fa-spin"></i>
-              <span>Đang tải các bài viết...</span>
+            <IsLoading message="Đang tải các bài viết..." />
+          ) : hasError ? (
+            <div className="blog-empty" style={{ color: '#ef4444' }}>
+              <i className="fa-solid fa-circle-exclamation" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}></i>
+              <p>Lỗi kết nối đến máy chủ. Vui lòng kiểm tra đường truyền!</p>
             </div>
           ) : posts.length === 0 ? (
             <div className="blog-empty">
@@ -189,25 +201,31 @@ const BlogView = ({ navigate }) => {
 
               {/* BỘ PHÂN TRANG ĐỘNG (Dữ liệu từ database API) */}
               {totalPages > 1 && (
-                <div className="blog-pagination">
+                <div className="pagination-container">
                   <button
-                    className="blog-page-btn"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    className="page-btn"
                     disabled={currentPage === 1}
+                    onClick={() => handlePageChange(currentPage - 1)}
                   >
-                    <i className="fa-solid fa-chevron-left"></i> Trước
+                    ❮ Trước
                   </button>
 
-                  <span className="blog-page-info">
-                    Trang {currentPage} / {totalPages}
-                  </span>
+                  {Array.from({ length: totalPages }, (_, index) => (
+                    <button
+                      key={index + 1}
+                      className={`page-btn ${currentPage === index + 1 ? 'active' : ''}`}
+                      onClick={() => handlePageChange(index + 1)}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
 
                   <button
-                    className="blog-page-btn"
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    className="page-btn"
                     disabled={currentPage === totalPages}
+                    onClick={() => handlePageChange(currentPage + 1)}
                   >
-                    Tiếp <i className="fa-solid fa-chevron-right"></i>
+                    Sau ❯
                   </button>
                 </div>
               )}

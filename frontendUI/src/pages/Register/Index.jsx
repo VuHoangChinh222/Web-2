@@ -4,12 +4,21 @@
  * Môn học: Chuyên đề ASP.NET Core & ReactJS
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import customerService from '../../services/customerService';
+import { getCookie } from '../../utils/cookieHelper';
 
 const RegisterView = () => {
   const navigate = useNavigate();
+
+  // Kiểm tra nếu đã đăng nhập thì tự động điều hướng sang trang User
+  useEffect(() => {
+    const customer = getCookie('customer');
+    if (customer) {
+      navigate('/user');
+    }
+  }, [navigate]);
 
   // States cho Form Đăng Ký
   const [fullName, setFullName] = useState('');
@@ -26,7 +35,17 @@ const RegisterView = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
-    setLoading(false);
+
+    // Validate số điện thoại bắt buộc và đúng định dạng
+    if (!phone.trim()) {
+      setErrorMessage("Số điện thoại không được để trống.");
+      return;
+    }
+
+    if (!/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/.test(phone.trim())) {
+      setErrorMessage("Số điện thoại không đúng định dạng (Ví dụ: 0912345678).");
+      return;
+    }
 
     // Validate mật khẩu tối thiểu 6 ký tự
     if (password.length < 6) {
@@ -40,7 +59,7 @@ const RegisterView = () => {
       const registerData = {
         fullName,
         email,
-        phone: phone || null,
+        phone: phone.trim(),
         address: address || null,
         password
       };
@@ -94,11 +113,12 @@ const RegisterView = () => {
           </div>
 
           <div className="form-group">
-            <label>Số điện thoại (SĐT VN)</label>
+            <label>Số điện thoại (SĐT VN) <span style={{ color: 'red' }}>*</span></label>
             <input
               type="tel"
               className="form-input"
               placeholder="09xx xxx xxx"
+              required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />

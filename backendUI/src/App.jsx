@@ -5,22 +5,22 @@ import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
 
 // Page imports
-import Dashboard from './pages/Dashboard';
-import Products from './pages/Products';
-import Categories from './pages/Categories';
-import Orders from './pages/Orders';
-import Customers from './pages/Customers';
-import Blogs from './pages/Blogs';
-import Banners from './pages/Banners';
-import Users from './pages/Users';
-import Roles from './pages/Roles';
-import Login from './pages/Login';
+import Dashboard from './pages/Dashboard/Index';
+import Products from './pages/Products/Index';
+import Categories from './pages/Categories/Index';
+import Orders from './pages/Orders/Index';
+import Customers from './pages/Customers/Index';
+import Blogs from './pages/Blogs/Index';
+import Banners from './pages/Banners/Index';
+import Users from './pages/Users/Index';
+import Roles from './pages/Roles/Index';
+import Login from './pages/Login/Index';
 
 const DashboardContent = () => {
   const { users, roles, currentUser, setCurrentUser } = useAdmin();
   const [activePage, setActivePage] = useState('dashboard');
   const [isCollapsed, setIsCollapsed] = useState(false);
-  
+
   // Shared Order Details Modal State (allows opening from Dashboard or Orders list)
   const [selectedOrderId, setSelectedOrderId] = useState('ord-1001');
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
@@ -49,7 +49,7 @@ const DashboardContent = () => {
 
   const handleChangeUser = (newUser) => {
     setCurrentUser(newUser);
-    
+
     // Check if the page the user is viewing is allowed for the new role, if not fallback to dashboard
     const pagePermissions = {
       'dashboard': 'dashboard_view',
@@ -75,7 +75,7 @@ const DashboardContent = () => {
     switch (activePage) {
       case 'dashboard':
         return (
-          <Dashboard 
+          <Dashboard
             setActivePage={setActivePage}
             setSelectedOrderId={setSelectedOrderId}
             setIsOrderModalOpen={setIsOrderModalOpen}
@@ -87,7 +87,7 @@ const DashboardContent = () => {
         return <Categories />;
       case 'orders':
         return (
-          <Orders 
+          <Orders
             selectedOrderId={selectedOrderId}
             setSelectedOrderId={setSelectedOrderId}
             isOpen={isOrderModalOpen}
@@ -119,22 +119,22 @@ const DashboardContent = () => {
       <VibrantBackground />
 
       {/* Collapsible Sidebar */}
-      <Sidebar 
-        activePage={activePage} 
-        setActivePage={setActivePage} 
+      <Sidebar
+        activePage={activePage}
+        setActivePage={setActivePage}
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}
         currentUser={currentUser}
       />
 
       {/* Main Panel Content Area */}
-      <div 
+      <div
         className={`transition-all duration-300 min-h-screen flex flex-col
           ${isCollapsed ? 'pl-[76px]' : 'pl-[260px]'}`}
       >
         {/* Navigation Control Bar */}
-        <Navbar 
-          activePage={activePage} 
+        <Navbar
+          activePage={activePage}
           currentUser={currentUser}
           onChangeUser={handleChangeUser}
         />

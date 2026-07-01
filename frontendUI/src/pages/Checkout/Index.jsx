@@ -6,10 +6,11 @@
 
 import { useState, useEffect } from 'react';
 import { getCookie } from '../../utils/cookieHelper';
-import orderService from '../../services/orderService';
-import '../../assets/css/CheckoutView.css';
+import ShippingForm from './ShippingForm';
+import OrderSummary from './OrderSummary';
+import '../../assets/css/checkoutCSS/Index.css';
 
-const CheckoutView = ({ cart, clearCart, navigate }) => {
+const CheckoutView = ({ cart, navigate }) => {
   const [customer, setCustomer] = useState(null);
 
   // States cho Form
@@ -18,8 +19,7 @@ const CheckoutView = ({ cart, clearCart, navigate }) => {
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
 
-  // Trạng thái xử lý
-  const [loading, setLoading] = useState(false);
+  // Trạng thái xử lý lỗi
   const [errorMessage, setErrorMessage] = useState('');
 
   // 1. Kiểm tra đăng nhập bảo mật & nạp dữ liệu từ Cookie
@@ -38,8 +38,8 @@ const CheckoutView = ({ cart, clearCart, navigate }) => {
     setAddress(loggedCustomer.address || '');
   }, [navigate]);
 
-  // 2. Xử lý gửi đơn hàng lên máy chủ Backend để lưu Database
-  const handleSubmit = async (e) => {
+  // 2. Xử lý lưu thông tin giao hàng tạm thời và chuyển đến trang Thanh toán
+  const handleSubmit = (e) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -48,110 +48,61 @@ const CheckoutView = ({ cart, clearCart, navigate }) => {
       return;
     }
 
-    setLoading(true);
-
-    // Chuẩn bị payload khớp cấu trúc CheckoutRequestDto của Backend
-    const orderPayload = {
-      customerId: customer.id,
-      notes: notes.trim() || null,
-      items: cart.map(item => ({
-        productId: item.id,
-        quantity: item.qty
-      }))
-    };
-
-    try {
-      const response = await orderService.checkout(orderPayload);
-      if (response && response.orderId) {
-        alert("Xác nhận đặt hàng thành công! Đang chuyển hướng đến cổng thanh toán.");
-        navigate('payment');
-      } else {
-        setErrorMessage("Không thể tạo đơn hàng, vui lòng kiểm tra lại thông tin.");
-      }
-    } catch (err) {
-      console.error("Lỗi đặt hàng:", err);
-      // Hiển thị trực quan thông báo lỗi từ Backend (ví dụ: Sản phẩm hết hàng trong kho)
-      const msg = err.response?.data?.message || "Đã xảy ra lỗi hệ thống trong quá trình xử lý đơn hàng.";
-      setErrorMessage(msg);
-    } finally {
-      setLoading(false);
+    if (!fullName.trim()) {
+      setErrorMessage("Họ và tên nhận hàng không được để trống.");
+      return;
     }
+
+    if (!phone.trim()) {
+      setErrorMessage("Số điện thoại liên hệ không được để trống.");
+      return;
+    }
+
+    if (!/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/.test(phone.trim())) {
+      setErrorMessage("Số điện thoại Việt Nam không hợp lệ (phải bắt đầu bằng 0 hoặc +84, theo sau là 3, 5, 7, 8, 9 và gồm 10 chữ số).");
+      return;
+    }
+
+    if (!address.trim()) {
+      setErrorMessage("Địa chỉ nhận hàng không được để trống.");
+      return;
+    }
+
+    // Lưu thông tin giao hàng tạm thời vào sessionStorage để trang Thanh toán sử dụng khi bấm xác nhận
+    sessionStorage.setItem('checkout_shipping_info', JSON.stringify({
+      fullName: fullName.trim(),
+      phone: phone.trim(),
+      address: address.trim(),
+      notes: notes.trim()
+    }));
+
+    navigate('payment');
   };
 
   if (!customer) return null;
 
   return (
     <div className="page-container page-transition">
-      <h2 className="page-title">Thông tin <span>Giao hàng</span></h2>
-      <div className="form-card checkout-form-card">
+      <h2 className="page-title">Thông tin <span>Thanh toán & Đơn hàng</span></h2>
 
-        {errorMessage && (
-          <div className="checkout-error-alert">
-            <i className="fa-solid fa-triangle-exclamation checkout-error-icon"></i> {errorMessage}
-          </div>
-        )}
+      <div className="checkout-container">
+        {/* Left Column: Shipping Form */}
+        <ShippingForm
+          handleSubmit={handleSubmit}
+          fullName={fullName}
+          setFullName={setFullName}
+          phone={phone}
+          setPhone={setPhone}
+          address={address}
+          setAddress={setAddress}
+          notes={notes}
+          setNotes={setNotes}
+          navigate={navigate}
+          errorMessage={errorMessage}
+        />
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Họ và tên nhận hàng <span className="checkout-required-star">*</span></label>
-            <input
-              type="text"
-              className="form-input"
-              required
-              placeholder="Nhập họ tên của bạn"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Số điện thoại liên hệ <span className="checkout-required-star">*</span></label>
-            <input
-              type="tel"
-              required
-              className="form-input"
-              placeholder="Nhập số điện thoại"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Địa chỉ nhận hàng <span className="checkout-required-star">*</span></label>
-            <input
-              type="text"
-              required
-              className="form-input"
-              placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Ghi chú đơn hàng (Tùy chọn)</label>
-            <textarea
-              className="form-input"
-              rows="3"
-              placeholder="Ghi chú về thời gian giao hàng, lời nhắn..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            ></textarea>
-          </div>
-
-          <div className="checkout-actions-row">
-            <button type="button" className="btn btn-outline checkout-action-btn" onClick={() => navigate('cart')} disabled={loading}>
-              Quay lại giỏ hàng
-            </button>
-            <button type="submit" className="btn btn-primary checkout-action-btn" disabled={loading}>
-              {loading ? (
-                <><i className="fa-solid fa-spinner fa-spin checkout-spinner-icon"></i> Đang xử lý...</>
-              ) : (
-                'Xác nhận đặt hàng'
-              )}
-            </button>
-          </div>
-        </form>
+        {/* Right Column: Order Summary */}
+        <OrderSummary cart={cart} />
       </div>
     </div>
   );

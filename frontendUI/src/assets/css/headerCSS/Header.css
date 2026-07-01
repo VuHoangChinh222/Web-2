@@ -1,0 +1,512 @@
+/* ==========================================================================
+   HEADER COMPONENT STYLES - CHINH HOOPS SHOP
+   ========================================================================== */
+
+/* Header Container */
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem 5% 0.8rem 5%;
+    background-color: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Brand Logo */
+.logo {
+    flex: 1;
+    font-size: 1.8rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.logo span {
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--accent-neon);
+}
+
+/* Navigation Links Row */
+.nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-links li button,
+.nav-links li a {
+    background: transparent;
+    color: var(--text-main);
+    font-weight: 500;
+    font-size: 1rem;
+    text-transform: uppercase;
+    position: relative;
+    padding: 0.5rem 0;
+}
+
+.nav-links li button::after,
+.nav-links li a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--accent);
+    transition: width 0.3s ease;
+    box-shadow: 0 0 8px var(--accent-neon);
+}
+
+.nav-links li button:hover::after,
+.nav-links li button.active::after,
+.nav-links li a:hover::after,
+.nav-links li a.active::after {
+    width: 100%;
+}
+
+/* Header Utilities/Actions */
+.header-actions {
+    flex: 1;
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.desktop-actions-only {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.mobile-only-item {
+    display: none !important;
+}
+
+.action-btn {
+    background: transparent;
+    color: var(--text-main);
+    font-size: 1.2rem;
+    position: relative;
+    transition: transform 0.3s, color 0.3s;
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+    color: var(--accent);
+}
+
+.cart-count {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: var(--accent);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: transparent;
+    color: white;
+    font-size: 1.5rem;
+}
+
+/* Autocomplete Search Bar Layout */
+.header-main-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 2rem;
+}
+
+.header-search-container {
+    position: relative;
+    flex: 1;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.header-search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.header-search-input {
+    width: 100%;
+    padding: 0.6rem 2.8rem 0.6rem 2.8rem;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    background-color: rgba(30, 41, 59, 0.5);
+    color: var(--text-main);
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.header-search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(244, 63, 94, 0.2);
+    background-color: rgba(30, 41, 59, 0.8);
+}
+
+.header-search-wrapper .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.header-search-wrapper .search-clear-btn {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.header-search-wrapper .search-clear-btn:hover {
+    color: var(--accent);
+}
+
+/* Results Dropdown */
+.search-results-dropdown {
+    position: absolute;
+    top: 115%;
+    left: 0;
+    right: 0;
+    background-color: rgba(15, 23, 42, 0.98);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(15px);
+    z-index: 1000;
+    overflow: hidden;
+    max-height: 480px;
+}
+
+.search-dropdown-loading {
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.search-dropdown-content {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    padding: 1rem;
+    gap: 1rem;
+}
+
+.search-dropdown-divider {
+    background-color: var(--border-color);
+    width: 1px;
+    height: 100%;
+}
+
+.search-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    overflow-y: auto;
+    max-height: 350px;
+}
+
+.search-section-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.search-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.search-item {
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.search-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.search-item-link {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.5rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.search-item-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.search-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.search-item-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-main);
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.search-item-price {
+    font-size: 0.75rem;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.search-item-category {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.no-results-text {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 0.5rem;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 768px) {
+    .header {
+        padding: 1rem 5%;
+    }
+
+    .nav-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: var(--bg-card);
+        flex-direction: column;
+        padding: 2rem;
+        gap: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    .nav-links.mobile-open {
+        display: flex;
+    }
+
+    .mobile-menu-btn {
+        display: block;
+    }
+
+    .header-main-row {
+        gap: 1rem;
+    }
+
+    .logo {
+        flex: unset;
+    }
+
+    .desktop-search-only {
+        display: none !important;
+    }
+
+    .desktop-actions-only {
+        display: none !important;
+    }
+
+    /* Hiển thị các thành phần dành riêng cho mobile khi màn hình nhỏ */
+    .mobile-only-item {
+        display: block !important;
+    }
+
+    /* Thiết lập độ rộng tự do cho khu vực nút hành động trên mobile */
+    .header-actions {
+        flex: unset;
+    }
+
+    /* Đổi bố cục hộp gợi ý tìm kiếm thành 1 cột duy nhất trên mobile thay vì 2 cột */
+    .search-dropdown-content {
+        grid-template-columns: 1fr;
+    }
+
+    /* Ẩn vạch chia dọc của hộp gợi ý tìm kiếm trên mobile */
+    .search-dropdown-divider {
+        display: none;
+    }
+
+    /* Hàng hiển thị thông tin người dùng trong menu mobile (gồm avatar tròn + tên chào) */
+    .mobile-user-row {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.5rem 0;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+        /* Vạch chia dưới ngăn cách */
+        text-decoration: none;
+    }
+
+    /* Dòng chữ chào mừng người dùng trên mobile */
+    .mobile-user-row .welcome-text {
+        font-size: 1.1rem;
+        color: var(--text-main);
+        font-weight: 600;
+        text-transform: none;
+        /* Giữ nguyên chữ hoa/thường nguyên bản */
+    }
+
+    /* Ảnh đại diện (avatar) hình tròn chứa chữ cái đầu tiên trên mobile */
+    .mobile-user-row .user-profile-avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        /* Màu chuyển sắc từ xanh tím sang hồng tím */
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+
+    /* Liên kết hành động trên mobile (ví dụ Đăng ký, Đăng nhập, Giỏ hàng) */
+    .mobile-nav-action-link {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.8rem 0;
+        font-size: 1.1rem;
+        color: var(--text-main);
+        font-weight: 500;
+        border-bottom: 1px solid var(--border-color);
+        text-decoration: none;
+    }
+
+    /* Định hình riêng cho mục Giỏ hàng ở cuối cùng của Menu mobile */
+    .mobile-cart-item .mobile-nav-action-link {
+        border-bottom: none;
+        border-top: 1px solid var(--border-color);
+        /* Vạch kẻ ngăn cách phía trên tạo điểm nhấn */
+        margin-top: 0.5rem;
+        padding-top: 1rem;
+    }
+
+    /* Tạo khoảng cách dưới cho thanh tìm kiếm trong menu mobile */
+    .mobile-search-item {
+        margin-bottom: 1rem;
+    }
+
+    /* Khung chứa thanh tìm kiếm mobile rộng 100% */
+    .mobile-search-container {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Bắt buộc ô nhập liệu tìm kiếm mobile co giãn hết cỡ */
+    .mobile-search-container .header-search-input {
+        width: 100%;
+    }
+}
+
+/* ==========================================================================
+   STYLE PROFILE ĐẦU TRANG CHO PHIÊN BẢN DESKTOP
+   ========================================================================== */
+
+/* Nút liên kết thông tin tài khoản dạng chào mừng ở góc trên bên phải */
+.header-user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+}
+
+/* Hiệu ứng nhấc nhẹ nút khi di chuột qua */
+.header-user-profile:hover {
+    transform: translateY(-1px);
+}
+
+/* Dòng chữ chào mừng dạng "Chào, [Tên]" */
+.header-user-profile .welcome-text {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    max-width: 120px;
+    white-space: nowrap;
+    /* Tránh xuống dòng */
+    overflow: hidden;
+    /* Ẩn phần thừa */
+    text-transform: none;
+    text-overflow: ellipsis;
+    /* Tạo dấu ba chấm (...) nếu tên quá dài */
+}
+
+/* Ảnh đại diện hình tròn phiên bản nhỏ (32px) cho Header */
+.header-user-profile .user-profile-avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 800;
+    box-shadow: 0 3px 8px rgba(99, 102, 241, 0.3);
+    /* Bóng đổ chuyển sắc tím nhẹ */
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    /* Viền mờ bao quanh */
+}
+
+/* Tự động ẩn dòng chữ chào mừng khi thu màn hình quá nhỏ để nhường không gian cho logo */
+@media (max-width: 576px) {
+    .header-user-profile .welcome-text {
+        display: none;
+    }
+}

@@ -7,10 +7,12 @@
 import { useState, useEffect } from 'react';
 import productService from '../../services/productService';
 import { getCookie } from '../../utils/cookieHelper';
-import '../../assets/css/ProductDetailView.css';
+import IsLoading from '../../components/IsLoading';
+import '../../assets/css/productCSS/ProductDetail.css';
+import { IMAGE_BASE_URL, resolveImageUrl } from '../../config';
 
 // Cấu hình URL Backend để lấy hình ảnh từ wwwroot/uploads
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+const BASE_URL = IMAGE_BASE_URL;
 
 export const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
@@ -20,6 +22,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
   const [product, setProduct] = useState(null);
   const [size, setSize] = useState('');
   const [qty, setQty] = useState(1);
+  const [stockWarning, setStockWarning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -35,6 +38,8 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
     fetchPromise
       .then(data => {
         setProduct(data);
+        setQty(1);
+        setStockWarning(false);
         setLoading(false);
         // Chọn size mặc định
         const category = data.categoryName || '';
@@ -42,6 +47,8 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
           setSize('US 8');
         } else if (category.toLowerCase().includes('vớ') || category.toLowerCase().includes('tất')) {
           setSize('Free');
+        } else if (category.toLowerCase().includes('quả') || category.toLowerCase().includes('bóng')) {
+          setSize('7');
         } else {
           setSize('M');
         }
@@ -54,12 +61,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
   }, [productSlug, productId]);
 
   if (loading) {
-    return (
-      <div className="detail-loading-container">
-        <i className="fa-solid fa-spinner fa-spin detail-loading-spinner"></i>
-        <p>Đang tải chi tiết sản phẩm...</p>
-      </div>
-    );
+    return <IsLoading message="Đang tải chi tiết sản phẩm..." />;
   }
 
   if (error || !product) {
@@ -79,7 +81,9 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
     ? ['US 7', 'US 8', 'US 9', 'US 10', 'US 11']
     : (category.toLowerCase().includes('vớ') || category.toLowerCase().includes('tất'))
       ? ['Free']
-      : ['S', 'M', 'L', 'XL'];
+      : (category.toLowerCase().includes('quả') || category.toLowerCase().includes('bóng'))
+        ? ['5', '6', '7']
+        : ['S', 'M', 'L', 'XL'];
 
   // Xử lý thêm vào giỏ hàng
   const handleAdd = () => {
@@ -106,11 +110,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image || (product.imageUrl
-        ? (product.imageUrl.startsWith('data:') || product.imageUrl.startsWith('http://') || product.imageUrl.startsWith('https://')
-          ? product.imageUrl
-          : `${BASE_URL}${product.imageUrl.startsWith('/') ? '' : '/'}${product.imageUrl}`)
-        : 'src/assets/images/default_product.png'),
+      image: resolveImageUrl(product.image || product.imageUrl, 'src/assets/images/default_product.png'),
       categoryName: product.categoryName,
       stockQuantity: product.stockQuantity
     };
@@ -119,11 +119,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
     navigate('cart');
   };
 
-  const imageSrc = product.image || (product.imageUrl
-    ? (product.imageUrl.startsWith('data:') || product.imageUrl.startsWith('http://') || product.imageUrl.startsWith('https://')
-      ? product.imageUrl
-      : `${BASE_URL}${product.imageUrl.startsWith('/') ? '' : '/'}${product.imageUrl}`)
-    : 'src/assets/images/default_product.png');
+  const imageSrc = resolveImageUrl(product.image || product.imageUrl, 'src/assets/images/default_product.png');
 
   return (
     <div className="page-container page-transition">
@@ -178,12 +174,23 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
               max={product.stockQuantity || 1}
               disabled={product.stockQuantity <= 0}
               onChange={(e) => {
-                const val = parseInt(e.target.value) || 1;
-                // Không cho nhập quá số lượng trong kho
+                const val = parseInt(e.target.value);
+                if (isNaN(val)) {
+                  setQty('');
+                  setStockWarning(false);
+                  return;
+                }
                 if (val > product.stockQuantity) {
                   setQty(product.stockQuantity);
+                  setStockWarning(true);
                 } else {
                   setQty(Math.max(1, val));
+                  setStockWarning(false);
+                }
+              }}
+              onBlur={() => {
+                if (qty === '' || qty < 1) {
+                  setQty(1);
                 }
               }}
             />
@@ -197,6 +204,11 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
               </button>
             )}
           </div>
+          {stockWarning && (
+            <div className="stock-warning-text" style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: '500' }}>
+              <i className="fa-solid fa-circle-exclamation"></i> Số lượng đặt mua đã được tự động giới hạn ở mức tối đa tồn kho ({product.stockQuantity} sản phẩm).
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,0 +1,151 @@
+/* 
+ * SIZE GUIDE VIEW - STYLESHEET
+ * Sinh viên: Vũ Hoàng Chính
+ * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Mô tả: Cung cấp style cho bảng hướng dẫn chọn size, chuyển đổi tab và mô tả cách đo size
+ */
+
+.size-guide-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+}
+
+.size-tab-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 10px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.size-tab-btn:hover {
+    border-color: var(--accent);
+    color: var(--text-main);
+}
+
+/* Kiểu kích hoạt khi chọn tab */
+.size-tab-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); /* Bóng đổ cam mờ */
+}
+
+/* Khung chứa bảng cuộn ngang trên mobile */
+.size-table-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    overflow-x: auto;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.size-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.size-table th {
+    background: rgba(249, 115, 22, 0.08);
+    color: var(--accent);
+    font-weight: 700;
+    padding: 14px;
+    border-bottom: 2px solid var(--border-color);
+    font-size: 0.95rem;
+}
+
+.size-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 0.92rem;
+}
+
+.size-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-main);
+}
+
+/* Chia bố cục cách đo size */
+.measure-instruction-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    margin-top: 3rem;
+}
+
+@media (max-width: 768px) {
+    .measure-instruction-grid {
+        grid-template-columns: 1fr; /* Trở về 1 cột trên mobile */
+    }
+}
+
+.instruction-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.instruction-title {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 1.2rem 0;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.8rem;
+}
+
+.instruction-title i {
+    color: var(--accent);
+}
+
+.instruction-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.instruction-steps li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.instruction-steps li strong {
+    color: var(--text-main);
+}
+
+/* Số thứ tự bước hình tròn nhỏ */
+.instruction-steps li span {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(249, 115, 22, 0.1);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}

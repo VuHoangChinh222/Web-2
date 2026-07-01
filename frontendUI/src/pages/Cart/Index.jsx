@@ -1,11 +1,12 @@
 import { getCookie } from '../../utils/cookieHelper';
+import '../../assets/css/cartCSS/Cart.css';
 
 
 export const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
 
 const CartView = ({ cart, updateQty, removeFromCart, navigate }) => {
-  const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const total = cart.reduce((sum, item) => sum + (item.price * (parseInt(item.qty) || 0)), 0);
 
   if (cart.length === 0) {
     return (
@@ -34,10 +35,45 @@ const CartView = ({ cart, updateQty, removeFromCart, navigate }) => {
                 </div>
               </div>
               <div className="cart-item-actions">
-                <div className="qty-control">
-                  <button className="qty-btn" onClick={() => updateQty(item.cartId, item.qty - 1)}><i className="fa-solid fa-minus"></i></button>
-                  <span style={{ width: '30px', textAlign: 'center', fontWeight: 'bold' }}>{item.qty}</span>
-                  <button className="qty-btn" onClick={() => updateQty(item.cartId, item.qty + 1)}><i className="fa-solid fa-plus"></i></button>
+                <div className="qty-control" style={{ display: 'flex', alignItems: 'center' }}>
+                  <button className="qty-btn" onClick={() => {
+                    const currentVal = parseInt(item.qty) || 0;
+                    updateQty(item.cartId, currentVal - 1);
+                  }}><i className="fa-solid fa-minus"></i></button>
+                  <input
+                    type="number"
+                    value={item.qty}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      if (isNaN(val)) {
+                        updateQty(item.cartId, '');
+                      } else {
+                        updateQty(item.cartId, val);
+                      }
+                    }}
+                    onBlur={() => {
+                      if (item.qty === '' || item.qty < 1) {
+                        updateQty(item.cartId, 1);
+                      }
+                    }}
+                    style={{
+                      width: '50px',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--bg-input)',
+                      color: 'var(--text-main)',
+                      borderRadius: '4px',
+                      padding: '4px 0',
+                      margin: '0 5px',
+                      outline: 'none',
+                      mozAppearance: 'textfield'
+                    }}
+                  />
+                  <button className="qty-btn" onClick={() => {
+                    const currentVal = parseInt(item.qty) || 0;
+                    updateQty(item.cartId, currentVal + 1);
+                  }}><i className="fa-solid fa-plus"></i></button>
                 </div>
                 <button className="remove-btn" onClick={() => removeFromCart(item.cartId)} title="Xóa"><i className="fa-solid fa-trash-can"></i></button>
               </div>

@@ -1,35 +1,332 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import productService from '../services/productService';
+import postService from '../services/postService';
+import { getCookie } from '../utils/cookieHelper';
+import '../assets/css/headerCSS/Header.css';
+
+import { IMAGE_BASE_URL, resolveImageUrl } from '../config';
+
+const BASE_URL = IMAGE_BASE_URL;
 
 const Header = ({ currentView, cartCount }) => {
+  const location = useLocation();
+  const [customer, setCustomer] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [results, setResults] = useState({ products: [], posts: [] });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const searchRef = useRef(null);
+
+  // Sync customer cookie on load and on route transitions
+  useEffect(() => {
+    const loggedCustomer = getCookie('customer');
+    setCustomer(loggedCustomer || null);
+  }, [location]);
+
+  // Debounced API call for autocomplete search
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setResults({ products: [], posts: [] });
+      return;
+    }
+
+    const delayDebounceFn = setTimeout(() => {
+      setIsLoading(true);
+      Promise.all([
+        productService.getAllProducts(1, 5, searchQuery),
+        postService.getLatestPosts(1, 5, searchQuery)
+      ])
+        .then(([productsRes, postsRes]) => {
+          setResults({
+            products: productsRes?.data || productsRes?.Data || [],
+            posts: postsRes?.data || postsRes?.Data || []
+          });
+          setIsLoading(false);
+        })
+        .catch(err => {
+          console.error("Lỗi khi tìm kiếm:", err);
+          setIsLoading(false);
+        });
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
+
+  const mobileSearchRef = useRef(null);
+
+  // Click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const clickedOutsideDesktop = searchRef.current && !searchRef.current.contains(event.target);
+      const clickedOutsideMobile = mobileSearchRef.current && !mobileSearchRef.current.contains(event.target);
+      if (clickedOutsideDesktop && clickedOutsideMobile) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setIsDropdownOpen(true);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setResults({ products: [], posts: [] });
+  };
+
+  const handleResultClick = () => {
+    setIsDropdownOpen(false);
+    setSearchQuery('');
+    setIsMobileMenuOpen(false);
+  };
+
+  const processImage = (imageUrl) => {
+    return resolveImageUrl(imageUrl, '');
+  };
 
   return (
     <header className="header">
-      <Link to="/" className="logo" onClick={() => setIsMobileMenuOpen(false)} style={{ textDecoration: 'none', color: 'inherit' }}>
-        <i className="fa-solid fa-basketball"></i> Chinh <span>HOOPS</span>
-      </Link>
+      {/* Top Row: Logo, Search Bar, actions */}
+      <div className="header-main-row">
+        <Link to="/" className="logo" onClick={() => setIsMobileMenuOpen(false)} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <i className="fa-solid fa-basketball"></i> CHINH <span>HOOPS</span>
+        </Link>
+
+        {/* Centered Search Bar (Desktop only) */}
+        <div className="header-search-container desktop-search-only" ref={searchRef}>
+          <div className="header-search-wrapper">
+            <input
+              type="text"
+              placeholder="Tìm kiếm sản phẩm, bài viết..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onFocus={() => setIsDropdownOpen(true)}
+              className="header-search-input"
+            />
+            <i className="fa-solid fa-magnifying-glass search-icon"></i>
+            {searchQuery && (
+              <button className="search-clear-btn" onClick={clearSearch}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            )}
+          </div>
+
+          {/* Autocomplete Dropdown */}
+          {isDropdownOpen && (searchQuery.trim().length > 0 || isLoading) && (
+            <div className="search-results-dropdown">
+              {isLoading ? (
+                <div className="search-dropdown-loading">
+                  <i className="fa-solid fa-spinner fa-spin"></i> Đang tìm kiếm...
+                </div>
+              ) : (
+                <div className="search-dropdown-content">
+                  {/* Products Section */}
+                  <div className="search-section">
+                    <h4 className="search-section-title">
+                      <i className="fa-solid fa-bag-shopping"></i> Sản phẩm ({results.products.length})
+                    </h4>
+                    {results.products.length > 0 ? (
+                      <ul className="search-items-list">
+                        {results.products.map(product => (
+                          <li key={product.id} className="search-item">
+                            <Link to={`/product/${product.slug || product.id}`} onClick={handleResultClick} className="search-item-link">
+                              <img src={processImage(product.imageUrl)} alt={product.name} className="search-item-img" />
+                              <div className="search-item-info">
+                                <span className="search-item-name">{product.name}</span>
+                                <span className="search-item-price">{product.price?.toLocaleString('vi-VN')} đ</span>
+                              </div>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="no-results-text">Không tìm thấy sản phẩm nào</p>
+                    )}
+                  </div>
+
+                  {/* Vertical Divider */}
+                  <div className="search-dropdown-divider"></div>
+
+                  {/* Posts Section */}
+                  <div className="search-section">
+                    <h4 className="search-section-title">
+                      <i className="fa-regular fa-newspaper"></i> Bài viết ({results.posts.length})
+                    </h4>
+                    {results.posts.length > 0 ? (
+                      <ul className="search-items-list">
+                        {results.posts.map(post => (
+                          <li key={post.id} className="search-item">
+                            <Link to={`/blog/${post.slug || post.id}`} onClick={handleResultClick} className="search-item-link">
+                              <img src={processImage(post.imageUrl)} alt={post.title} className="search-item-img" />
+                              <div className="search-item-info">
+                                <span className="search-item-name">{post.title}</span>
+                                <span className="search-item-category">{post.categoryName}</span>
+                              </div>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="no-results-text">Không tìm thấy bài viết nào</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Actions (Account, Cart, Menu) */}
+        <div className="header-actions">
+          <div className="desktop-actions-only">
+            {customer ? (
+              <Link className="header-user-profile" to="/user" title="Tài khoản" onClick={() => setIsMobileMenuOpen(false)}>
+                <span className="welcome-text">Chào, {customer.fullName}</span>
+                <div className="user-profile-avatar-circle">
+                  {customer.fullName ? customer.fullName.charAt(0).toUpperCase() : 'U'}
+                </div>
+              </Link>
+            ) : (
+              <Link className="action-btn" to="/user" title="Tài khoản" onClick={() => setIsMobileMenuOpen(false)}>
+                <i className="fa-solid fa-user"></i>
+              </Link>
+            )}
+            <Link className="action-btn" to="/cart" title="Giỏ hàng" onClick={() => setIsMobileMenuOpen(false)}>
+              <i className="fa-solid fa-bag-shopping"></i>
+              {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
+            </Link>
+          </div>
+          <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            <i className={`fa-solid ${isMobileMenuOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
+          </button>
+        </div>
+      </div>
+
+      {/* Bottom Row: Centered Navigation Links */}
       <ul className={`nav-links ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        
+        {/* Mobile User Profile Section */}
+        <li className="mobile-only-item mobile-user-info">
+          {customer ? (
+            <Link to="/user" className="mobile-user-row" onClick={() => setIsMobileMenuOpen(false)}>
+              <div className="user-profile-avatar-circle">
+                {customer.fullName ? customer.fullName.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <span className="welcome-text">Chào, {customer.fullName}</span>
+            </Link>
+          ) : (
+            <Link to="/user" className="mobile-nav-action-link" onClick={() => setIsMobileMenuOpen(false)}>
+              <i className="fa-solid fa-user"></i> Tài khoản / Đăng nhập
+            </Link>
+          )}
+        </li>
+
+        {/* Mobile Search Bar Section */}
+        <li className="mobile-only-item mobile-search-item">
+          <div className="header-search-container mobile-search-container" ref={mobileSearchRef}>
+            <div className="header-search-wrapper">
+              <input
+                type="text"
+                placeholder="Tìm kiếm sản phẩm, bài viết..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onFocus={() => setIsDropdownOpen(true)}
+                className="header-search-input"
+              />
+              <i className="fa-solid fa-magnifying-glass search-icon"></i>
+              {searchQuery && (
+                <button className="search-clear-btn" onClick={clearSearch}>
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              )}
+            </div>
+
+            {/* Autocomplete Dropdown */}
+            {isDropdownOpen && (searchQuery.trim().length > 0 || isLoading) && (
+              <div className="search-results-dropdown">
+                {isLoading ? (
+                  <div className="search-dropdown-loading">
+                    <i className="fa-solid fa-spinner fa-spin"></i> Đang tìm kiếm...
+                  </div>
+                ) : (
+                  <div className="search-dropdown-content">
+                    {/* Products Section */}
+                    <div className="search-section">
+                      <h4 className="search-section-title">
+                        <i className="fa-solid fa-bag-shopping"></i> Sản phẩm ({results.products.length})
+                      </h4>
+                      {results.products.length > 0 ? (
+                        <ul className="search-items-list">
+                          {results.products.map(product => (
+                            <li key={product.id} className="search-item">
+                              <Link to={`/product/${product.slug || product.id}`} onClick={handleResultClick} className="search-item-link">
+                                <img src={processImage(product.imageUrl)} alt={product.name} className="search-item-img" />
+                                <div className="search-item-info">
+                                  <span className="search-item-name">{product.name}</span>
+                                  <span className="search-item-price">{product.price?.toLocaleString('vi-VN')} đ</span>
+                                </div>
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="no-results-text">Không tìm thấy sản phẩm nào</p>
+                      )}
+                    </div>
+
+                    {/* Vertical Divider */}
+                    <div className="search-dropdown-divider"></div>
+
+                    {/* Posts Section */}
+                    <div className="search-section">
+                      <h4 className="search-section-title">
+                        <i className="fa-regular fa-newspaper"></i> Bài viết ({results.posts.length})
+                      </h4>
+                      {results.posts.length > 0 ? (
+                        <ul className="search-items-list">
+                          {results.posts.map(post => (
+                            <li key={post.id} className="search-item">
+                              <Link to={`/blog/${post.slug || post.id}`} onClick={handleResultClick} className="search-item-link">
+                                <img src={processImage(post.imageUrl)} alt={post.title} className="search-item-img" />
+                                <div className="search-item-info">
+                                  <span className="search-item-name">{post.title}</span>
+                                  <span className="search-item-category">{post.categoryName}</span>
+                                </div>
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="no-results-text">Không tìm thấy bài viết nào</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </li>
+
         <li><Link className={currentView.name === 'home' ? 'active' : ''} to="/" onClick={() => setIsMobileMenuOpen(false)}>Trang chủ</Link></li>
         <li><Link className={currentView.name === 'products' ? 'active' : ''} to="/products" onClick={() => setIsMobileMenuOpen(false)}>Sản phẩm</Link></li>
         <li><Link className={currentView.name === 'blog' ? 'active' : ''} to="/blog" onClick={() => setIsMobileMenuOpen(false)}>Bài viết</Link></li>
         <li><Link className={currentView.name === 'about' ? 'active' : ''} to="/about" onClick={() => setIsMobileMenuOpen(false)}>Về chúng tôi</Link></li>
+
+        {/* Mobile Cart Section */}
+        <li className="mobile-only-item mobile-cart-item">
+          <Link className="mobile-nav-action-link" to="/cart" onClick={() => setIsMobileMenuOpen(false)}>
+            <i className="fa-solid fa-bag-shopping"></i> Giỏ hàng {cartCount > 0 && `(${cartCount})`}
+          </Link>
+        </li>
       </ul>
-      <div className="header-actions">
-        <Link className="action-btn" to="/search" title="Tìm kiếm" onClick={() => setIsMobileMenuOpen(false)}>
-          <i className="fa-solid fa-magnifying-glass"></i>
-        </Link>
-        <Link className="action-btn" to="/user" title="Tài khoản" onClick={() => setIsMobileMenuOpen(false)}>
-          <i className="fa-solid fa-user"></i>
-        </Link>
-        <Link className="action-btn" to="/cart" title="Giỏ hàng" onClick={() => setIsMobileMenuOpen(false)}>
-          <i className="fa-solid fa-bag-shopping"></i>
-          {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
-        </Link>
-        <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          <i className={`fa-solid ${isMobileMenuOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
-        </button>
-      </div>
     </header>
   );
 };

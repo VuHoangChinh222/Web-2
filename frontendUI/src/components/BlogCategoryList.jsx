@@ -8,7 +8,9 @@ import React, { useState, useEffect } from 'react';
 import postService from '../services/postService';
 import '../assets/css/BlogCategoryList.css';
 
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+import { IMAGE_BASE_URL, resolveImageUrl } from '../config';
+
+const BASE_URL = IMAGE_BASE_URL;
 
 const BlogCategoryList = ({ activeCategoryId, onSelectCategory, onCategoriesLoaded }) => {
   const [categories, setCategories] = useState([]);
@@ -20,11 +22,11 @@ const BlogCategoryList = ({ activeCategoryId, onSelectCategory, onCategoriesLoad
       try {
         setLoading(true);
         const data = await postService.getBlogCategories();
-        
+
         // Kiểm tra xem backend đã trả về "Tất cả bài viết" chưa
         const hasAll = (data || []).some(c => c.name === 'Tất cả bài viết');
         const dynamicCategories = hasAll ? (data || []) : [{ id: 'all', name: 'Tất cả bài viết' }, ...(data || [])];
-        
+
         setCategories(dynamicCategories);
         if (onCategoriesLoaded) {
           onCategoriesLoaded(dynamicCategories);
@@ -55,11 +57,7 @@ const BlogCategoryList = ({ activeCategoryId, onSelectCategory, onCategoriesLoad
         {categories.map(cat => {
           const imageSrc = cat.id === 'all'
             ? 'src/assets/images/hero_basketball_1778727871576.png'
-            : (cat.imageUrl
-              ? (cat.imageUrl.startsWith('data:') || cat.imageUrl.startsWith('http://') || cat.imageUrl.startsWith('https://')
-                ? cat.imageUrl
-                : `${BASE_URL}${cat.imageUrl.startsWith('/') ? '' : '/'}${cat.imageUrl}`)
-              : 'src/assets/images/shoe_product_1_1778727884422.png');
+            : resolveImageUrl(cat.imageUrl, 'src/assets/images/shoe_product_1_1778727884422.png');
 
           return (
             <button

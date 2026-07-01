@@ -1,0 +1,114 @@
+/* 
+ * ISLOADING - Component Stylesheet
+ * Sinh viên: Vũ Hoàng Chính
+ * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ */
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    width: 100%;
+    min-height: 200px;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    margin: 2rem 0;
+}
+
+.loading-spinner-wrapper {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1.5rem;
+}
+
+.loading-spinner {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 3px solid transparent;
+    border-top-color: #f97316;
+    border-bottom-color: #fdba74;
+    border-radius: 50%;
+    animation: loading-spin 1.2s linear infinite;
+}
+
+.loading-spinner-inner {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border: 3px solid transparent;
+    border-left-color: #4f46e5;
+    border-right-color: #818cf8;
+    border-radius: 50%;
+    animation: loading-spin-reverse 1s linear infinite;
+}
+
+.loading-text {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: rgba(243, 244, 246, 0.95);
+    letter-spacing: 0.5px;
+    text-align: center;
+    background: linear-gradient(135deg, #f3f4f6 0%, #9ca3af 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: loading-pulse 1.8s ease-in-out infinite;
+}
+
+.loading-warning {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #ef4444;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    animation: loading-pulse 1.5s ease-in-out infinite;
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+}
+
+@keyframes loading-spin {
+    0% {
+        transform: rotate(0deg);
+        box-shadow: 0 0 15px rgba(249, 115, 22, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 0 25px rgba(249, 115, 22, 0.4);
+    }
+
+    100% {
+        transform: rotate(360deg);
+        box-shadow: 0 0 15px rgba(249, 115, 22, 0.2);
+    }
+}
+
+@keyframes loading-spin-reverse {
+    0% {
+        transform: rotate(360deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes loading-pulse {
+
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}

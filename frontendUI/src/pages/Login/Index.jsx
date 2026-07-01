@@ -1,10 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import customerService from '../../services/customerService';
-import { setCookie } from '../../utils/cookieHelper';
+import { setCookie, getCookie } from '../../utils/cookieHelper';
 
 const LoginView = () => {
   const navigate = useNavigate();
+
+  // Kiểm tra nếu đã đăng nhập thì tự động điều hướng sang trang User
+  useEffect(() => {
+    const customer = getCookie('customer');
+    if (customer) {
+      navigate('/user');
+    }
+  }, [navigate]);
 
   // States cho Form
   const [email, setEmail] = useState('');

@@ -55,7 +55,7 @@ public class Customer {
 
     // Trường số điện thoại, độ dài tối đa 15 ký tự
     @NotBlank(message = "Số điện thoại không được để trống")
-    @Pattern(regexp = "^(0|\\+84)[0-9]{9}$", message = "Số điện thoại không đúng định dạng (Ví dụ: 0912345678)")
+    @Pattern(regexp = "^(0|\\+84)(3|5|7|8|9)[0-9]{8}$", message = "Số điện thoại không đúng định dạng (Ví dụ: 0912345678)")
     @Column(length = 15)
     private String phone;
 

@@ -58,7 +58,7 @@ public class Order {
     // Số điện thoại nhận hàng, bắt buộc nhập, bẫy lỗi định dạng sđt Việt Nam (10 chữ số)
     @Column(name = "recipient_phone", nullable = false, length = 15)
     @NotBlank(message = "Số điện thoại nhận hàng không được để trống")
-    @Pattern(regexp = "^(0|\\+84)(\\d{9})$", message = "Số điện thoại người nhận không đúng định dạng (10 số bắt đầu bằng 0 hoặc +84)")
+    @Pattern(regexp = "^(0|\\+84)(3|5|7|8|9)[0-9]{8}$", message = "Số điện thoại người nhận không đúng định dạng (Ví dụ: 0912345678)")
     private String recipientPhone;
 
     // Địa chỉ giao hàng đầy đủ lúc đặt hàng (đường, phường, quận, thành phố), bắt buộc nhập

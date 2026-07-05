@@ -9,6 +9,8 @@ import jakarta.validation.constraints.*; // Annotations như @NotNull, @Min...
 // Import các thư viện Lombok giúp tự động sinh các getter, setter, constructor
 import lombok.*; // Annotations @Data, @NoArgsConstructor, @AllArgsConstructor
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 // Import kiểu dữ liệu số thực của Java
 import java.math.BigDecimal; // Kiểu số thực chính xác cao cho giá tiền tại thời điểm mua
 
@@ -36,6 +38,7 @@ public class OrderDetail {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "order_id", nullable = false)
     @NotNull(message = "Đơn hàng trực thuộc là bắt buộc")
+    @JsonIgnoreProperties("orderDetails")
     private Order order;
 
     // Thiết lập quan hệ Nhiều-Một (Many-to-One) liên kết khóa ngoại với bảng "product_variants"

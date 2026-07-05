@@ -66,6 +66,7 @@ const HomeView = ({ navigate, addToCart }) => {
         onButtonClick={() => navigate('products')}
       />
 
+      {/* SECTION 3: SẢN PHẨM NỔI BẬT & BÁN CHẠY */}
       <FeaturedProducts
         loading={loading}
         newestProducts={newestProducts}

@@ -1,6 +1,6 @@
 import { getCookie } from '../utils/cookieHelper';
 import '../assets/css/productCSS/ProductCard.css';
-import { IMAGE_BASE_URL, resolveImageUrl } from '../config';
+import { IMAGE_BASE_URL } from '../config';
 
 export const productsData = [
   { id: 1, name: 'Ignite Red X', category: 'Giày bóng rổ', price: 3500000, image: 'src/assets/images/shoe_product_1_1778727884422.png', badge: 'Mới', desc: 'Đôi giày bứt phá mọi giới hạn tốc độ. Thiết kế ôm sát cổ chân, đế đệm bật nảy cực cao, giúp bạn thực hiện những pha lên rổ hoàn hảo.' },
@@ -15,7 +15,7 @@ export const categories = ['Tất cả', 'Giày bóng rổ', 'Áo', 'Quần', 'V
 export const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
 const ProductCard = ({ product, addToCart, navigate }) => {
-  const imageSrc = resolveImageUrl(product.image || product.imageUrl, 'src/assets/images/default_product.png');
+  const imageSrc = product.image || (product.imageUrl ? (product.imageUrl.startsWith('http') ? product.imageUrl : `${IMAGE_BASE_URL}${product.imageUrl}`) : 'src/assets/images/default_product.png');
   const categoryName = product.categoryName || product.category || '';
   const stock = product.stockQuantity !== undefined && product.stockQuantity !== null ? product.stockQuantity : 99;
 

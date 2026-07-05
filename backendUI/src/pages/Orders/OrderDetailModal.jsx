@@ -41,7 +41,7 @@ const OrderDetailModal = ({
       title={activeOrder ? (mode === 'edit' ? `Edit Order: ${activeOrder.id}` : `Invoice: ${activeOrder.id}`) : 'Order Detail'}
       maxWidth="max-w-2xl"
     >
-      {activeOrder && activeCustomer && (
+      {activeOrder && (
         <div className="space-y-6">
           {/* Split Info Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -51,9 +51,9 @@ const OrderDetailModal = ({
                 <ShoppingBag size={10} className="text-purple-400" /> Customer Information
               </h4>
               <div className="space-y-1">
-                <p className="text-xs font-bold text-white">{activeCustomer.fullname}</p>
-                <p className="text-[11px] text-slate-400">{activeCustomer.email}</p>
-                <p className="text-[11px] text-slate-400">Phone: {activeCustomer.phone}</p>
+                <p className="text-xs font-bold text-white">{activeCustomer ? activeCustomer.fullname : 'Guest Customer'}</p>
+                <p className="text-[11px] text-slate-400">{activeCustomer ? activeCustomer.email : 'N/A'}</p>
+                <p className="text-[11px] text-slate-400">Phone: {activeCustomer ? activeCustomer.phone : 'N/A'}</p>
               </div>
             </div>
 

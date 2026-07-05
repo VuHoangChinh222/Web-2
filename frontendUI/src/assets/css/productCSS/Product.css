@@ -73,7 +73,7 @@
         grid-template-columns: 1fr;
         gap: 2rem;
     }
-    
+
     .product-sidebar {
         position: static;
     }
@@ -88,4 +88,208 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 12px;
     }
+}
+
+/* === BỘ LỌC GIÁ SẢN PHẨM Ở SIDEBAR === */
+.product-price-filter-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    border: 1px solid #f1f5f9;
+    margin-top: 1.5rem;
+}
+
+.product-price-filter-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 0.75rem;
+}
+
+.product-price-filter-title i {
+    color: #4f46e5;
+}
+
+.price-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 1rem;
+}
+
+.price-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.price-input-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    text-align: left;
+}
+
+.price-input-group input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.2s;
+    color: #1e293b;
+}
+
+.price-input-group input:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.price-filter-error {
+    color: #ef4444;
+    font-size: 0.775rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.3;
+    text-align: left;
+}
+
+.price-filter-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-apply-filter {
+    flex: 1;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn-apply-filter:hover:not(:disabled) {
+    opacity: 0.9;
+}
+
+.btn-apply-filter:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.btn-clear-filter {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-clear-filter:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+/* === THANH TÌM KIẾM SẢN PHẨM TRÊN ĐẦU LƯỚI === */
+.product-main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.product-count-summary {
+    color: #475569;
+    font-size: 0.95rem;
+}
+
+.product-count-summary strong {
+    color: #4f46e5;
+    font-weight: 600;
+}
+
+.product-search-box {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 9999px;
+    padding: 4px 6px 4px 16px;
+    width: 320px;
+    max-width: 100%;
+    transition: all 0.25s ease;
+}
+
+.product-search-box:focus-within {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.product-search-box .search-icon {
+    color: #94a3b8;
+    margin-right: 8px;
+    font-size: 0.9rem;
+}
+
+.product-search-box input {
+    border: none;
+    outline: none;
+    font-size: 0.9rem;
+    color: #1e293b;
+    width: 100%;
+    background: transparent;
+}
+
+.product-search-box .search-clear-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    margin-right: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s;
+}
+
+.product-search-box .search-clear-btn:hover {
+    color: #64748b;
+}
+
+.product-search-box .search-btn {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    border: none;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.product-search-box .search-btn:hover {
+    opacity: 0.9;
 }

@@ -184,3 +184,90 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Center and style the bottom description section */
+.product-description-section {
+    margin-top: 4rem;
+    padding-top: 3rem;
+    border-top: 1px solid var(--border-color, #e4e4e7);
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.description-section-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: var(--text-main, #ffffff);
+    letter-spacing: 1px;
+}
+
+.description-content {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-main, #f8fafc);
+}
+
+.description-content p {
+    margin-bottom: 1.5rem;
+}
+
+.description-content strong {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.description-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1.5rem 0;
+    display: block;
+}
+
+.description-content h2,
+.description-content h3 {
+    color: var(--text-main);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    text-transform: none;
+}
+
+/* Định dạng bảng biểu tạo từ CKEditor 5 tương thích giao diện tối */
+.description-content table {
+    width: 100% !important;
+    margin: 1.8rem 0;
+    border-collapse: collapse;
+    border: 1px solid var(--border-color, #3a3f44);
+    background: var(--bg-card, #1e222b);
+}
+
+.description-content table th,
+.description-content table td {
+    padding: 12px 16px;
+    border: 1px solid var(--border-color, #3a3f44);
+    color: var(--text-main);
+    vertical-align: middle;
+}
+
+.description-content table th {
+    background-color: rgba(255, 255, 255, 0.05);
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.description-content figure.table {
+    margin: 1.5rem 0;
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Định dạng hình ảnh và video nhúng */
+.description-content figure.media {
+    margin: 1.8rem auto;
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+}

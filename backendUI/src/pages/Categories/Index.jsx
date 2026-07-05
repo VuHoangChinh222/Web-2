@@ -3,12 +3,14 @@ import { FolderKanban, Tags, Plus, Edit2, Trash2, Link as LinkIcon } from 'lucid
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import CategoryFormModal from './CategoryFormModal';
+import categoryProductService from '../../services/categoryProductService';
+import categoryBlogService from '../../services/categoryBlogService';
 
 const Categories = () => {
   const { 
-    categoriesProduct, categoriesBlog, products, blogs,
-    addCategoryProduct, updateCategoryProduct, deleteCategoryProduct,
-    addCategoryBlog, updateCategoryBlog, deleteCategoryBlog,
+    categoriesProduct, setCategoriesProduct,
+    categoriesBlog, setCategoriesBlog,
+    products, blogs,
     uploadImage, resolveImageUrl
   } = useAdmin();
 
@@ -71,23 +73,31 @@ const Categories = () => {
       status: formData.status !== undefined ? formData.status : 1
     };
 
-    if (activeTab === 'product') {
-      if (modalType === 'add') {
-        await addCategoryProduct(body);
+    try {
+      if (activeTab === 'product') {
+        if (modalType === 'add') {
+          const newCat = await categoryProductService.create(body);
+          setCategoriesProduct(prev => [...prev, newCat]);
+        } else {
+          const updated = await categoryProductService.update(formData.id, body);
+          setCategoriesProduct(prev => prev.map(c => c.id === formData.id ? updated : c));
+        }
       } else {
-        await updateCategoryProduct(formData.id, body);
+        if (modalType === 'add') {
+          const newCat = await categoryBlogService.create(body);
+          setCategoriesBlog(prev => [...prev, newCat]);
+        } else {
+          const updated = await categoryBlogService.update(formData.id, body);
+          setCategoriesBlog(prev => prev.map(c => c.id === formData.id ? updated : c));
+        }
       }
-    } else {
-      if (modalType === 'add') {
-        await addCategoryBlog(body);
-      } else {
-        await updateCategoryBlog(formData.id, body);
-      }
+    } catch (err) {
+      alert("Lỗi khi lưu danh mục: " + err.message);
     }
     setIsModalOpen(false);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (activeTab === 'product') {
       const hasProducts = products.some(p => p.category?.id === id || p.categoryId === id);
       if (hasProducts) {
@@ -95,7 +105,12 @@ const Categories = () => {
         return;
       }
       if (confirm("Are you sure you want to delete this category?")) {
-        deleteCategoryProduct(id);
+        try {
+          await categoryProductService.delete(id);
+          setCategoriesProduct(prev => prev.filter(c => c.id !== id));
+        } catch (err) {
+          alert("Lỗi khi xóa danh mục sản phẩm: " + err.message);
+        }
       }
     } else {
       const hasBlogs = blogs.some(b => b.category?.id === id || b.categoryId === id);
@@ -104,7 +119,12 @@ const Categories = () => {
         return;
       }
       if (confirm("Are you sure you want to delete this category?")) {
-        deleteCategoryBlog(id);
+        try {
+          await categoryBlogService.delete(id);
+          setCategoriesBlog(prev => prev.filter(c => c.id !== id));
+        } catch (err) {
+          alert("Lỗi khi xóa danh mục bài viết: " + err.message);
+        }
       }
     }
   };

@@ -11,6 +11,18 @@ const customerService = {
     register: (customerData) => {
         const url = '/customers/register';
         return axiosClient.post(url, customerData);
+    },
+
+    // API Cập nhật thông tin tài khoản khách hàng
+    updateCustomer: (id, customerData) => {
+        const url = `/customers/${id}`;
+        return axiosClient.put(url, customerData);
+    },
+
+    // API Quên mật khẩu khách hàng
+    forgotPassword: (email) => {
+        const url = '/customers/forgot-password';
+        return axiosClient.post(url, { email });
     }
 };
 

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_BASE_URL } from './config';
+import { getCookie } from './utils/cookieHelper';
 
 // Khởi tạo một thực thể axios với cấu hình base chung
 const axiosClient = axios.create({
@@ -9,6 +10,21 @@ const axiosClient = axios.create({
     },
     timeout: 10000, // Thời gian tối đa chờ phản hồi từ server (10 giây)
 });
+
+// Thêm Request Interceptor để tự động đính kèm JWT Token vào Header
+axiosClient.interceptors.request.use(
+    (config) => {
+        const token = getCookie('token');
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 axiosClient.interceptors.response.use(
     (response) => {
         // Nếu phản hồi thành công, bóc tách lấy thẳng cục data bên trong dữ liệu JSON

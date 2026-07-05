@@ -4,6 +4,8 @@ import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import UserFormModal from './UserFormModal';
 import RelatedContentModal from './RelatedContentModal';
+import userService from '../../services/userService';
+import blogService from '../../services/blogService';
 
 const mapUserFromBackend = (user) => {
   if (!user) return null;
@@ -30,15 +32,13 @@ const mapUserFromBackend = (user) => {
 const Users = () => {
   const { 
     users, 
+    setUsers,
     roles, 
     currentUser, 
-    addUser, 
-    updateUser, 
-    deleteUser, 
     uploadImage, 
     resolveImageUrl,
     blogs,
-    deleteBlog,
+    setBlogs,
     categoriesBlog
   } = useAdmin();
 
@@ -102,15 +102,43 @@ const Users = () => {
       body.password = formData.password;
     }
 
-    if (modalType === 'add') {
-      await addUser(body);
-    } else {
-      await updateUser(formData.id, body);
+    try {
+      if (modalType === 'add') {
+        const newUser = await userService.create(body);
+        setUsers(prev => [...prev, newUser]);
+      } else {
+        const updatedUser = await userService.update(formData.id, body);
+        setUsers(prev => prev.map(u => u.id === formData.id ? updatedUser : u));
+      }
+    } catch (err) {
+      alert("Lỗi thao tác người dùng: " + err.message);
     }
     setIsModalOpen(false);
   };
 
-  const handleDelete = (usr) => {
+  const handleDeleteUser = async (userId) => {
+    try {
+      await userService.delete(userId);
+      setUsers(prev => prev.filter(u => u.id !== userId));
+      return true;
+    } catch (err) {
+      alert("Lỗi khi xóa người dùng: " + err.message);
+      return false;
+    }
+  };
+
+  const handleDeleteBlog = async (blogId) => {
+    try {
+      await blogService.delete(blogId);
+      setBlogs(prev => prev.filter(b => b.id !== blogId));
+      return true;
+    } catch (err) {
+      alert("Lỗi khi xóa bài viết: " + err.message);
+      return false;
+    }
+  };
+
+  const handleDelete = async (usr) => {
     if (usr.id === currentUser?.id) {
       alert("Self Demolition Blocked: You cannot delete the admin profile you are currently signed in with.");
       return;
@@ -128,7 +156,7 @@ const Users = () => {
     }
 
     if (confirm(`Are you sure you want to delete this staff user "${usr.fullname}"? This will revoke all terminal permissions.`)) {
-      deleteUser(usr.id);
+      await handleDeleteUser(usr.id);
     }
   };
 
@@ -266,8 +294,8 @@ const Users = () => {
         blogs={blogs}
         categoriesBlog={categoriesBlog}
         resolveImageUrl={resolveImageUrl}
-        deleteBlog={deleteBlog}
-        deleteUser={deleteUser}
+        deleteBlog={handleDeleteBlog}
+        deleteUser={handleDeleteUser}
         currentUser={currentUser}
       />
     </div>

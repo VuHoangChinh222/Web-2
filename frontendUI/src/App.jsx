@@ -17,6 +17,7 @@ import CheckoutView from './pages/Checkout/Index';
 import PaymentView from './pages/Checkout/PaymentView';
 import LoginView from './pages/Login/Index';
 import RegisterView from './pages/Register/Index';
+import ForgotPasswordView from './pages/ForgotPassword/ForgotPassword';
 import UserInfoView from './pages/User/Index';
 import UserInfo from './pages/User/UserInfo';
 import AboutView from './pages/About/Index';
@@ -151,6 +152,7 @@ const AppContent = ({ cart, addToCart, updateQty, removeFromCart, clearCart }) =
 
           <Route path="/login" element={<LoginView />} />
           <Route path="/register" element={<RegisterView />} />
+          <Route path="/forgot-password" element={<ForgotPasswordView />} />
           <Route path="/user" element={<UserInfoView navigate={navigate} />} />
           <Route path="/user-info" element={<UserInfo navigate={navigate} />} />
           <Route path="/about" element={<AboutView />} />
@@ -187,10 +189,11 @@ const AppContent = ({ cart, addToCart, updateQty, removeFromCart, clearCart }) =
 const ProductsRoute = ({ navigate, addToCart }) => {
   const [searchParams] = useSearchParams();
   const categoryIdVal = searchParams.get('categoryId');
+  const keyword = searchParams.get('keyword') || undefined;
   // Chuyển đổi định dạng ID sang số nguyên nếu hợp lệ
   const categoryId = categoryIdVal ? (isNaN(Number(categoryIdVal)) ? categoryIdVal : Number(categoryIdVal)) : undefined;
 
-  return <ProductView params={{ categoryId }} navigate={navigate} addToCart={addToCart} />;
+  return <ProductView params={{ categoryId, keyword }} navigate={navigate} addToCart={addToCart} />;
 };
 
 // Route wrapper cho trang chi tiết sản phẩm

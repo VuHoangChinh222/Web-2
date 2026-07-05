@@ -92,4 +92,13 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public String getImageUrl() {
+        if (imageUrl != null && imageUrl.startsWith("data:image/")) {
+            if (imageUrl.length() > 2000) {
+                return "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80";
+            }
+        }
+        return imageUrl;
+    }
 }

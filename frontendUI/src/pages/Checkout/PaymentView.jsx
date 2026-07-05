@@ -45,30 +45,20 @@ const PaymentView = ({ navigate, clearCart, cart }) => {
 
     setLoading(true);
 
-    const totalPrice = cart.reduce((sum, item) => sum + (item.price * (parseInt(item.qty) || 0)), 0);
-
     // 4. Chuẩn bị dữ liệu gửi lên Backend
     const orderPayload = {
       customerId: customer.id,
-      recipientName: shippingData.fullName,
-      recipientPhone: shippingData.phone,
-      shippingAddress: shippingData.address,
-      totalPrice: totalPrice,
-      shippingFee: 0,
-      paymentMethod: method.toUpperCase(),
-      note: shippingData.notes || null,
+      notes: shippingData.notes || null,
       items: cart.map(item => ({
         productId: item.id,
-        quantity: item.qty,
-        size: item.size,
-        price: item.price
+        quantity: item.qty
       }))
     };
 
     try {
       // Thực hiện gọi API lưu đơn hàng vào CSDL
       const response = await orderService.checkout(orderPayload);
-      if (response && (response.id || response.orderId)) {
+      if (response && response.orderId) {
         // Chỉ khi lưu Database thành công mới xác nhận thanh toán hoàn tất
         alert("Thanh toán & Đặt hàng thành công! Cảm ơn bạn đã mua hàng tại Chinh Hoops.");
         

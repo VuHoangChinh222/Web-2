@@ -9,7 +9,7 @@ import productService from '../../services/productService';
 import { getCookie } from '../../utils/cookieHelper';
 import IsLoading from '../../components/IsLoading';
 import '../../assets/css/productCSS/ProductDetail.css';
-import { IMAGE_BASE_URL, resolveImageUrl } from '../../config';
+import { IMAGE_BASE_URL } from '../../config';
 
 // Cấu hình URL Backend để lấy hình ảnh từ wwwroot/uploads
 const BASE_URL = IMAGE_BASE_URL;
@@ -60,6 +60,58 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
       });
   }, [productSlug, productId]);
 
+  // Chuyển đổi thẻ oembed từ CKEditor thành iframe phát video thời gian thực
+  useEffect(() => {
+    if (!product) return;
+
+    const timer = setTimeout(() => {
+      const container = document.querySelector('.description-content');
+      if (container) {
+        const oembeds = container.querySelectorAll('oembed');
+        oembeds.forEach(oembed => {
+          const url = oembed.getAttribute('url');
+          if (url) {
+            let embedUrl = '';
+
+            // Phân tích đường dẫn Youtube
+            const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+            const ytMatch = url.match(ytRegex);
+            if (ytMatch && ytMatch[1]) {
+              embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
+            }
+
+            // Phân tích đường dẫn Vimeo
+            const vimeoRegex = /vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]+)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:$|\/|\?)/i;
+            const vimeoMatch = url.match(vimeoRegex);
+            if (vimeoMatch && vimeoMatch[1]) {
+              embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+            }
+
+            if (embedUrl) {
+              const iframe = document.createElement('iframe');
+              iframe.src = embedUrl;
+              iframe.width = "100%";
+              iframe.height = "480";
+              iframe.setAttribute('frameborder', '0');
+              iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+              iframe.setAttribute('allowfullscreen', 'true');
+              iframe.style.borderRadius = "8px";
+              iframe.style.marginTop = "15px";
+              iframe.style.marginBottom = "15px";
+              iframe.style.boxShadow = "0 4px 15px rgba(0,0,0,0.3)";
+
+              if (oembed.parentNode) {
+                oembed.parentNode.replaceChild(iframe, oembed);
+              }
+            }
+          }
+        });
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [product]);
+
   if (loading) {
     return <IsLoading message="Đang tải chi tiết sản phẩm..." />;
   }
@@ -101,7 +153,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
     }
 
     if (qty > product.stockQuantity) {
-      alert(`Số lượng đặt mua vượt quá số lượng hàng tồn kho (${product.stockQuantity} sản phẩm)!`);
+      alert("Số lượng sản phẩm trong kho không đủ!");
       return;
     }
 
@@ -110,7 +162,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: resolveImageUrl(product.image || product.imageUrl, 'src/assets/images/default_product.png'),
+      image: product.image || (product.imageUrl ? (product.imageUrl.startsWith('http') ? product.imageUrl : `${BASE_URL}${product.imageUrl}`) : 'src/assets/images/default_product.png'),
       categoryName: product.categoryName,
       stockQuantity: product.stockQuantity
     };
@@ -119,7 +171,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
     navigate('cart');
   };
 
-  const imageSrc = resolveImageUrl(product.image || product.imageUrl, 'src/assets/images/default_product.png');
+  const imageSrc = product.image || (product.imageUrl ? (product.imageUrl.startsWith('http') ? product.imageUrl : `${BASE_URL}${product.imageUrl}`) : 'src/assets/images/default_product.png');
 
   return (
     <div className="page-container page-transition">
@@ -147,8 +199,6 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
               </span>
             )}
           </div>
-
-          <p className="detail-desc">{product.description}</p>
 
           <span className="detail-section-title">Kích cỡ / Size:</span>
           <div className="size-selector">
@@ -210,6 +260,12 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
             </div>
           )}
         </div>
+      </div>
+
+      {/* PHẦN MÔ TẢ CHI TIẾT SẢN PHẨM Ở DƯỚI CĂN GIỮA TRANG */}
+      <div className="product-description-section">
+        <h2 className="description-section-title">MÔ TẢ CHI TIẾT SẢN PHẨM</h2>
+        <div className="description-content ck-content" dangerouslySetInnerHTML={{ __html: product.description || 'Chưa có mô tả chi tiết cho sản phẩm này.' }} />
       </div>
     </div>
   );

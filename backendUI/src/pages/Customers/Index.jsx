@@ -4,21 +4,21 @@ import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import CustomerFormModal from './CustomerFormModal';
 import RelatedOrdersModal from './RelatedOrdersModal';
+import customerService from '../../services/customerService';
+import userAddressService from '../../services/userAddressService';
+import orderService from '../../services/orderService';
 
 
 const Customers = () => {
   const { 
     customers, 
+    setCustomers,
     orders, 
-    addCustomer, 
-    updateCustomer, 
-    deleteCustomer, 
+    setOrders,
     uploadImage, 
     resolveImageUrl, 
-    deleteOrder,
     userAddresses,
-    addUserAddress,
-    updateUserAddress
+    setUserAddresses
   } = useAdmin();
 
   // Search state
@@ -111,50 +111,75 @@ const Customers = () => {
     }
 
     let customerId = formData.id;
-    let res = null;
 
-    if (modalType === 'add') {
-      res = await addCustomer(body);
-      if (res && res.success && res.data) {
-        customerId = res.data.id;
+    try {
+      if (modalType === 'add') {
+        const newCustomer = await customerService.create(body);
+        setCustomers(prev => [...prev, newCustomer]);
+        customerId = newCustomer.id;
+      } else {
+        const updatedCustomer = await customerService.update(formData.id, body);
+        setCustomers(prev => prev.map(c => c.id === formData.id ? updatedCustomer : c));
       }
-    } else {
-      res = await updateCustomer(formData.id, body);
-    }
 
-    // Save or update address
-    if (customerId) {
-      const addressText = (formData.address || '').trim();
-      const existingAddr = (userAddresses || []).find(addr => 
-        (addr.customerId === customerId || addr.customer?.id === customerId) && addr.isDefault
-      ) || (userAddresses || []).find(addr => 
-        (addr.customerId === customerId || addr.customer?.id === customerId)
-      );
+      // Save or update address
+      if (customerId) {
+        const addressText = (formData.address || '').trim();
+        const existingAddr = (userAddresses || []).find(addr => 
+          (addr.customerId === customerId || addr.customer?.id === customerId) && addr.isDefault
+        ) || (userAddresses || []).find(addr => 
+          (addr.customerId === customerId || addr.customer?.id === customerId)
+        );
 
-      if (addressText) {
-        const addressBody = {
-          customerId: customerId,
-          recipientName: formData.fullname || body.fullName || 'Recipient',
-          recipientPhone: formData.phone || body.phone || '0912345678',
-          addressLine: addressText,
-          ward: existingAddr?.ward || 'N/A',
-          district: existingAddr?.district || 'N/A',
-          city: existingAddr?.city || 'N/A',
-          isDefault: true
-        };
+        if (addressText) {
+          const addressBody = {
+            customerId: customerId,
+            recipientName: formData.fullname || body.fullName || 'Recipient',
+            recipientPhone: formData.phone || body.phone || '0912345678',
+            addressLine: addressText,
+            ward: existingAddr?.ward || 'N/A',
+            district: existingAddr?.district || 'N/A',
+            city: existingAddr?.city || 'N/A',
+            isDefault: true
+          };
 
-        if (existingAddr) {
-          await updateUserAddress(existingAddr.id, addressBody);
-        } else {
-          await addUserAddress(addressBody);
+          if (existingAddr) {
+            const updatedAddr = await userAddressService.update(existingAddr.id, addressBody);
+            setUserAddresses(prev => prev.map(a => a.id === existingAddr.id ? updatedAddr : a));
+          } else {
+            const newAddr = await userAddressService.create(addressBody);
+            setUserAddresses(prev => [...prev, newAddr]);
+          }
         }
       }
+    } catch (err) {
+      alert("Lỗi thao tác khách hàng: " + err.message);
     }
 
     setIsModalOpen(false);
   };
 
-  const handleDelete = (id) => {
+  const handleDeleteOrder = async (orderId) => {
+    try {
+      await orderService.delete(orderId);
+      setOrders(prev => prev.filter(o => o.id !== orderId));
+    } catch (err) {
+      alert("Lỗi khi xóa đơn hàng: " + err.message);
+    }
+  };
+
+  const handleDeleteCustomer = async (customerId) => {
+    try {
+      await customerService.delete(customerId);
+      setCustomers(prev => prev.filter(c => c.id !== customerId));
+      return true;
+    } catch (err) {
+      alert("Lỗi khi xóa khách hàng: " + err.message);
+      return false;
+    }
+  };
+
+  const handleDelete = async (id) => {
     const customer = mappedCustomers.find(c => c.id === id);
     if (!customer) return;
 
@@ -165,7 +190,7 @@ const Customers = () => {
       return;
     }
     if (confirm(`Are you sure you want to delete customer record "${customer.fullname}"?`)) {
-      deleteCustomer(id);
+      await handleDeleteCustomer(id);
     }
   };
 
@@ -305,8 +330,8 @@ const Customers = () => {
         }}
         selectedCustomer={selectedCustomerForDelete}
         orders={orders}
-        deleteOrder={deleteOrder}
-        deleteCustomer={deleteCustomer}
+        deleteOrder={handleDeleteOrder}
+        deleteCustomer={handleDeleteCustomer}
       />
     </div>
   );

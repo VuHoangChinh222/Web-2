@@ -3,9 +3,10 @@ import { Shield, ShieldAlert, CheckSquare, Square, Save, Plus, Edit2, Trash2 } f
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import RoleFormModal from './RoleFormModal';
+import roleService from '../../services/roleService';
 
 const Roles = () => {
-  const { roles, users, addRole, updateRole, deleteRole, updateRolePermissions } = useAdmin();
+  const { roles, setRoles, users } = useAdmin();
 
   // List of all system entities for dynamic permissions
   const entities = [
@@ -77,9 +78,19 @@ const Roles = () => {
 
   const handleSave = async () => {
     if (!selectedRoleId) return;
-    const res = await updateRolePermissions(selectedRoleId, tempPermissions);
-    if (res && res.success) {
+    try {
+      const roleObj = roles.find(r => r.id === selectedRoleId);
+      if (!roleObj) return;
+      const body = {
+        name: roleObj.name,
+        description: roleObj.description,
+        permissions: tempPermissions
+      };
+      const updated = await roleService.updatePermissions(selectedRoleId, body);
+      setRoles(prev => prev.map(r => r.id === selectedRoleId ? { ...r, permissions: updated.permissions || [] } : r));
       alert(`Permissions configuration for role "${activeRole?.name}" has been saved successfully.`);
+    } catch (err) {
+      alert("Lỗi cập nhật quyền: " + err.message);
     }
   };
 
@@ -100,7 +111,7 @@ const Roles = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteRole = (role) => {
+  const handleDeleteRole = async (role) => {
     if (role.name === 'ROLE_ADMIN') {
       alert("Cannot delete standard system admin role.");
       return;
@@ -111,25 +122,36 @@ const Roles = () => {
       return;
     }
     if (confirm(`Are you sure you want to delete role "${role.name}"?`)) {
-      deleteRole(role.id);
+      try {
+        await roleService.delete(role.id);
+        setRoles(prev => prev.filter(r => r.id !== role.id));
+      } catch (err) {
+        alert("Lỗi khi xóa vai trò: " + err.message);
+      }
     }
   };
 
   const handleFormSubmit = async (formData) => {
-    if (modalType === 'add') {
-      const body = {
-        name: formData.name,
-        description: formData.description,
-        permissions: []
-      };
-      await addRole(body);
-    } else {
-      const body = {
-        name: formData.name,
-        description: formData.description,
-        permissions: formData.permissions || []
-      };
-      await updateRole(formData.id, body);
+    try {
+      if (modalType === 'add') {
+        const body = {
+          name: formData.name,
+          description: formData.description,
+          permissions: []
+        };
+        const newRole = await roleService.create(body);
+        setRoles(prev => [...prev, newRole]);
+      } else {
+        const body = {
+          name: formData.name,
+          description: formData.description,
+          permissions: formData.permissions || []
+        };
+        const updated = await roleService.update(formData.id, body);
+        setRoles(prev => prev.map(r => r.id === formData.id ? updated : r));
+      }
+    } catch (err) {
+      alert("Lỗi thao tác vai trò: " + err.message);
     }
     setIsModalOpen(false);
   };

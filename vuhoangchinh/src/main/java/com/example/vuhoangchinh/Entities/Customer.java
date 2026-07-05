@@ -81,4 +81,13 @@ public class Customer {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public String getImageUrl() {
+        if (imageUrl != null && imageUrl.startsWith("data:image/")) {
+            if (imageUrl.length() > 2000) {
+                return "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+            }
+        }
+        return imageUrl;
+    }
 }

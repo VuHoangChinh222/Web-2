@@ -58,8 +58,8 @@ const CheckoutView = ({ cart, navigate }) => {
       return;
     }
 
-    if (!/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/.test(phone.trim())) {
-      setErrorMessage("Số điện thoại Việt Nam không hợp lệ (phải bắt đầu bằng 0 hoặc +84, theo sau là 3, 5, 7, 8, 9 và gồm 10 chữ số).");
+    if (!/^(0[3|5|7|8|9])+([0-9]{8})$/.test(phone.trim())) {
+      setErrorMessage("Số điện thoại Việt Nam không hợp lệ (phải bắt đầu bằng 03, 05, 07, 08, 09 và gồm 10 chữ số).");
       return;
     }
 

@@ -3,6 +3,7 @@ import { Plus, Search, Edit2, Trash2, Calendar, User, BookOpen, ExternalLink } f
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import BlogFormModal from './BlogFormModal';
+import blogService from '../../services/blogService';
 
 const mapBlogFromBackend = (blog) => {
   if (!blog) return null;
@@ -19,7 +20,7 @@ const mapBlogFromBackend = (blog) => {
 };
 
 const Blogs = () => {
-  const { blogs, categoriesBlog, users, addBlog, updateBlog, deleteBlog, uploadImage, resolveImageUrl } = useAdmin();
+  const { blogs, setBlogs, categoriesBlog, users, uploadImage, resolveImageUrl } = useAdmin();
 
   const formatDate = (dateVal) => {
     if (!dateVal) return 'N/A';
@@ -81,17 +82,28 @@ const Blogs = () => {
       imageUrl: imgVal
     };
 
-    if (modalType === 'add') {
-      await addBlog(body);
-    } else {
-      await updateBlog(formData.id, body);
+    try {
+      if (modalType === 'add') {
+        const newBlog = await blogService.create(body);
+        setBlogs(prev => [newBlog, ...prev]);
+      } else {
+        const updated = await blogService.update(formData.id, body);
+        setBlogs(prev => prev.map(b => b.id === formData.id ? updated : b));
+      }
+    } catch (err) {
+      alert("Lỗi khi lưu bài viết: " + err.message);
     }
     setIsModalOpen(false);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm("Are you sure you want to delete this blog post?")) {
-      deleteBlog(id);
+      try {
+        await blogService.delete(id);
+        setBlogs(prev => prev.filter(b => b.id !== id));
+      } catch (err) {
+        alert("Lỗi khi xóa bài viết: " + err.message);
+      }
     }
   };
 

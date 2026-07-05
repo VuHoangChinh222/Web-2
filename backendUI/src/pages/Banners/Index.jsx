@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, Layout, Link as LinkIcon } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import BannerFormModal from './BannerFormModal';
+import bannerService from '../../services/bannerService';
 
 const mapBannerFromBackend = (banner) => {
   if (!banner) return null;
@@ -17,7 +18,7 @@ const mapBannerFromBackend = (banner) => {
 };
 
 const Banners = () => {
-  const { banners, addBanner, updateBanner, deleteBanner, uploadImage, resolveImageUrl } = useAdmin();
+  const { banners, setBanners, uploadImage, resolveImageUrl } = useAdmin();
 
   // Modal controls
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,17 +50,28 @@ const Banners = () => {
       status: formData.active ? 1 : 0
     };
 
-    if (modalType === 'add') {
-      await addBanner(body);
-    } else {
-      await updateBanner(formData.id, body);
+    try {
+      if (modalType === 'add') {
+        const newBanner = await bannerService.create(body);
+        setBanners(prev => [newBanner, ...prev]);
+      } else {
+        const updated = await bannerService.update(formData.id, body);
+        setBanners(prev => prev.map(b => b.id === formData.id ? updated : b));
+      }
+    } catch (err) {
+      alert("Lỗi thao tác Banner: " + err.message);
     }
     setIsModalOpen(false);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm("Are you sure you want to delete this promotional banner?")) {
-      deleteBanner(id);
+      try {
+        await bannerService.delete(id);
+        setBanners(prev => prev.filter(b => b.id !== id));
+      } catch (err) {
+        alert("Lỗi khi xóa Banner: " + err.message);
+      }
     }
   };
 

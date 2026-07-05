@@ -11,15 +11,21 @@ Dự án **Hệ Thống Quản Trị & API Bán Hàng** là một giải pháp q
 
 ## 🏗️ Kiến Trúc Hệ Thống
 
-Hệ thống hoạt động theo mô hình Client-Server rời rạc:
-* **Frontend** gửi các yêu cầu HTTP mang theo JWT Bearer Token trong Header để tương tác dữ liệu.
-* **Backend** tiếp nhận yêu cầu, xử lý nghiệp vụ, kiểm tra phân quyền JWT Token thông qua Security Filter, tương tác MySQL qua JPA Hibernate và phản hồi dữ liệu JSON.
+Dự án áp dụng mô hình kiến trúc sạch (Clean Architecture) với sự tách biệt rõ ràng ở cả Frontend và Backend:
+* **Frontend Quản Trị (backendUI)**: Loại bỏ kiến trúc Context-monolith (không gán logic API cồng kềnh trong Context). Thay vào đó, các **Page Components** tương tác trực tiếp với các **API Services** riêng biệt, nhận dữ liệu phản hồi rồi sử dụng **AdminContext** (Lean State Store) làm kho chứa trạng thái và bộ cập nhật (setters) để đồng bộ lại dữ liệu toàn cục.
+* **Backend (vuhoangchinh)**: Phân tầng chuẩn mực (Controller - Service - Repository) bảo mật qua JWT Filter, xử lý các ràng buộc toàn vẹn cơ sở dữ liệu.
 
 ```mermaid
 graph TD
     subgraph Clients ["Phân Hệ Giao Diện (Client Side)"]
-        A["Admin Dashboard<br/>(backendUI)<br/>React, Vite, Tailwind"]
-        B["Client Store<br/>(frontendUI)<br/>React, Vite, Axios"]
+        subgraph AdminUI ["Admin Dashboard (backendUI)"]
+            A["Page Components<br/>(Index.jsx)"]
+            AS["Service Layer<br/>(JS Service Wrappers)"]
+            AC["AdminContext<br/>(Lean State Store)"]
+            A -->|1. Call CRUD API| AS
+            A -->|3. Update State via Setters| AC
+        end
+        B["Client Store (frontendUI)<br/>React, Vite, Axios"]
     end
 
     subgraph Service ["Phân Hệ Máy Chủ (Server Side - vuhoangchinh)"]
@@ -38,7 +44,7 @@ graph TD
         G[("MySQL Database")]
     end
 
-    A -- "HTTP Requests & JWT Bearer" --> C
+    AS -- "2. HTTP Request & JWT" --> C
     B -- "HTTP Requests" --> C
     F --> G
 ```
@@ -59,7 +65,7 @@ erDiagram
     PRODUCT ||--o{ ProductVariant : "has"
     CUSTOMER ||--o{ UserAddress : "has"
     CUSTOMER ||--o{ ORDER : "places"
-    ORDER ||--o{ OrderDetail : "contains"
+    ORDER ||--o{ OrderDetail : "contains (Cascade ALL)"
     ProductVariant ||--o{ OrderDetail : "ordered_in"
 
     ROLE {
@@ -183,6 +189,7 @@ erDiagram
         String note "TEXT"
         LocalDateTime createdAt
         LocalDateTime updatedAt
+        List orderDetails "Cascade Delete"
     }
 
     OrderDetail {

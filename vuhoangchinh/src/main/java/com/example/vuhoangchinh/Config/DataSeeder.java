@@ -130,58 +130,59 @@ public class DataSeeder implements CommandLineRunner {
             employeeRole = roleRepository.save(employeeRole);
         }
 
-        // 2. Seed Users
-        if (userRepository.findByUsername("admin_duong").isEmpty()) {
-            User user = new User();
-            user.setUsername("admin_duong");
-            user.setPassword(passwordEncoder.encode("chinh123"));
-            user.setFullName("Trịnh Tùng Dương");
-            user.setEmail("duong@example.com");
-            user.setPhone("0912345678");
-            user.setImageUrl("https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80");
-            user.setStatus(1);
-            user.setRole(adminRole);
-            userRepository.save(user);
-        }
+/// Các tài khoản test nếu muốn dùng thì chạy
+        // // 2. Seed Users
+        // if (userRepository.findByUsername("admin_duong").isEmpty()) {
+        //     User user = new User();
+        //     user.setUsername("admin_duong");
+        //     user.setPassword(passwordEncoder.encode("chinh123"));
+        //     user.setFullName("Trịnh Tùng Dương");
+        //     user.setEmail("duong@example.com");
+        //     user.setPhone("0912345678");
+        //     user.setImageUrl("https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80");
+        //     user.setStatus(1);
+        //     user.setRole(adminRole);
+        //     userRepository.save(user);
+        // }
 
-        if (userRepository.findByUsername("editor_minh").isEmpty()) {
-            User user = new User();
-            user.setUsername("editor_minh");
-            user.setPassword(passwordEncoder.encode("chinh123"));
-            user.setFullName("Nguyễn Hoàng Minh");
-            user.setEmail("minh@example.com");
-            user.setPhone("0987654321");
-            user.setImageUrl("https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=150&q=80");
-            user.setStatus(1);
-            user.setRole(editorRole);
-            userRepository.save(user);
-        }
+        // if (userRepository.findByUsername("editor_minh").isEmpty()) {
+        //     User user = new User();
+        //     user.setUsername("editor_minh");
+        //     user.setPassword(passwordEncoder.encode("chinh123"));
+        //     user.setFullName("Nguyễn Hoàng Minh");
+        //     user.setEmail("minh@example.com");
+        //     user.setPhone("0987654321");
+        //     user.setImageUrl("https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=150&q=80");
+        //     user.setStatus(1);
+        //     user.setRole(editorRole);
+        //     userRepository.save(user);
+        // }
 
-        if (userRepository.findByUsername("sales_lan").isEmpty()) {
-            User user = new User();
-            user.setUsername("sales_lan");
-            user.setPassword(passwordEncoder.encode("chinh123"));
-            user.setFullName("Lê Thị Lan");
-            user.setEmail("lan@example.com");
-            user.setPhone("0901234567");
-            user.setImageUrl("https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80");
-            user.setStatus(1);
-            user.setRole(employeeRole);
-            userRepository.save(user);
-        }
+        // if (userRepository.findByUsername("sales_lan").isEmpty()) {
+        //     User user = new User();
+        //     user.setUsername("sales_lan");
+        //     user.setPassword(passwordEncoder.encode("chinh123"));
+        //     user.setFullName("Lê Thị Lan");
+        //     user.setEmail("lan@example.com");
+        //     user.setPhone("0901234567");
+        //     user.setImageUrl("https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80");
+        //     user.setStatus(1);
+        //     user.setRole(employeeRole);
+        //     userRepository.save(user);
+        // }
 
-        if (userRepository.findByUsername("admin").isEmpty()) {
-            User user = new User();
-            user.setUsername("admin");
-            user.setPassword(passwordEncoder.encode("chinh123"));
-            user.setFullName("Vũ Hoàng Chính");
-            user.setEmail("chinh@example.com");
-            user.setPhone("0922334455");
-            user.setImageUrl("https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80");
-            user.setStatus(1);
-            user.setRole(adminRole);
-            userRepository.save(user);
-        }
+        // if (userRepository.findByUsername("admin").isEmpty()) {
+        //     User user = new User();
+        //     user.setUsername("admin");
+        //     user.setPassword(passwordEncoder.encode("chinh123"));
+        //     user.setFullName("Vũ Hoàng Chính");
+        //     user.setEmail("chinh@example.com");
+        //     user.setPhone("0922334455");
+        //     user.setImageUrl("https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80");
+        //     user.setStatus(1);
+        //     user.setRole(adminRole);
+        //     userRepository.save(user);
+        // }
 
         // 3. Seed Category Products
         CategoryProduct giay = null;

@@ -3,6 +3,7 @@ import { Plus, Search, Edit2, Trash2, SlidersHorizontal, LayoutGrid, List } from
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import ProductFormModal from './ProductFormModal';
+import productService from '../../services/productService';
 
 const mapProductFromBackend = (prod) => {
   if (!prod) return null;
@@ -24,7 +25,7 @@ const mapProductFromBackend = (prod) => {
 };
 
 const Products = () => {
-  const { products, categoriesProduct, orderDetails, addProduct, updateProduct, deleteProduct, uploadImage, resolveImageUrl } = useAdmin();
+  const { products, setProducts, categoriesProduct, orderDetails, uploadImage, resolveImageUrl } = useAdmin();
 
   // States
   const [searchTerm, setSearchTerm] = useState('');
@@ -73,23 +74,34 @@ const Products = () => {
       status: formData.status === 'Active' ? 1 : 0
     };
 
-    if (modalType === 'add') {
-      await addProduct(body);
-    } else {
-      await updateProduct(formData.id, body);
+    try {
+      if (modalType === 'add') {
+        const newProduct = await productService.create(body);
+        setProducts(prev => [newProduct, ...prev]);
+      } else {
+        const updated = await productService.update(formData.id, body);
+        setProducts(prev => prev.map(p => p.id === formData.id ? updated : p));
+      }
+    } catch (err) {
+      alert("Lỗi khi lưu sản phẩm: " + err.message);
     }
     setIsModalOpen(false);
   };
 
   // Delete Handler
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     const hasOrders = orderDetails.some(det => det.productId === id);
     if (hasOrders) {
       alert("Không thể xóa sản phẩm: Đã có đơn hàng chứa mặt hàng này.");
       return;
     }
     if (confirm("Are you sure you want to delete this product?")) {
-      deleteProduct(id);
+      try {
+        await productService.delete(id);
+        setProducts(prev => prev.filter(p => p.id !== id));
+      } catch (err) {
+        alert("Lỗi khi xóa sản phẩm: " + err.message);
+      }
     }
   };
 

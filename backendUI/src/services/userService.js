@@ -5,7 +5,7 @@ const userService = {
   create: (user) => apiClient.post('/users', user),
   update: (id, user) => apiClient.put(`/users/${id}`, user),
   delete: (id) => apiClient.delete(`/users/${id}`),
-  login: (credentials) => apiClient.post('/authenticate', credentials)
+  login: (credentials) => apiClient.post('/auth/login', credentials)
 };
 
 export default userService;

@@ -122,6 +122,7 @@ const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) =
   const handleViewOrder = (orderId) => {
     setSelectedOrderId(orderId);
     setIsOrderModalOpen(true);
+    setActivePage('orders');
   };
 
   const formatDate = (dateVal) => {

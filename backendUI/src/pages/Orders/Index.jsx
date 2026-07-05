@@ -3,6 +3,7 @@ import { Search, Eye, Edit2, Trash2 } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import OrderDetailModal from './OrderDetailModal';
+import orderService from '../../services/orderService';
 
 const mapOrderFromBackend = (order) => {
   if (!order) return null;
@@ -68,7 +69,14 @@ const mapProductFromBackend = (prod) => {
 };
 
 const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
-  const { orders, orderDetails, customers, products, updateOrder, deleteOrderDetail, deleteOrder } = useAdmin();
+  const {
+    orders,
+    setOrders,
+    orderDetails,
+    setOrderDetails,
+    customers,
+    products
+  } = useAdmin();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -137,7 +145,23 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
       orderStatus: newStatus,
       note: orderObj.note
     };
-    await updateOrder(orderId, body);
+    try {
+      const updated = await orderService.update(orderId, body);
+      setOrders(prev => prev.map(o => o.id === orderId ? updated : o));
+    } catch (err) {
+      alert("Lỗi khi cập nhật đơn hàng: " + err.message);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId) => {
+    try {
+      await orderService.delete(orderId);
+      setOrders(prev => prev.filter(o => o.id !== orderId));
+      return true;
+    } catch (err) {
+      alert("Lỗi khi xóa đơn hàng: " + err.message);
+      return false;
+    }
   };
 
   // Local helper to delete detail item and update order price
@@ -145,8 +169,13 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
     const detail = mappedOrderDetails.find(d => d.id === detailId);
     if (!detail) return;
 
-    const success = await deleteOrderDetail(detailId);
-    if (!success) return;
+    try {
+      await orderService.deleteDetail(detailId);
+      setOrderDetails(prev => prev.filter(d => d.id !== detailId));
+    } catch (err) {
+      alert("Lỗi khi xóa chi tiết đơn hàng: " + err.message);
+      return;
+    }
 
     const activeOrderObj = mappedOrders.find(o => o.id === selectedOrderId);
     if (!activeOrderObj) return;
@@ -168,7 +197,12 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
       note: activeOrderObj.note
     };
 
-    await updateOrder(activeOrderObj.id, body);
+    try {
+      const updated = await orderService.update(activeOrderObj.id, body);
+      setOrders(prev => prev.map(o => o.id === activeOrderObj.id ? updated : o));
+    } catch (err) {
+      alert("Lỗi khi cập nhật tổng tiền đơn hàng: " + err.message);
+    }
   };
 
   // Status Styling Badge
@@ -311,7 +345,7 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
                           <button
                             onClick={async () => {
                               if (confirm(`Are you sure you want to delete order "${order.orderCode || order.id}"?`)) {
-                                await deleteOrder(order.id);
+                                await handleDeleteOrder(order.id);
                               }
                             }}
                             className="glass-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30"
@@ -340,7 +374,7 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
         products={mappedProducts}
         updateOrderStatus={updateOrderStatus}
         deleteOrderDetail={handleDeleteOrderDetail}
-        deleteOrder={deleteOrder}
+        deleteOrder={handleDeleteOrder}
         formatDate={formatDate}
         mode={modalMode}
       />

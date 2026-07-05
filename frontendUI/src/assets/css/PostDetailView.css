@@ -25,3 +25,40 @@
     margin-bottom: 1rem;
     text-transform: none;
 }
+
+/* Định dạng bảng biểu tạo từ CKEditor 5 tương thích giao diện tối */
+.post-detail-content table {
+    width: 100% !important;
+    margin: 1.8rem 0;
+    border-collapse: collapse;
+    border: 1px solid var(--border-color, #3a3f44);
+    background: var(--bg-card, #1e222b);
+}
+
+.post-detail-content table th,
+.post-detail-content table td {
+    padding: 12px 16px;
+    border: 1px solid var(--border-color, #3a3f44);
+    color: var(--text-main);
+    vertical-align: middle;
+}
+
+.post-detail-content table th {
+    background-color: rgba(255, 255, 255, 0.05);
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.post-detail-content figure.table {
+    margin: 1.5rem 0;
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Định dạng hình ảnh và video nhúng */
+.post-detail-content figure.media {
+    margin: 1.8rem auto;
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+}

@@ -9,6 +9,8 @@ import jakarta.validation.constraints.*; // Annotations như @NotNull, @NotBlank
 // Import các thư viện Lombok giúp tự động sinh các getter, setter, constructor
 import lombok.*; // Annotations @Data, @NoArgsConstructor, @AllArgsConstructor
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 // Import thư viện Hibernate hỗ trợ tự động tạo thời gian
 import org.hibernate.annotations.CreationTimestamp; // Tự động ghi nhận thời gian tạo bản ghi
 import org.hibernate.annotations.UpdateTimestamp; // Tự động cập nhật thời gian sửa bản ghi
@@ -112,4 +114,11 @@ public class Order {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    // Chi tiết các mặt hàng trong đơn hàng, tự động xóa khi đơn hàng bị xóa (Cascade Delete)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @JsonIgnoreProperties("order")
+    private java.util.List<OrderDetail> orderDetails;
 }

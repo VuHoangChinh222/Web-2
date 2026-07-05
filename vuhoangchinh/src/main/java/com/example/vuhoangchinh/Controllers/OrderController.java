@@ -363,10 +363,6 @@ public class OrderController {
     public ResponseEntity<?> deleteOrder(@PathVariable Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found with id " + id));
-        List<OrderDetail> details = orderDetailRepository.findByOrderId(id);
-        if (details != null && !details.isEmpty()) {
-            orderDetailRepository.deleteAll(details);
-        }
         orderRepository.delete(order);
         return ResponseEntity.ok("Xóa đơn hàng thành công");
     }

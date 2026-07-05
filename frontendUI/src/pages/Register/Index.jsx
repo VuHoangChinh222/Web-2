@@ -11,12 +11,11 @@ import { getCookie } from '../../utils/cookieHelper';
 
 const RegisterView = () => {
   const navigate = useNavigate();
-
-  // Kiểm tra nếu đã đăng nhập thì tự động điều hướng sang trang User
+  // Kiểm tra nếu đã đăng nhập thì tự động điều hướng sang trang sản phẩm
   useEffect(() => {
     const customer = getCookie('customer');
     if (customer) {
-      navigate('/user');
+      navigate('/products');
     }
   }, [navigate]);
 
@@ -26,7 +25,9 @@ const RegisterView = () => {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Trạng thái xử lý
   const [loading, setLoading] = useState(false);
@@ -35,21 +36,17 @@ const RegisterView = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
-
-    // Validate số điện thoại bắt buộc và đúng định dạng
-    if (!phone.trim()) {
-      setErrorMessage("Số điện thoại không được để trống.");
-      return;
-    }
-
-    if (!/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/.test(phone.trim())) {
-      setErrorMessage("Số điện thoại không đúng định dạng (Ví dụ: 0912345678).");
-      return;
-    }
+    setLoading(false);
 
     // Validate mật khẩu tối thiểu 6 ký tự
     if (password.length < 6) {
       setErrorMessage("Mật khẩu phải chứa ít nhất 6 ký tự.");
+      return;
+    }
+
+    // Validate mật khẩu nhập lại phải khớp
+    if (password !== confirmPassword) {
+      setErrorMessage("Mật khẩu nhập lại không khớp.");
       return;
     }
 
@@ -59,7 +56,7 @@ const RegisterView = () => {
       const registerData = {
         fullName,
         email,
-        phone: phone.trim(),
+        phone: phone || null,
         address: address || null,
         password
       };
@@ -113,12 +110,11 @@ const RegisterView = () => {
           </div>
 
           <div className="form-group">
-            <label>Số điện thoại (SĐT VN) <span style={{ color: 'red' }}>*</span></label>
+            <label>Số điện thoại (SĐT VN)</label>
             <input
               type="tel"
               className="form-input"
               placeholder="09xx xxx xxx"
-              required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
@@ -167,6 +163,42 @@ const RegisterView = () => {
                 }}
               >
                 <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+              </button>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>Nhập lại mật khẩu <span style={{ color: 'red' }}>*</span></label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                className="form-input"
+                placeholder="Nhập lại mật khẩu"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                style={{ paddingRight: '45px' }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '15px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  fontSize: '1.1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0
+                }}
+              >
+                <i className={`fa-solid ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
               </button>
             </div>
           </div>

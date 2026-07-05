@@ -1,16 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import productService from '../services/productService';
 import postService from '../services/postService';
 import { getCookie } from '../utils/cookieHelper';
 import '../assets/css/headerCSS/Header.css';
 
-import { IMAGE_BASE_URL, resolveImageUrl } from '../config';
+import { IMAGE_BASE_URL } from '../config';
 
 const BASE_URL = IMAGE_BASE_URL;
 
 const Header = ({ currentView, cartCount }) => {
   const location = useLocation();
+  const routerNavigate = useNavigate();
   const [customer, setCustomer] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,6 +20,27 @@ const Header = ({ currentView, cartCount }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const searchRef = useRef(null);
+
+  // Xử lý submit tìm kiếm khi nhấn Enter
+  const handleSearchSubmit = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (searchQuery.trim()) {
+        setIsDropdownOpen(false);
+        setIsMobileMenuOpen(false);
+        routerNavigate(`/products?keyword=${encodeURIComponent(searchQuery.trim())}`);
+      }
+    }
+  };
+
+  // Click vào biểu tượng tìm kiếm để chuyển trang kết quả
+  const handleSearchIconClick = () => {
+    if (searchQuery.trim()) {
+      setIsDropdownOpen(false);
+      setIsMobileMenuOpen(false);
+      routerNavigate(`/products?keyword=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   // Sync customer cookie on load and on route transitions
   useEffect(() => {
@@ -89,7 +111,8 @@ const Header = ({ currentView, cartCount }) => {
   };
 
   const processImage = (imageUrl) => {
-    return resolveImageUrl(imageUrl, '');
+    if (!imageUrl) return '';
+    return imageUrl.startsWith('http') ? imageUrl : `${BASE_URL}${imageUrl}`;
   };
 
   return (
@@ -109,9 +132,10 @@ const Header = ({ currentView, cartCount }) => {
               value={searchQuery}
               onChange={handleSearchChange}
               onFocus={() => setIsDropdownOpen(true)}
+              onKeyDown={handleSearchSubmit}
               className="header-search-input"
             />
-            <i className="fa-solid fa-magnifying-glass search-icon"></i>
+            <i className="fa-solid fa-magnifying-glass search-icon" style={{ cursor: 'pointer' }} onClick={handleSearchIconClick}></i>
             {searchQuery && (
               <button className="search-clear-btn" onClick={clearSearch}>
                 <i className="fa-solid fa-xmark"></i>
@@ -239,9 +263,10 @@ const Header = ({ currentView, cartCount }) => {
                 value={searchQuery}
                 onChange={handleSearchChange}
                 onFocus={() => setIsDropdownOpen(true)}
+                onKeyDown={handleSearchSubmit}
                 className="header-search-input"
               />
-              <i className="fa-solid fa-magnifying-glass search-icon"></i>
+              <i className="fa-solid fa-magnifying-glass search-icon" style={{ cursor: 'pointer' }} onClick={handleSearchIconClick}></i>
               {searchQuery && (
                 <button className="search-clear-btn" onClick={clearSearch}>
                   <i className="fa-solid fa-xmark"></i>

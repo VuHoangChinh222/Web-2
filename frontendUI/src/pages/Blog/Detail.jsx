@@ -5,7 +5,7 @@ import IsLoading from '../../components/IsLoading';
 // Import css
 import '../../assets/css/PostDetailView.css';
 
-import { IMAGE_BASE_URL, resolveImageUrl } from '../../config';
+import { IMAGE_BASE_URL } from '../../config';
 
 // Cấu hình URL Backend để lấy hình ảnh từ wwwroot/uploads
 const BASE_URL = IMAGE_BASE_URL;
@@ -43,9 +43,62 @@ const PostDetailView = ({ params, navigate }) => {
             });
     }, [slug]);
 
+    // Chuyển đổi thẻ oembed từ CKEditor thành iframe phát video thời gian thực
+    useEffect(() => {
+        if (!post) return;
+
+        const timer = setTimeout(() => {
+            const container = document.querySelector('.post-detail-content');
+            if (container) {
+                const oembeds = container.querySelectorAll('oembed');
+                oembeds.forEach(oembed => {
+                    const url = oembed.getAttribute('url');
+                    if (url) {
+                        let embedUrl = '';
+
+                        // Phân tích đường dẫn Youtube
+                        const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+                        const ytMatch = url.match(ytRegex);
+                        if (ytMatch && ytMatch[1]) {
+                            embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
+                        }
+
+                        // Phân tích đường dẫn Vimeo
+                        const vimeoRegex = /vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]+)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:$|\/|\?)/i;
+                        const vimeoMatch = url.match(vimeoRegex);
+                        if (vimeoMatch && vimeoMatch[1]) {
+                            embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+                        }
+
+                        if (embedUrl) {
+                            const iframe = document.createElement('iframe');
+                            iframe.src = embedUrl;
+                            iframe.width = "100%";
+                            iframe.height = "480";
+                            iframe.setAttribute('frameborder', '0');
+                            iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+                            iframe.setAttribute('allowfullscreen', 'true');
+                            iframe.style.borderRadius = "8px";
+                            iframe.style.marginTop = "15px";
+                            iframe.style.marginBottom = "15px";
+                            iframe.style.boxShadow = "0 4px 15px rgba(0,0,0,0.3)";
+
+                            if (oembed.parentNode) {
+                                oembed.parentNode.replaceChild(iframe, oembed);
+                            }
+                        }
+                    }
+                });
+            }
+        }, 150);
+
+        return () => clearTimeout(timer);
+    }, [post]);
+
     // Hàm bổ trợ xử lý ghép link domain Backend cho ảnh
     const processImage = (imageUrl) => {
-        return resolveImageUrl(imageUrl, '');
+        if (!imageUrl) return '';
+        return imageUrl.startsWith('http') ? imageUrl : `${BASE_URL}${imageUrl}`;
     };
 
     // 1. Trạng thái đang tải dữ liệu

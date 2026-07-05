@@ -5,16 +5,15 @@ import { setCookie, getCookie } from '../../utils/cookieHelper';
 
 const LoginView = () => {
   const navigate = useNavigate();
-
-  // Kiểm tra nếu đã đăng nhập thì tự động điều hướng sang trang User
+  // Kiểm tra nếu đã đăng nhập thì tự động điều hướng sang trang sản phẩm
   useEffect(() => {
     const customer = getCookie('customer');
     if (customer) {
-      navigate('/user');
+      navigate('/products');
     }
   }, [navigate]);
 
-  // States cho Form
+  // States cho Form Đăng nhập
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -34,8 +33,11 @@ const LoginView = () => {
       if (response && response.customer) {
         // Bảo mật phiên làm việc bằng Cookie lưu trữ 2 ngày (48 tiếng)
         setCookie('customer', response.customer, 2);
+        if (response.token) {
+          setCookie('token', response.token, 2); // Lưu JWT Token
+        }
         alert("Đăng nhập tài khoản thành công!");
-        navigate('/user');
+        navigate('/products');
         window.location.reload(); // Reload để đồng bộ lại trạng thái header
       } else {
         setErrorMessage("Đăng nhập không thành công, vui lòng kiểm tra lại.");
@@ -106,6 +108,20 @@ const LoginView = () => {
               >
                 <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
               </button>
+            </div>
+            {/* Đặt dưới ô nhập mật khẩu */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
+              <Link
+                to="/forgot-password"
+                style={{
+                  color: 'var(--accent)',
+                  fontWeight: '600',
+                  textDecoration: 'none',
+                  fontSize: '0.85rem'
+                }}
+              >
+                Quên mật khẩu?
+              </Link>
             </div>
           </div>
 

@@ -153,6 +153,7 @@
     color: var(--text-muted, #71717a);
     font-weight: 600;
     font-size: 0.9rem;
+    white-space: nowrap;
 }
 
 .orders-table td {
@@ -160,6 +161,15 @@
     border-bottom: 1px solid var(--border-color, #e4e4e7);
     font-size: 0.95rem;
     color: var(--text-main, #18181b);
+    white-space: nowrap;
+}
+
+.orders-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.orders-table tbody tr:hover {
+    background-color: rgba(99, 102, 241, 0.05);
 }
 
 /* Trạng thái hóa đơn màu sắc */
@@ -255,6 +265,8 @@
 .orders-table-notes {
     font-style: italic;
     font-size: 0.85rem;
+    white-space: normal;
+    min-width: 150px;
 }
 
 /* ==========================================================================
@@ -297,7 +309,8 @@
     padding: 12px 16px;
     border: 1px solid var(--border-color, #334155);
     border-radius: 8px;
-    background: rgba(15, 23, 42, 0.5); /* Đồng bộ nền tối với các ô nhập liệu khác trong dự án */
+    background: rgba(15, 23, 42, 0.5);
+    /* Đồng bộ nền tối với các ô nhập liệu khác trong dự án */
     color: var(--text-main, #f8fafc);
     font-size: 0.95rem;
     transition: all 0.2s ease;
@@ -312,7 +325,8 @@
 
 /* Trạng thái vô hiệu hóa (ví dụ trường Email không được sửa) */
 .user-info-input:disabled {
-    background: rgba(15, 23, 42, 0.8); /* Nền tối hẳn khi bị vô hiệu hóa */
+    background: rgba(15, 23, 42, 0.8);
+    /* Nền tối hẳn khi bị vô hiệu hóa */
     border-color: rgba(51, 65, 85, 0.5);
     color: var(--text-muted);
     cursor: not-allowed;

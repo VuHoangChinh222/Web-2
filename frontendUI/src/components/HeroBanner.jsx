@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import bannerService from '../services/bannerService';
 import '../assets/css/HeroBanner.css';
 
-import { IMAGE_BASE_URL, resolveImageUrl } from '../config';
+import { IMAGE_BASE_URL } from '../config';
 
 const BASE_URL = IMAGE_BASE_URL;
 
@@ -44,7 +44,8 @@ const HeroBanner = ({ tag, title, desc, image, buttonText, onButtonClick }) => {
   }, [banners]);
 
   const getImageUrl = (url) => {
-    return resolveImageUrl(url, '');
+    if (!url) return '';
+    return url.startsWith('http') ? url : `${BASE_URL}${url}`;
   };
 
   const handlePrev = (e) => {

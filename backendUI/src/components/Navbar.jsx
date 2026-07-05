@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Bell, Search, RefreshCw, UserCheck, Shield } from 'lucide-react';
+import { Bell, RefreshCw, UserCheck, Shield } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
 
 const Navbar = ({ activePage, currentUser, onChangeUser }) => {
-  const { users, roles, resolveImageUrl } = useAdmin();
+  const { orders, customers, products, resolveImageUrl } = useAdmin();
   const [showNotification, setShowNotification] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
 
   // Capitalize active page title
   const getPageTitle = () => {
@@ -15,19 +14,63 @@ const Navbar = ({ activePage, currentUser, onChangeUser }) => {
     return activePage.charAt(0).toUpperCase() + activePage.slice(1);
   };
 
-  const mappedUsers = (users || []).map(u => ({
-    id: u.id,
-    fullname: u.fullName || u.username,
-    username: u.username,
-    avatar: u.imageUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
-    roleId: u.role ? u.role.id : u.roleId
-  }));
+  // Build dynamic system notifications from actual backend data
+  const notificationList = [];
 
-  const notificationList = [
-    { id: 1, text: "New pending order #ord-1003 received.", time: "10 mins ago", unread: true },
-    { id: 2, text: "Product 'Aura Soundbar Gen 2' is now out of stock.", time: "2 hours ago", unread: true },
-    { id: 3, text: "Role settings updated for Sales Agent role.", time: "1 day ago", unread: false }
-  ];
+  // 1. Pending/Processing orders alerts
+  const pendingOrders = (orders || [])
+    .filter(o => o.orderStatus === '0' || o.orderStatus === 'Pending')
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 3);
+
+  pendingOrders.forEach(o => {
+    notificationList.push({
+      id: `order-${o.id}`,
+      text: `New pending order #${o.orderCode || `ORD-${o.id}`} from ${o.recipientName || 'customer'}.`,
+      time: "Awaiting approval",
+      unread: true
+    });
+  });
+
+  // 2. Recent customers alerts
+  const recentCustomers = (customers || [])
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 2);
+
+  recentCustomers.forEach(c => {
+    notificationList.push({
+      id: `cust-${c.id}`,
+      text: `New customer registered: ${c.fullName || c.email}.`,
+      time: "New signup",
+      unread: true
+    });
+  });
+
+  // 3. Draft/Inactive products status warnings
+  const draftProducts = (products || [])
+    .filter(p => p.status === 0)
+    .slice(0, 2);
+
+  draftProducts.forEach(p => {
+    notificationList.push({
+      id: `prod-${p.id}`,
+      text: `Product '${p.name}' is currently set as Draft (hidden from store).`,
+      time: "Catalog alert",
+      unread: false
+    });
+  });
+
+  // Fallback if everything is fully processed/active
+  if (notificationList.length === 0) {
+    notificationList.push({
+      id: 'fallback-alert',
+      text: "All commerce systems operational. No new alerts.",
+      time: "Just now",
+      unread: false
+    });
+  }
+
+  const unreadCount = notificationList.filter(n => n.unread).length;
 
   return (
     <nav className="h-16 border-b border-white/5 bg-[#090A10]/45 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-6">
@@ -41,62 +84,13 @@ const Navbar = ({ activePage, currentUser, onChangeUser }) => {
         <h1 className="text-lg font-bold text-white tracking-wide">{getPageTitle()}</h1>
       </div>
 
-      {/* Quick Search & Controls */}
+      {/* Controls */}
       <div className="flex items-center gap-4">
-        {/* Search */}
-        <div className="relative hidden md:block w-64">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input
-            type="text"
-            placeholder="Search records, analytics..."
-            className="w-full pl-10 pr-4 py-1.5 rounded-lg text-xs glass-input"
-          />
-        </div>
 
-        {/* Quick Role Switcher Button */}
-        <div className="relative">
-          <button
-            onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-2 text-xs glass-btn px-3 py-1.5 rounded-lg border border-purple-500/20 text-purple-300 hover:border-purple-500/40"
-          >
-            <Shield size={14} className="text-purple-400" />
-            <span className="hidden sm:inline">Role: {currentUser.role.name}</span>
-            <RefreshCw size={12} className="animate-spin-slow" />
-          </button>
-
-          {showUserMenu && (
-            <div className="absolute right-0 mt-2 w-56 rounded-xl border border-white/10 bg-[#0F1224] p-1.5 shadow-2xl z-50">
-              <div className="px-3 py-2 text-[10px] uppercase font-bold tracking-widest text-slate-500">
-                Switch Active Actor
-              </div>
-              <div className="space-y-0.5">
-                {mappedUsers.map(u => {
-                  const roleObj = roles.find(r => r.id === u.roleId);
-                  return (
-                    <button
-                      key={u.id}
-                      onClick={() => {
-                        onChangeUser({ ...u, role: roleObj });
-                        setShowUserMenu(false);
-                      }}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-xs transition-colors
-                         ${currentUser.id === u.id
-                          ? 'bg-purple-600/25 text-purple-300 border border-purple-500/30'
-                          : 'text-slate-300 hover:bg-white/5 hover:text-white'
-                        }`}
-                    >
-                      <img src={resolveImageUrl(u.avatar)} alt={u.fullname} className="w-6 h-6 rounded-full object-cover" />
-                      <div className="overflow-hidden">
-                        <p className="font-semibold truncate">{u.fullname}</p>
-                        <p className="text-[10px] text-slate-400 truncate">{roleObj?.name}</p>
-                      </div>
-                      {currentUser.id === u.id && <UserCheck size={14} className="ml-auto text-purple-400" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+        {/* Current User Role Badge */}
+        <div className="flex items-center gap-2 text-xs glass-btn px-3 py-1.5 rounded-lg border border-purple-500/20 text-purple-300">
+          <Shield size={14} className="text-purple-400" />
+          <span className="hidden sm:inline">Role: {currentUser.role?.name || 'Staff'}</span>
         </div>
 
         {/* Notifications */}
@@ -106,14 +100,16 @@ const Navbar = ({ activePage, currentUser, onChangeUser }) => {
             className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 relative transition-colors"
           >
             <Bell size={18} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-pink-500 shadow-md shadow-pink-500/50" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-pink-500 shadow-md shadow-pink-500/50" />
+            )}
           </button>
 
           {showNotification && (
             <div className="absolute right-0 mt-2 w-80 rounded-xl border border-white/10 bg-[#0F1224] shadow-2xl p-1 z-50">
               <div className="px-4 py-2.5 border-b border-white/5 flex items-center justify-between">
                 <span className="text-xs font-bold text-white uppercase tracking-wider">System Alerts</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-600/30 text-purple-300">2 New</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-600/30 text-purple-300">{unreadCount} New</span>
               </div>
               <div className="max-h-60 overflow-y-auto glass-scrollbar p-1">
                 {notificationList.map((notif) => (

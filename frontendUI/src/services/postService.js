@@ -8,33 +8,32 @@ import axiosClient from '../axiosClient';
 
 const postService = {
   // 1. API lấy danh sách bài viết mới nhất (Có phân trang)
-  // 1. API lấy danh sách bài viết mới nhất (Có phân trang)
   getLatestPosts: (pageNumber = 1, pageSize = 5, keyword = '') => {
-    const url = `/post?pageNumber=${pageNumber}&pageSize=${pageSize}${keyword ? `&keyword=${encodeURIComponent(keyword)}` : ''}`;
+    const url = `/blogs?page=${pageNumber - 1}&size=${pageSize}${keyword ? `&keyword=${encodeURIComponent(keyword)}` : ''}`;
     return axiosClient.get(url);
   },
 
   // 2. API lấy chi tiết bài viết theo ID
   getPostById: (id) => {
-    const url = `/post/${id}`;
+    const url = `/blogs/${id}`;
     return axiosClient.get(url);
   },
 
   // 3. API lấy tất cả danh sách chuyên mục bài viết (Category)
   getBlogCategories: () => {
-    const url = '/post/categories';
+    const url = '/category-blogs';
     return axiosClient.get(url);
   },
 
   // 4. API lọc danh sách bài viết theo chuyên mục (Có phân trang)
   getPostsByCategory: (categoryId, pageNumber = 1, pageSize = 5) => {
-    const url = `/post/category/${categoryId}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
+    const url = `/blogs/category/${categoryId}?page=${pageNumber - 1}&size=${pageSize}`;
     return axiosClient.get(url);
   },
 
   // 5. API lấy chi tiết bài viết theo slug (SEO)
   getPostBySlug: (slug) => {
-    const url = `/post/slug/${slug}`;
+    const url = `/blogs/slug/${slug}`;
     return axiosClient.get(url);
   }
 };

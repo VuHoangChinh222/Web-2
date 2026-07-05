@@ -3,7 +3,7 @@ import axiosClient from '../axiosClient';
 const productService = {
     // API lấy tất cả sản phẩm có phân trang và bộ lọc nâng cao
     getAllProducts: (pageNumber, pageSize, keyword = '', minPrice = null, maxPrice = null, categoryId = null) => {
-        let url = `/product?pageNumber=${pageNumber}&pageSize=${pageSize}`;
+        let url = `/products?page=${pageNumber > 0 ? pageNumber - 1 : 0}&size=${pageSize}`;
         if (keyword) {
             url += `&keyword=${encodeURIComponent(keyword)}`;
         }
@@ -21,31 +21,31 @@ const productService = {
 
     // API lọc sản phẩm theo mã danh mục có phân trang
     getProductsByCategory: (categoryId, pageNumber, pageSize) => {
-        const url = `/product/category/${categoryId}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
+        const url = `/products/category/${categoryId}?page=${pageNumber > 0 ? pageNumber - 1 : 0}&size=${pageSize}`;
         return axiosClient.get(url);
     },
 
     // API lấy chi tiết sản phẩm theo mã sản phẩm
     getProductById: (productId) => {
-        const url = `/product/${productId}`;
+        const url = `/products/${productId}`;
         return axiosClient.get(url);
     },
 
     // API lấy chi tiết sản phẩm theo slug (SEO)
     getProductBySlug: (slug) => {
-        const url = `/product/slug/${slug}`;
+        const url = `/products/slug/${slug}`;
         return axiosClient.get(url);
     },
 
     // API lấy 5 sản phẩm mới nhất
     getNewestProducts: () => {
-        const url = '/product/newest';
+        const url = '/products/newest';
         return axiosClient.get(url);
     },
 
     // API lấy 5 sản phẩm bán chạy nhất
     getBestSellers: () => {
-        const url = '/product/best-sellers';
+        const url = '/products/best-sellers';
         return axiosClient.get(url);
     }
 };

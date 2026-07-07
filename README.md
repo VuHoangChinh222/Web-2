@@ -298,8 +298,8 @@ erDiagram
   * Sử dụng các micro-animations cho các nút bấm (nhấp nháy chậm, phóng to nhẹ khi di chuột) để mang lại cảm giác sống động, hiện đại và cao cấp.
 * **Vẽ Biểu Đồ Động Bằng Recharts**:
   * Sử dụng thư viện Recharts để kết xuất các biểu đồ vector (SVG) chất lượng cao phản ứng theo kích thước màn hình (Responsive Charts). Giúp hiển thị trực quan biểu đồ xu hướng doanh thu và cơ cấu danh mục bán chạy nhất trên Dashboard.
-* **Tương Tác Kéo Thả Trực Quan (Native HTML5 Drag & Drop)**:
-  * Trang Quản lý Banner áp dụng kỹ thuật Drag & Drop nguyên thủy của trình duyệt (không dùng thư viện ngoài) kết hợp với **Optimistic UI**. Cho phép quản trị viên kéo thả các thẻ hình ảnh để sắp xếp thứ tự hiển thị, giao diện sẽ phản ứng tức thời trước khi gửi yêu cầu đồng bộ hàng loạt (Bulk Update) xuống Backend để đảm bảo dữ liệu hiển thị xuyên suốt.
+* **Tương Tác Kéo Thả Trực Quan (Live Swap Layout Animation)**:
+  * Trang Quản lý Banner được tích hợp thư viện lõi `@dnd-kit` hiện đại. Cho phép quản trị viên kéo thả các thẻ hình ảnh (Grid Layout) để sắp xếp thứ tự hiển thị. Đặc biệt, khi di chuyển một banner tới vị trí của banner khác, các thẻ sẽ lập tức "trượt mượt mà" để hoán đổi chỗ cho nhau (Live Layout Animation), tạo cảm giác tương tác cực kỳ cao cấp ngang ngửa các hệ thống quản trị hàng đầu. Dữ liệu sau đó sẽ được hệ thống đồng bộ ngầm toàn bộ vị trí (position) mới xuống Backend thông qua API Bulk Update.
 
 ---
 

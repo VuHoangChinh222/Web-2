@@ -23,7 +23,7 @@ const mapProductFromBackend = (prod) => {
     categoryId: prod.category ? prod.category.id : '',
     category: prod.category,
     image: prod.thumbnail || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80',
-    status: prod.status === 1 ? 'Active' : 'Draft',
+    status: prod.status === 1 ? 'Active' : (prod.status === 2 ? 'OutOfStock' : 'Draft'),
     createdAt: prod.createdAt
   };
 };
@@ -80,7 +80,7 @@ const Products = () => {
       thumbnail: formData.thumbnail || formData.image || '',
       basePrice: parseFloat(formData.price),
       discountPrice: parseFloat(formData.salePrice || formData.price),
-      status: formData.status === 'Active' ? 1 : 0
+      status: formData.status === 'Active' ? 1 : (formData.status === 'OutOfStock' ? 2 : 0)
     };
 
     try {
@@ -116,6 +116,27 @@ const Products = () => {
       alert("Lỗi khi lưu sản phẩm: " + err.message);
     }
     setIsModalOpen(false);
+  };
+
+  const handleToggleStatus = async (prod) => {
+    const newStatus = prod.status === 'Active' ? 0 : 1;
+    const body = {
+      categoryId: prod.categoryId,
+      name: prod.name,
+      slug: prod.slug || '',
+      shortDescription: prod.shortDescription || '',
+      description: prod.description || '',
+      thumbnail: prod.image || '',
+      basePrice: prod.price,
+      discountPrice: prod.salePrice || prod.price,
+      status: newStatus
+    };
+    try {
+      const updated = await productService.update(prod.id, body);
+      setProducts(prev => prev.map(p => p.id === prod.id ? updated : p));
+    } catch (err) {
+      alert("Lỗi khi thay đổi trạng thái: " + err.message);
+    }
   };
 
   const handleDelete = async (id) => {
@@ -221,6 +242,7 @@ const Products = () => {
               handleOpenView={handleOpenView}
               handleOpenEdit={handleOpenEdit}
               handleDelete={handleDelete}
+              handleToggleStatus={handleToggleStatus}
             />
           ))}
         </div>
@@ -250,6 +272,7 @@ const Products = () => {
                     handleOpenView={handleOpenView}
                     handleOpenEdit={handleOpenEdit}
                     handleDelete={handleDelete}
+                    handleToggleStatus={handleToggleStatus}
                   />
                 ))}
               </tbody>

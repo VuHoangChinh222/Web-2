@@ -70,7 +70,15 @@ const ProductFormModal = ({
   };
 
   const handleMultipleImageUpload = async (e) => {
-    const files = Array.from(e.target.files);
+    let files = Array.from(e.target.files);
+    
+    if (additionalImages.length + files.length > 4) {
+      alert("Bạn chỉ được phép tải lên tối đa 4 hình ảnh phụ (Gallery) cho mỗi sản phẩm.");
+      const allowedSlots = 4 - additionalImages.length;
+      files = files.slice(0, allowedSlots);
+      if (files.length === 0) return;
+    }
+
     if (files.length > 0) {
       try {
         // Upload tất cả file song song để tăng tốc độ
@@ -105,6 +113,11 @@ const ProductFormModal = ({
     e.preventDefault();
     if (!form.name || !form.price || form.stock === '') {
       alert("Please fill in all required fields.");
+      return;
+    }
+    
+    if (!form.image) {
+      alert("Ảnh Thumbnail (đại diện) là bắt buộc để hiển thị bên ngoài trang chủ cửa hàng!");
       return;
     }
 
@@ -238,7 +251,7 @@ const ProductFormModal = ({
 
         {/* Gallery Images (Multiple) */}
         <div className="space-y-1.5 pt-4 border-t border-white/5">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Additional Gallery Images</label>
+          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Additional Gallery Images (Max: 4)</label>
           <div className="flex flex-col gap-2">
             <input
               type="file"
@@ -247,7 +260,7 @@ const ProductFormModal = ({
               onChange={handleMultipleImageUpload}
               className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-blue-600/20 file:text-blue-300 hover:file:bg-blue-600/30 file:cursor-pointer glass-input cursor-pointer"
             />
-            <span className="text-[9px] text-slate-500 block">Bạn có thể chọn (Ctrl/Shift) nhiều hình ảnh cùng lúc.</span>
+            <span className="text-[9px] text-slate-500 block">Bạn có thể chọn (Ctrl/Shift) nhiều hình ảnh cùng lúc (Tối đa 4 ảnh).</span>
           </div>
           
           {/* Gallery Preview */}

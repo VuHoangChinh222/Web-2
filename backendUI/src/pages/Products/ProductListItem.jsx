@@ -1,9 +1,9 @@
 import React from 'react';
 import { Eye, Edit2, Trash2 } from 'lucide-react';
 
-const ProductListItem = ({ prod, categoriesProduct, getStatusBadge, resolveImageUrl, handleOpenView, handleOpenEdit, handleDelete }) => {
+const ProductListItem = ({ prod, categoriesProduct, getStatusBadge, resolveImageUrl, handleOpenView, handleOpenEdit, handleDelete, handleToggleStatus }) => {
   return (
-    <tr className="hover:bg-white/[0.01] transition-colors">
+    <tr className={`transition-all duration-300 hover:bg-white/[0.02] ${prod.status === 'Draft' ? 'opacity-50 grayscale hover:opacity-100 hover:grayscale-0' : ''}`}>
       <td className="py-2.5 pr-2">
         <img src={resolveImageUrl(prod.image)} alt={prod.name} className="w-10 h-7 rounded object-cover border border-white/10" />
       </td>
@@ -25,6 +25,13 @@ const ProductListItem = ({ prod, categoriesProduct, getStatusBadge, resolveImage
       <td className="py-2.5">{getStatusBadge(prod.status)}</td>
       <td className="py-2.5 text-right">
         <div className="flex justify-end gap-1.5">
+          <button
+            onClick={() => handleToggleStatus(prod)}
+            className={`p-1.5 rounded glass-btn ${prod.status === 'Active' ? 'text-emerald-400 hover:border-emerald-500/40' : 'text-slate-400 hover:border-slate-500/40'}`}
+            title={prod.status === 'Active' ? "Disable product" : "Active product"}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+          </button>
           <button
             onClick={() => handleOpenView(prod)}
             className="p-1.5 rounded glass-btn text-emerald-400 hover:border-emerald-500/40"

@@ -300,6 +300,8 @@ erDiagram
   * Sử dụng thư viện Recharts để kết xuất các biểu đồ vector (SVG) chất lượng cao phản ứng theo kích thước màn hình (Responsive Charts). Giúp hiển thị trực quan biểu đồ xu hướng doanh thu và cơ cấu danh mục bán chạy nhất trên Dashboard.
 * **Tương Tác Kéo Thả Trực Quan (Live Swap Layout Animation)**:
   * Trang Quản lý Banner được tích hợp thư viện lõi `@dnd-kit` hiện đại. Cho phép quản trị viên kéo thả các thẻ hình ảnh (Grid Layout) để sắp xếp thứ tự hiển thị. Đặc biệt, khi di chuyển một banner tới vị trí của banner khác, các thẻ sẽ lập tức "trượt mượt mà" để hoán đổi chỗ cho nhau (Live Layout Animation), tạo cảm giác tương tác cực kỳ cao cấp ngang ngửa các hệ thống quản trị hàng đầu. Dữ liệu sau đó sẽ được hệ thống đồng bộ ngầm toàn bộ vị trí (position) mới xuống Backend thông qua API Bulk Update.
+* **Cơ Chế Tự Động Tái Cấp Phát Vị Trí (Auto-sequencing State)**:
+  * Khi người quản trị thêm một banner mới hoặc xóa một banner bất kỳ ở giữa danh sách, Frontend sẽ ngay lập tức tính toán và dồn lại số thứ tự (`position`) của tất cả các banner còn lại để lấp đầy khoảng trống (đảm bảo tính liên tục 1, 2, 3...). Sau đó hệ thống sẽ âm thầm gọi API Bulk Update xuống Backend để bảo toàn tính nhất quán tuyệt đối giữa Cơ sở dữ liệu và Giao diện UI.
 
 ---
 
@@ -362,7 +364,7 @@ Giao diện quản trị Admin được thiết kế theo phong cách Dark Mode 
 4. **Orders (Đơn hàng)**: Theo dõi đơn hàng, cập nhật trạng thái (`Pending` -> `Processing` -> `Shipped` -> `Completed` -> `Cancelled`).
 5. **Customers (Khách hàng)**: Quản lý danh sách khách hàng và trạng thái khóa/mở khóa tài khoản.
 6. **Blogs (Tin tức)**: Biên tập bài viết tin tức và tối ưu hóa SEO URL.
-7. **Banners (Banner Quảng cáo)**: Quản lý hình ảnh quảng cáo thanh trượt trang chủ. Tích hợp tính năng thông minh: **Kéo thả (Drag & Drop)** trực quan để thay đổi thứ tự hiển thị của slider, và các nút thao tác nhanh (Quick Actions) cho phép **bật/tắt (Active/Disable)** trạng thái hiển thị của banner ngay trên thẻ hình ảnh mà không cần mở form chỉnh sửa.
+7. **Banners (Banner Quảng cáo)**: Quản lý hình ảnh quảng cáo thanh trượt trang chủ. Tích hợp tính năng thông minh: **Kéo thả (Drag & Drop)** trực quan để thay đổi thứ tự hiển thị của slider, các nút thao tác nhanh (Quick Actions) cho phép **bật/tắt (Active/Disable)**, và cơ chế **Auto-sequencing** tự động tính toán lại vị trí hiển thị khi thêm/xóa ảnh để tránh các khoảng trống (gaps) dữ liệu.
 8. **Roles & Permissions (Phân quyền & Vai trò)**: Giao diện trực quan tích hợp danh sách 12 Entity hệ thống. Cho phép tích chọn cập nhật quyền và lưu đồng bộ trực tiếp vào cơ sở dữ liệu.
 
 ---

@@ -169,18 +169,22 @@ const Banners = () => {
   };
 
   const handleFormSubmit = async (formData) => {
+    // Tự động gán vị trí cuối cùng cho banner thêm mới
+    const targetPosition = modalType === 'add' ? ((banners || []).length + 1) : formData.position;
+
     const body = {
       title: formData.title,
       subtitle: formData.subtitle,
       imageUrl: formData.image || formData.imageUrl || '',
       linkUrl: formData.link || formData.linkUrl || '',
-      status: formData.active ? 1 : 0
+      status: formData.active ? 1 : 0,
+      position: targetPosition
     };
 
     try {
       if (modalType === 'add') {
         const newBanner = await bannerService.create(body);
-        setBanners(prev => [newBanner, ...prev]);
+        setBanners(prev => [...(prev || []), newBanner]);
       } else {
         const updated = await bannerService.update(formData.id, body);
         setBanners(prev => prev.map(b => b.id === formData.id ? updated : b));
@@ -212,8 +216,29 @@ const Banners = () => {
   const handleDelete = async (id) => {
     if (confirm("Are you sure you want to delete this promotional banner?")) {
       try {
+        // Xóa banner khỏi Database
         await bannerService.delete(id);
-        setBanners(prev => prev.filter(b => b.id !== id));
+
+        // Loại bỏ banner đã xóa khỏi danh sách hiện tại
+        const remainingRawList = [...(banners || [])]
+          .filter(b => b.id !== id)
+          .sort((a, b) => (a.position || 0) - (b.position || 0));
+
+        // Đánh lại số thứ tự (position) từ 1 cho các banner còn lại
+        const updatedRawList = remainingRawList.map((b, i) => ({ ...b, position: i + 1 }));
+
+        // Cập nhật giao diện (Optimistic UI)
+        setBanners(updatedRawList);
+
+        // Gửi ngầm cập nhật vị trí mới xuống Backend để lấp chỗ trống
+        await Promise.all(updatedRawList.map(b =>
+          bannerService.update(b.id, {
+            title: b.title,
+            imageUrl: b.imageUrl,
+            position: b.position,
+            status: b.status
+          })
+        ));
       } catch (err) {
         alert("Lỗi khi xóa Banner: " + err.message);
       }

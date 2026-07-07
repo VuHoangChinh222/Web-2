@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import GlassModal from '../../components/GlassModal';
+import productImageService from '../../services/productImageService';
 
 const ProductFormModal = ({
   isOpen,
@@ -23,6 +24,8 @@ const ProductFormModal = ({
     description: ''
   });
 
+  const [additionalImages, setAdditionalImages] = useState([]);
+
   useEffect(() => {
     if (isOpen) {
       if (modalType === 'add') {
@@ -37,6 +40,7 @@ const ProductFormModal = ({
           status: 'Active',
           description: ''
         });
+        setAdditionalImages([]);
       } else if (productData) {
         setForm({
           ...productData,
@@ -44,6 +48,11 @@ const ProductFormModal = ({
           salePrice: productData.salePrice !== undefined && productData.salePrice !== null ? String(productData.salePrice) : '',
           stock: productData.stock !== undefined && productData.stock !== null ? String(productData.stock) : ''
         });
+        
+        // Tải ảnh phụ đã lưu
+        productImageService.getByProductId(productData.id).then(res => {
+          setAdditionalImages(res);
+        }).catch(err => console.log("Lỗi tải ảnh phụ", err));
       }
     }
   }, [isOpen, modalType, productData, categoriesProduct]);
@@ -55,8 +64,40 @@ const ProductFormModal = ({
         const url = await uploadImage(file);
         setForm(prev => ({ ...prev, image: url }));
       } catch (err) {
-        alert("Lỗi tải lên hình ảnh: " + err.message);
+        alert("Lỗi tải lên hình đại diện: " + err.message);
       }
+    }
+  };
+
+  const handleMultipleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      try {
+        // Upload tất cả file song song để tăng tốc độ
+        const uploadPromises = files.map(file => uploadImage(file));
+        const urls = await Promise.all(uploadPromises);
+        
+        // Tạo object tạm để đẩy lên list, isNew = true để phân biệt ảnh chưa được lưu vào DB
+        const newImages = urls.map(url => ({ id: null, imageUrl: url, isNew: true }));
+        setAdditionalImages(prev => [...prev, ...newImages]);
+      } catch (err) {
+        alert("Lỗi tải lên bộ sưu tập ảnh: " + err.message);
+      }
+    }
+  };
+
+  const handleDeleteAdditionalImage = async (image, index) => {
+    if (image.id) {
+       // Xóa ảnh đã lưu trong DB
+       try {
+          await productImageService.delete(image.id);
+          setAdditionalImages(prev => prev.filter(img => img.id !== image.id));
+       } catch (err) {
+          alert("Lỗi xóa ảnh khỏi hệ thống: " + err.message);
+       }
+    } else {
+       // Chỉ xóa ảnh mới up chưa lưu
+       setAdditionalImages(prev => prev.filter((_, i) => i !== index));
     }
   };
 
@@ -75,7 +116,8 @@ const ProductFormModal = ({
       ...form,
       price: priceNum,
       salePrice: salePriceNum,
-      stock: stockNum
+      stock: stockNum,
+      additionalImages // Trả về danh sách ảnh phụ
     });
   };
 
@@ -175,9 +217,9 @@ const ProductFormModal = ({
           </div>
         </div>
 
-        {/* Image File Input */}
+        {/* Cover Image Input */}
         <div className="space-y-1.5">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Product Image *</label>
+          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Primary Thumbnail *</label>
           <div className="flex items-center gap-4">
             {form.image && (
               <img src={resolveImageUrl(form.image)} alt="Preview" className="w-14 h-14 rounded-lg object-cover border border-purple-500/20" />
@@ -189,9 +231,43 @@ const ProductFormModal = ({
                 onChange={handleImageUpload}
                 className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-purple-600/20 file:text-purple-300 hover:file:bg-purple-600/30 file:cursor-pointer glass-input cursor-pointer"
               />
-              <span className="text-[9px] text-slate-500 block mt-1">Select an image file from your device.</span>
+              <span className="text-[9px] text-slate-500 block mt-1">Ảnh đại diện chính của sản phẩm.</span>
             </div>
           </div>
+        </div>
+
+        {/* Gallery Images (Multiple) */}
+        <div className="space-y-1.5 pt-4 border-t border-white/5">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Additional Gallery Images</label>
+          <div className="flex flex-col gap-2">
+            <input
+              type="file"
+              accept="image/*"
+              multiple // <--- CRITICAL cho phép chọn nhiều hình
+              onChange={handleMultipleImageUpload}
+              className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-blue-600/20 file:text-blue-300 hover:file:bg-blue-600/30 file:cursor-pointer glass-input cursor-pointer"
+            />
+            <span className="text-[9px] text-slate-500 block">Bạn có thể chọn (Ctrl/Shift) nhiều hình ảnh cùng lúc.</span>
+          </div>
+          
+          {/* Gallery Preview */}
+          {additionalImages.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3 p-2 bg-[#0F1224]/30 rounded-lg border border-white/5">
+              {additionalImages.map((img, index) => (
+                <div key={img.id || index} className="relative group w-14 h-14">
+                   <img src={resolveImageUrl(img.imageUrl)} className="w-full h-full object-cover rounded-md border border-white/10" />
+                   <button 
+                     type="button" 
+                     onClick={() => handleDeleteAdditionalImage(img, index)}
+                     className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                     title="Xóa hình này"
+                   >
+                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                   </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Description */}

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Search, Eye, Edit2, Trash2 } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import OrderDetailModal from './OrderDetailModal';
+import OrderListItem from './OrderListItem';
 import orderService from '../../services/orderService';
 
 const mapOrderFromBackend = (order) => {
@@ -61,7 +62,7 @@ const mapProductFromBackend = (prod) => {
     shortDescription: prod.shortDescription || '',
     price: prod.basePrice ? parseFloat(prod.basePrice) : 0,
     salePrice: prod.discountPrice ? parseFloat(prod.discountPrice) : (prod.basePrice ? parseFloat(prod.basePrice) : 0),
-    stock: 120, // default stock count as it is variant-based on DB
+    stock: 120,
     categoryId: prod.category ? prod.category.id : '',
     category: prod.category,
     image: prod.thumbnail || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80',
@@ -82,7 +83,7 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [modalMode, setModalMode] = useState('view'); // 'view' or 'edit'
+  const [modalMode, setModalMode] = useState('view');
 
   const formatDate = (dateVal) => {
     if (!dateVal) return 'N/A';
@@ -94,13 +95,11 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
     return isNaN(d.getTime()) ? 'N/A' : d.toLocaleString();
   };
 
-  // Map collections locally
   const mappedOrders = (orders || []).map(mapOrderFromBackend).filter(Boolean);
   const mappedOrderDetails = (orderDetails || []).map(mapOrderDetailFromBackend).filter(Boolean);
   const mappedCustomers = (customers || []).map(mapCustomerFromBackend).filter(Boolean);
   const mappedProducts = (products || []).map(mapProductFromBackend).filter(Boolean);
 
-  // Filter orders
   const filteredOrders = mappedOrders.filter(o => {
     const cust = mappedCustomers.find(c => c.id === o.customerId);
     const customerName = cust ? cust.fullname.toLowerCase() : '';
@@ -116,21 +115,18 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
     return matchesSearch && matchesStatus;
   });
 
-  // Open Order Detail modal in view mode
   const handleOpenDetail = (id) => {
     setSelectedOrderId(id);
     setModalMode('view');
     setIsOpen(true);
   };
 
-  // Open Order Detail modal in edit mode
   const handleOpenEdit = (id) => {
     setSelectedOrderId(id);
     setModalMode('edit');
     setIsOpen(true);
   };
 
-  // Local helper to update status with formatted payload
   const updateOrderStatus = async (orderId, newStatus) => {
     const orderObj = mappedOrders.find(o => o.id === orderId);
     if (!orderObj) return;
@@ -166,7 +162,6 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
     }
   };
 
-  // Local helper to delete detail item and update order price
   const handleDeleteOrderDetail = async (detailId) => {
     const detail = mappedOrderDetails.find(d => d.id === detailId);
     if (!detail) return;
@@ -207,7 +202,6 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
     }
   };
 
-  // Status Styling Badge
   const getStatusBadge = (status) => {
     switch (status) {
       case '2':
@@ -227,23 +221,19 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
     }
   };
 
-  // Find active order details
   const activeOrder = mappedOrders.find(o => o.id === selectedOrderId);
   const activeCustomer = activeOrder ? mappedCustomers.find(c => c.id === activeOrder.customerId) : null;
   const activeItems = activeOrder ? mappedOrderDetails.filter(d => d.orderId === activeOrder.id) : [];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h2 className="text-xl font-bold text-white tracking-wide">Orders Registry</h2>
         <p className="text-xs text-slate-400">Total orders tracked: {mappedOrders.length} checkouts</p>
       </div>
 
-      {/* Filter Toolbar */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 rounded-xl border border-white/5 bg-[#0F1224]/30 backdrop-blur-md">
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          {/* Search */}
           <div className="relative flex-1 min-w-[200px] md:w-64">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
             <input
@@ -255,7 +245,6 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
             />
           </div>
 
-          {/* Status filter */}
           <div className="flex flex-wrap gap-1 border border-white/5 rounded-lg p-1 bg-white/[0.02]">
             {[
               { value: 'all', label: 'All' },
@@ -279,7 +268,6 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
         </div>
       </div>
 
-      {/* Orders List Table */}
       <GlassCard hoverEffect={false}>
         <div className="overflow-x-auto glass-scrollbar -mx-5 px-5">
           <table className="w-full text-left text-xs border-collapse">
@@ -302,71 +290,24 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
                   </td>
                 </tr>
               ) : (
-                filteredOrders.map(order => {
-                  const cust = mappedCustomers.find(c => c.id === order.customerId);
-                  return (
-                    <tr key={order.id} className="hover:bg-white/[0.01] transition-colors">
-                      <td className="py-3.5 font-mono text-purple-400 font-bold text-sm">
-                        {order.id}
-                      </td>
-                      <td className="py-3.5">
-                        <div className="flex items-center gap-2">
-                          <img src={cust?.avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
-                          <div>
-                            <p className="font-semibold text-white">{cust ? cust.fullname : 'Unknown'}</p>
-                            <p className="text-[10px] text-slate-500">{cust?.phone}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3.5 text-slate-400">
-                        {formatDate(order.orderDate)}
-                      </td>
-                      <td className="py-3.5 font-bold text-white">
-                        ${order.totalAmount.toFixed(2)}
-                      </td>
-                      <td className="py-3.5 text-slate-400 font-medium text-[11px]">
-                        {order.paymentMethod}
-                      </td>
-                      <td className="py-3.5">
-                        {getStatusBadge(order.status)}
-                      </td>
-                      <td className="py-3.5 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => handleOpenDetail(order.id)}
-                            className="glass-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 hover:border-purple-500/40 hover:text-purple-300"
-                          >
-                            <Eye size={12} /> View Details
-                          </button>
-                          <button
-                            onClick={() => handleOpenEdit(order.id)}
-                            className="glass-btn-primary px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 hover:opacity-90"
-                          >
-                            <Edit2 size={12} /> Edit
-                          </button>
-                          <button
-                            onClick={async () => {
-                              if (confirm(`Are you sure you want to delete order "${order.orderCode || order.id}"?`)) {
-                                await handleDeleteOrder(order.id);
-                              }
-                            }}
-                            className="glass-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30"
-                            title="Delete Order"
-                          >
-                            <Trash2 size={12} /> Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
+                filteredOrders.map(order => (
+                  <OrderListItem 
+                    key={order.id}
+                    order={order}
+                    mappedCustomers={mappedCustomers}
+                    formatDate={formatDate}
+                    getStatusBadge={getStatusBadge}
+                    handleOpenDetail={handleOpenDetail}
+                    handleOpenEdit={handleOpenEdit}
+                    handleDeleteOrder={handleDeleteOrder}
+                  />
+                ))
               )}
             </tbody>
           </table>
         </div>
       </GlassCard>
 
-      {/* Order Details Modal */}
       <OrderDetailModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}

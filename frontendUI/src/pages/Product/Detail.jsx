@@ -6,12 +6,13 @@
 
 import { useState, useEffect } from 'react';
 import productService from '../../services/productService';
+import productImageService from '../../services/productImageService';
 import { getCookie } from '../../utils/cookieHelper';
 import IsLoading from '../../components/IsLoading';
 import '../../assets/css/productCSS/ProductDetail.css';
 import { resolveImageUrl } from '../../config';
 
-export const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
 const ProductDetailView = ({ params, addToCart, navigate }) => {
   const productSlug = params.slug;
@@ -22,6 +23,10 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
   const [stockWarning, setStockWarning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Image Gallery state
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [activeImage, setActiveImage] = useState('');
 
   // 1. Tải chi tiết sản phẩm từ API (ưu tiên gọi theo Slug, fallback ID)
   useEffect(() => {
@@ -35,6 +40,16 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
     fetchPromise
       .then(data => {
         setProduct(data);
+        const mainImage = data.image || data.imageUrl || '';
+        setActiveImage(mainImage);
+
+        // Load gallery images
+        productImageService.getByProductId(data.id)
+          .then(images => {
+            setGalleryImages(images);
+          })
+          .catch(e => console.log(e));
+
         setQty(1);
         setStockWarning(false);
         setLoading(false);
@@ -182,8 +197,38 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
       </button>
 
       <div className="detail-grid">
-        <div className="detail-img">
-          <img src={imageSrc} alt={product.name} />
+        <div className="detail-gallery-container">
+          <div className="detail-img">
+            <img
+              src={resolveImageUrl(activeImage, 'src/assets/images/shoe_product_1_1778727884422.png')}
+              alt={product.name}
+              key={activeImage} /* Buộc React re-render để kích hoạt animation CSS */
+              className="fade-in-image"
+            />
+          </div>
+
+          {galleryImages.length > 0 && (
+            <div className="detail-thumbnails">
+              {/* Main thumbnail */}
+              <div
+                onClick={() => setActiveImage(product.image || product.imageUrl)}
+                className={`thumbnail-item ${activeImage === (product.image || product.imageUrl) ? 'active' : ''}`}
+              >
+                <img src={resolveImageUrl(product.image || product.imageUrl)} alt="Thumbnail" />
+              </div>
+
+              {/* Additional thumbnails */}
+              {galleryImages.map(img => (
+                <div
+                  key={img.id}
+                  onClick={() => setActiveImage(img.imageUrl)}
+                  className={`thumbnail-item ${activeImage === img.imageUrl ? 'active' : ''}`}
+                >
+                  <img src={resolveImageUrl(img.imageUrl)} alt="Gallery" />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="detail-info">
           <div className="product-category">{product.categoryName}</div>

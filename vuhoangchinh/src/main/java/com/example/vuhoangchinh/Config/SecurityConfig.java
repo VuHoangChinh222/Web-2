@@ -95,7 +95,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/customers/login", "/api/customers/register").permitAll()
                 
                 // Các API GET công khai phục vụ xem sản phẩm, danh mục, tin tức, banner ở trang Frontend
-                .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/category-products/**", "/api/blogs/**", "/api/category-blogs/**", "/api/banners/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/product-images/**", "/api/category-products/**", "/api/blogs/**", "/api/category-blogs/**", "/api/banners/**").permitAll()
                 
                 // Cho phép khách hàng gửi đơn đặt hàng
                 .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()

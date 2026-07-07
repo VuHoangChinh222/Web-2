@@ -298,6 +298,8 @@ erDiagram
   * Sử dụng các micro-animations cho các nút bấm (nhấp nháy chậm, phóng to nhẹ khi di chuột) để mang lại cảm giác sống động, hiện đại và cao cấp.
 * **Vẽ Biểu Đồ Động Bằng Recharts**:
   * Sử dụng thư viện Recharts để kết xuất các biểu đồ vector (SVG) chất lượng cao phản ứng theo kích thước màn hình (Responsive Charts). Giúp hiển thị trực quan biểu đồ xu hướng doanh thu và cơ cấu danh mục bán chạy nhất trên Dashboard.
+* **Tương Tác Kéo Thả Trực Quan (Native HTML5 Drag & Drop)**:
+  * Trang Quản lý Banner áp dụng kỹ thuật Drag & Drop nguyên thủy của trình duyệt (không dùng thư viện ngoài) kết hợp với **Optimistic UI**. Cho phép quản trị viên kéo thả các thẻ hình ảnh để sắp xếp thứ tự hiển thị, giao diện sẽ phản ứng tức thời trước khi gửi yêu cầu đồng bộ hàng loạt (Bulk Update) xuống Backend để đảm bảo dữ liệu hiển thị xuyên suốt.
 
 ---
 
@@ -360,7 +362,7 @@ Giao diện quản trị Admin được thiết kế theo phong cách Dark Mode 
 4. **Orders (Đơn hàng)**: Theo dõi đơn hàng, cập nhật trạng thái (`Pending` -> `Processing` -> `Shipped` -> `Completed` -> `Cancelled`).
 5. **Customers (Khách hàng)**: Quản lý danh sách khách hàng và trạng thái khóa/mở khóa tài khoản.
 6. **Blogs (Tin tức)**: Biên tập bài viết tin tức và tối ưu hóa SEO URL.
-7. **Banners (Banner Quảng cáo)**: Điều chỉnh hình ảnh quảng cáo thanh trượt trang chủ.
+7. **Banners (Banner Quảng cáo)**: Quản lý hình ảnh quảng cáo thanh trượt trang chủ. Tích hợp tính năng thông minh: **Kéo thả (Drag & Drop)** trực quan để thay đổi thứ tự hiển thị của slider, và các nút thao tác nhanh (Quick Actions) cho phép **bật/tắt (Active/Disable)** trạng thái hiển thị của banner ngay trên thẻ hình ảnh mà không cần mở form chỉnh sửa.
 8. **Roles & Permissions (Phân quyền & Vai trò)**: Giao diện trực quan tích hợp danh sách 12 Entity hệ thống. Cho phép tích chọn cập nhật quyền và lưu đồng bộ trực tiếp vào cơ sở dữ liệu.
 
 ---

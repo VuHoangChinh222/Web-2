@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Layout, Link as LinkIcon } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Plus, Edit2, Trash2, Layout, Link as LinkIcon, GripVertical, Eye, EyeOff } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import BannerFormModal from './BannerFormModal';
@@ -13,7 +13,8 @@ const mapBannerFromBackend = (banner) => {
     subtitle: banner.subtitle || '',
     image: banner.imageUrl || '',
     link: banner.linkUrl || '',
-    active: banner.status === 1
+    active: banner.status === 1,
+    position: banner.position || 0
   };
 };
 
@@ -25,8 +26,12 @@ const Banners = () => {
   const [modalType, setModalType] = useState('add');
   const [currentBanner, setCurrentBanner] = useState(null);
 
-  // Map banners locally
-  const mappedBanners = (banners || []).map(mapBannerFromBackend).filter(Boolean);
+  // Drag and Drop refs
+  const dragItem = useRef();
+  const dragOverItem = useRef();
+
+  // Map banners locally and sort by position
+  const mappedBanners = (banners || []).map(mapBannerFromBackend).filter(Boolean).sort((a, b) => a.position - b.position);
 
   const handleOpenAdd = () => {
     setCurrentBanner(null);
@@ -64,6 +69,75 @@ const Banners = () => {
     setIsModalOpen(false);
   };
 
+  const handleToggleStatus = async (banner) => {
+    try {
+      const newStatus = banner.active ? 0 : 1;
+      const body = {
+        title: banner.title,
+        subtitle: banner.subtitle,
+        imageUrl: banner.image,
+        linkUrl: banner.link,
+        position: banner.position,
+        status: newStatus
+      };
+      const updated = await bannerService.update(banner.id, body);
+      setBanners(prev => prev.map(b => b.id === banner.id ? updated : b));
+    } catch (err) {
+      alert("Lỗi khi cập nhật trạng thái Banner: " + err.message);
+    }
+  };
+
+  const handleDragStart = (e, index) => {
+    dragItem.current = index;
+    e.dataTransfer.effectAllowed = 'move';
+    e.target.style.opacity = '0.5';
+  };
+
+  const handleDragEnter = (e, index) => {
+    e.preventDefault();
+    dragOverItem.current = index;
+  };
+
+  const handleDragEnd = async (e) => {
+    e.target.style.opacity = '1';
+
+    if (dragItem.current === undefined || dragOverItem.current === undefined || dragItem.current === dragOverItem.current) {
+      dragItem.current = undefined;
+      dragOverItem.current = undefined;
+      return;
+    }
+
+    // Xử lý trực tiếp trên mảng gốc (Raw Banners) để tránh mất mát cấu trúc dữ liệu
+    const rawList = [...(banners || [])].sort((a, b) => (a.position || 0) - (b.position || 0));
+    const itemToMove = rawList[dragItem.current];
+    rawList.splice(dragItem.current, 1);
+    rawList.splice(dragOverItem.current, 0, itemToMove);
+
+    // Cập nhật lại vị trí hiển thị (1-indexed)
+    const updatedRawList = rawList.map((b, i) => ({ ...b, position: i + 1 }));
+
+    // Reset refs
+    dragItem.current = undefined;
+    dragOverItem.current = undefined;
+
+    // Cập nhật giao diện mượt mà trước (Optimistic UI) bằng mảng gốc
+    setBanners(updatedRawList);
+
+    try {
+      // Gửi hàng loạt yêu cầu cập nhật vị trí xuống Backend
+      await Promise.all(updatedRawList.map(b =>
+        bannerService.update(b.id, {
+          title: b.title,
+          imageUrl: b.imageUrl,
+          position: b.position,
+          status: b.status
+        })
+      ));
+    } catch (err) {
+      alert("Lỗi khi lưu vị trí mới xuống cơ sở dữ liệu: " + err.message);
+    }
+  };
+
   const handleDelete = async (id) => {
     if (confirm("Are you sure you want to delete this promotional banner?")) {
       try {
@@ -99,57 +173,82 @@ const Banners = () => {
             <p className="text-xs font-semibold">No banners configured yet.</p>
           </div>
         ) : (
-          mappedBanners.map((banner) => (
-            <GlassCard key={banner.id} hoverEffect={true} className="flex flex-col justify-between h-full relative overflow-hidden group">
-              {/* Status Badge */}
-              <div className="absolute top-4 right-4 z-10">
-                {banner.active ? (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Active</span>
-                ) : (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-500/20 text-slate-400 border border-slate-500/30">Disabled</span>
-                )}
-              </div>
+          mappedBanners.map((banner, index) => (
+            <div
+              key={banner.id}
+              draggable
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragEnter={(e) => handleDragEnter(e, index)}
+              onDragEnd={handleDragEnd}
+              onDragOver={(e) => e.preventDefault()}
+              className="cursor-move"
+            >
+              <GlassCard hoverEffect={true} className="flex flex-col justify-between h-full relative overflow-hidden group">
+                {/* Drag Handle */}
+                <div className="absolute top-4 left-4 z-10 p-1 bg-black/40 rounded-md text-white/50 hover:text-white backdrop-blur-sm transition-colors" title="Kéo thả để sắp xếp">
+                  <GripVertical size={16} />
+                </div>
 
-              {/* Banner Details */}
-              <div>
-                {/* Banner Image Preview */}
-                <div className="relative aspect-[21/9] rounded-xl overflow-hidden mb-4 border border-white/5 bg-slate-900">
-                  <img
-                    src={resolveImageUrl(banner.image)}
-                    alt=""
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#06070B]/70 via-transparent to-transparent flex flex-col justify-end p-4">
-                    <h4 className="text-sm font-extrabold text-white leading-tight">{banner.title}</h4>
-                    <p className="text-[10px] text-slate-300 font-medium mt-0.5">{banner.subtitle}</p>
+                {/* Status Badge */}
+                <div className="absolute top-4 right-4 z-10">
+                  {banner.active ? (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]">Active</span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-500/20 text-slate-400 border border-slate-500/30">Disabled</span>
+                  )}
+                </div>
+
+                {/* Banner Details */}
+                <div>
+                  {/* Banner Image Preview */}
+                  <div className="relative aspect-[21/9] rounded-xl overflow-hidden mb-4 border border-white/5 bg-slate-900 mt-2">
+                    <img
+                      src={resolveImageUrl(banner.image)}
+                      alt=""
+                      className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${!banner.active ? 'opacity-50 grayscale' : ''}`}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#06070B]/70 via-transparent to-transparent flex flex-col justify-end p-4">
+                      <h4 className="text-sm font-extrabold text-white leading-tight flex items-center gap-2">
+                        {banner.title}
+                        <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full" title="Thứ tự hiển thị">#{banner.position}</span>
+                      </h4>
+                      <p className="text-[10px] text-slate-300 font-medium mt-0.5">{banner.subtitle}</p>
+                    </div>
+                  </div>
+
+                  {/* Destination link */}
+                  <div className="flex items-center gap-1.5 text-xs text-purple-400 font-medium px-1">
+                    <LinkIcon size={12} className="text-slate-500" />
+                    <span className="truncate max-w-[280px]" title={banner.link}>{banner.link || 'No hyperlink attached'}</span>
                   </div>
                 </div>
 
-                {/* Destination link */}
-                <div className="flex items-center gap-1.5 text-xs text-purple-400 font-medium px-1">
-                  <LinkIcon size={12} className="text-slate-500" />
-                  <span className="truncate max-w-[280px]" title={banner.link}>{banner.link || 'No hyperlink attached'}</span>
+                {/* Actions Footer */}
+                <div className="mt-5 pt-3 border-t border-white/5 flex justify-end gap-1.5">
+                  <button
+                    onClick={() => handleToggleStatus(banner)}
+                    className={`p-2 rounded-lg glass-btn ${banner.active ? 'text-amber-400 hover:border-amber-500/40' : 'text-emerald-400 hover:border-emerald-500/40'}`}
+                    title={banner.active ? "Tạm ngưng (Disable)" : "Kích hoạt (Active)"}
+                  >
+                    {banner.active ? <EyeOff size={13} /> : <Eye size={13} />}
+                  </button>
+                  <button
+                    onClick={() => handleOpenEdit(banner)}
+                    className="p-2 rounded-lg glass-btn text-blue-400 hover:border-blue-500/40"
+                    title="Chỉnh sửa (Edit)"
+                  >
+                    <Edit2 size={13} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(banner.id)}
+                    className="p-2 rounded-lg glass-btn text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30"
+                    title="Xóa banner (Delete)"
+                  >
+                    <Trash2 size={13} />
+                  </button>
                 </div>
-              </div>
-
-              {/* Actions Footer */}
-              <div className="mt-5 pt-3 border-t border-white/5 flex justify-end gap-1.5">
-                <button
-                  onClick={() => handleOpenEdit(banner)}
-                  className="p-2 rounded-lg glass-btn text-blue-400 hover:border-blue-500/40"
-                  title="Edit banner details"
-                >
-                  <Edit2 size={13} />
-                </button>
-                <button
-                  onClick={() => handleDelete(banner.id)}
-                  className="p-2 rounded-lg glass-btn text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30"
-                  title="Delete banner"
-                >
-                  <Trash2 size={13} />
-                </button>
-              </div>
-            </GlassCard>
+              </GlassCard>
+            </div>
           ))
         )}
       </div>

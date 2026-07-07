@@ -7,9 +7,9 @@
 import axiosClient from '../axiosClient';
 
 const bannerService = {
-  // Lấy danh sách banner đang hiển thị (Status = 1)
+  // Lấy danh sách banner đang hiển thị (Status = 1) và sắp xếp theo vị trí
   getActiveBanners: () => {
-    return axiosClient.get('/banners');
+    return axiosClient.get('/banners/active');
   }
 };
 

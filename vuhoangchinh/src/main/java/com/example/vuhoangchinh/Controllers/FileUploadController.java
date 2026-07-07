@@ -39,8 +39,14 @@ public class FileUploadController {
         }
 
         try {
-            // Chuyển chuỗi UPLOAD_DIR thành đối tượng Path để làm việc trong Java NIO
-            Path uploadPath = Paths.get(UPLOAD_DIR);
+            // Xác định thư mục upload dựa trên thư mục đang chạy ứng dụng (workspace root hoặc project root)
+            String userDir = System.getProperty("user.dir");
+            Path uploadPath = Paths.get(userDir, "src", "main", "resources", "static", "image");
+            
+            // Nếu đang chạy từ thư mục gốc của workspace (chứa dự án con vuhoangchinh)
+            if (Files.exists(Paths.get(userDir, "vuhoangchinh"))) {
+                uploadPath = Paths.get(userDir, "vuhoangchinh", "src", "main", "resources", "static", "image");
+            }
             
             // Nếu thư mục lưu trữ static/image chưa tồn tại, tiến hành tạo mới
             if (!Files.exists(uploadPath)) {

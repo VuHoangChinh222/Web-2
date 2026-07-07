@@ -62,9 +62,13 @@ const OrderDetailModal = ({
               <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2.5 flex items-center gap-1.5">
                 <MapPin size={10} className="text-purple-400" /> Shipping Destination
               </h4>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                {activeOrder.shippingAddress}
-              </p>
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-white">{activeOrder.recipientName || 'N/A'}</p>
+                <p className="text-[11px] text-slate-400">Phone: {activeOrder.recipientPhone || 'N/A'}</p>
+                <p className="text-xs text-slate-300 leading-relaxed pt-1">
+                  {activeOrder.shippingAddress}
+                </p>
+              </div>
             </div>
           </div>
 

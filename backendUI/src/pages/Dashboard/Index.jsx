@@ -22,7 +22,9 @@ const mapOrderFromBackend = (order) => {
     paymentMethod: order.paymentMethod || 'COD',
     paymentStatus: order.paymentStatus || 'PENDING',
     status: order.orderStatus,
-    note: order.note || ''
+    note: order.note || '',
+    recipientName: order.recipientName || '',
+    recipientPhone: order.recipientPhone || ''
   };
 };
 

@@ -10,6 +10,10 @@ import lombok.*; // Annotations như @Data, @NoArgsConstructor, @AllArgsConstruc
 import org.hibernate.annotations.CreationTimestamp; // Điền thời gian lúc tạo (Insert)
 import org.hibernate.annotations.UpdateTimestamp; // Điền thời gian lúc sửa (Update)
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
+import java.util.ArrayList;
+
 // Import kiểu số thực chuyên tính toán tiền tệ của Java (có độ chính xác cao hơn Double/Float)
 import java.math.BigDecimal;
 
@@ -28,6 +32,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = "variants")
+@EqualsAndHashCode(exclude = "variants")
 public class Product {
 
     // Khóa chính tự động tăng (Auto-Increment) đại diện cho sản phẩm
@@ -90,4 +96,34 @@ public class Product {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    // Ánh xạ mối quan hệ Một - Nhiều với thực thể ProductVariant để lấy tồn kho
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnore
+    private List<ProductVariant> variants = new ArrayList<>();
+
+    // Trả về số lượng tồn kho (tổng số lượng của các biến thể)
+    public Integer getStockQuantity() {
+        if (variants == null || variants.isEmpty()) {
+            return 100; // Mặc định là 100 giống như tồn kho mặc định ảo trong OrderController để không báo hết hàng
+        }
+        return variants.stream()
+                .mapToInt(ProductVariant::getStockQuantity)
+                .sum();
+    }
+
+    // Trả về giá bán thực tế (ưu tiên discountPrice, fallback basePrice)
+    public BigDecimal getPrice() {
+        return discountPrice != null ? discountPrice : basePrice;
+    }
+
+    // Trả về đường dẫn ảnh đại diện
+    public String getImageUrl() {
+        return thumbnail;
+    }
+
+    // Trả về tên danh mục trực tiếp để frontend dễ hiển thị
+    public String getCategoryName() {
+        return category != null ? category.getName() : "";
+    }
 }

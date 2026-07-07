@@ -31,3 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+# Frontend
+node_modules/
+dist/
+.next/
+
+# Backend / API (.NET, Java, v.v.)
+bin/
+obj/
+target/
+*.log
+.git/

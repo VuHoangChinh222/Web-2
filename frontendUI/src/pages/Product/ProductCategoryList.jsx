@@ -8,9 +8,7 @@ import React, { useState, useEffect } from 'react';
 import categoryProductService from '../../services/categoryProductService';
 import '../../assets/css/productCSS/ProductCategoryList.css';
 
-import { IMAGE_BASE_URL } from '../../config';
-
-const BASE_URL = IMAGE_BASE_URL;
+import { resolveImageUrl } from '../../config';
 
 const ProductCategoryList = ({ activeCategoryId, onSelectCategory, onCategoriesLoaded }) => {
   const [categories, setCategories] = useState([]);
@@ -57,9 +55,7 @@ const ProductCategoryList = ({ activeCategoryId, onSelectCategory, onCategoriesL
         {categories.map(cat => {
           const imageSrc = cat.id === 'all'
             ? 'src/assets/images/hero_basketball_1778727871576.png'
-            : (cat.imageUrl
-              ? (cat.imageUrl.startsWith('http') ? cat.imageUrl : `${BASE_URL}${cat.imageUrl}`)
-              : 'src/assets/images/shoe_product_1_1778727884422.png');
+            : resolveImageUrl(cat.imageUrl, 'src/assets/images/shoe_product_1_1778727884422.png');
 
           return (
             <button

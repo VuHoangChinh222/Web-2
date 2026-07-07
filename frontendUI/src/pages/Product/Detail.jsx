@@ -9,10 +9,7 @@ import productService from '../../services/productService';
 import { getCookie } from '../../utils/cookieHelper';
 import IsLoading from '../../components/IsLoading';
 import '../../assets/css/productCSS/ProductDetail.css';
-import { IMAGE_BASE_URL } from '../../config';
-
-// Cấu hình URL Backend để lấy hình ảnh từ wwwroot/uploads
-const BASE_URL = IMAGE_BASE_URL;
+import { resolveImageUrl } from '../../config';
 
 export const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
@@ -137,6 +134,9 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
         ? ['5', '6', '7']
         : ['S', 'M', 'L', 'XL'];
 
+  // Chuẩn hóa và bảo vệ số lượng tồn kho để tránh lỗi so sánh với undefined/null
+  const stockQuantity = product.stockQuantity !== undefined && product.stockQuantity !== null ? product.stockQuantity : 0;
+
   // Xử lý thêm vào giỏ hàng
   const handleAdd = () => {
     // KHÓA BẢO MẬT: Bắt buộc đăng nhập
@@ -147,12 +147,12 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
       return;
     }
 
-    if (product.stockQuantity <= 0) {
+    if (stockQuantity <= 0) {
       alert("Sản phẩm đã hết hàng!");
       return;
     }
 
-    if (qty > product.stockQuantity) {
+    if (qty > stockQuantity) {
       alert("Số lượng sản phẩm trong kho không đủ!");
       return;
     }
@@ -162,16 +162,18 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image || (product.imageUrl ? (product.imageUrl.startsWith('http') ? product.imageUrl : `${BASE_URL}${product.imageUrl}`) : 'src/assets/images/default_product.png'),
+      image: product.image || resolveImageUrl(product.imageUrl, 'src/assets/images/shoe_product_1_1778727884422.png'),
       categoryName: product.categoryName,
-      stockQuantity: product.stockQuantity
+      stockQuantity: stockQuantity
     };
 
-    addToCart(productForCart, size, qty);
-    navigate('cart');
+    const success = addToCart(productForCart, size, qty);
+    if (success) {
+      navigate('cart');
+    }
   };
 
-  const imageSrc = product.image || (product.imageUrl ? (product.imageUrl.startsWith('http') ? product.imageUrl : `${BASE_URL}${product.imageUrl}`) : 'src/assets/images/default_product.png');
+  const imageSrc = product.image || resolveImageUrl(product.imageUrl, 'src/assets/images/shoe_product_1_1778727884422.png');
 
   return (
     <div className="page-container page-transition">
@@ -189,9 +191,9 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
           <div className="detail-price">{formatPrice(product.price)}</div>
 
           <div className="detail-stock-row">
-            {product.stockQuantity > 0 ? (
+            {stockQuantity > 0 ? (
               <span className="detail-badge-instock">
-                Còn hàng: {product.stockQuantity} sản phẩm
+                Còn hàng: {stockQuantity} sản phẩm
               </span>
             ) : (
               <span className="detail-badge-outofstock">
@@ -207,7 +209,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
                 key={s}
                 className={`size-btn ${size === s ? 'active' : ''}`}
                 onClick={() => setSize(s)}
-                disabled={product.stockQuantity <= 0}
+                disabled={stockQuantity <= 0}
               >
                 {s}
               </button>
@@ -221,8 +223,8 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
               className="form-input qty-input"
               value={qty}
               min="1"
-              max={product.stockQuantity || 1}
-              disabled={product.stockQuantity <= 0}
+              max={stockQuantity || 1}
+              disabled={stockQuantity <= 0}
               onChange={(e) => {
                 const val = parseInt(e.target.value);
                 if (isNaN(val)) {
@@ -230,8 +232,8 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
                   setStockWarning(false);
                   return;
                 }
-                if (val > product.stockQuantity) {
-                  setQty(product.stockQuantity);
+                if (val > stockQuantity) {
+                  setQty(stockQuantity);
                   setStockWarning(true);
                 } else {
                   setQty(Math.max(1, val));
@@ -244,7 +246,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
                 }
               }}
             />
-            {product.stockQuantity > 0 ? (
+            {stockQuantity > 0 ? (
               <button className="btn btn-primary detail-add-cart-btn" onClick={handleAdd}>
                 <i className="fa-solid fa-cart-plus detail-cart-icon"></i> Thêm vào giỏ
               </button>
@@ -256,7 +258,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
           </div>
           {stockWarning && (
             <div className="stock-warning-text" style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: '500' }}>
-              <i className="fa-solid fa-circle-exclamation"></i> Số lượng đặt mua đã được tự động giới hạn ở mức tối đa tồn kho ({product.stockQuantity} sản phẩm).
+              <i className="fa-solid fa-circle-exclamation"></i> Số lượng đặt mua đã được tự động giới hạn ở mức tối đa tồn kho ({stockQuantity} sản phẩm).
             </div>
           )}
         </div>

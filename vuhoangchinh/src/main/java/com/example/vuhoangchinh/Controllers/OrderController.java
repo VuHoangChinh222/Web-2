@@ -281,6 +281,14 @@ public class OrderController {
                     throw new RuntimeException("Không tìm thấy biến thể sản phẩm cho productId " + itemReq.getProductId());
                 }
 
+                // --- Xử lý trừ tồn kho đồng thời (Concurrency / Race Condition) ---
+                // Sử dụng truy vấn trực tiếp vào Database để đảm bảo an toàn tuyệt đối
+                int updatedRows = productVariantRepository.decrementStockAtomic(selectedVariant.getId(), itemReq.getQuantity());
+                if (updatedRows == 0) {
+                    // Cập nhật bằng 0 nghĩa là điều kiện (stock >= quantity) không thỏa mãn. Có thể do khách hàng khác vừa đặt mua trước!
+                    throw new RuntimeException("Rất tiếc! Số lượng hàng tồn kho của sản phẩm '" + selectedVariant.getProduct().getName() + "' (Size " + selectedVariant.getSize() + ") đã thay đổi. Có thể khách hàng khác vừa mua hoặc kho không đủ. Vui lòng kiểm tra lại giỏ hàng.");
+                }
+
                 detail.setProductVariant(selectedVariant);
                 detail.setQuantity(itemReq.getQuantity());
                 
@@ -380,5 +388,14 @@ public class OrderController {
         int randomNum = 10000 + random.nextInt(90000); // Sinh số có 5 chữ số từ 10000 đến 99999
         
         return "ORD-" + dateStr + "-" + randomNum;
+    }
+
+    /**
+     * Tự động bắt mọi ngoại lệ RuntimeException trong Controller này
+     * và chuyển đổi thành phản hồi HTTP 400 (Bad Request) gửi về Frontend kèm thông báo lỗi.
+     */
+    @org.springframework.web.bind.annotation.ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
     }
 }

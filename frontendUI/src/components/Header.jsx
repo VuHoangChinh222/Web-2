@@ -5,9 +5,7 @@ import postService from '../services/postService';
 import { getCookie } from '../utils/cookieHelper';
 import '../assets/css/headerCSS/Header.css';
 
-import { IMAGE_BASE_URL } from '../config';
-
-const BASE_URL = IMAGE_BASE_URL;
+import { resolveImageUrl } from '../config';
 
 const Header = ({ currentView, cartCount }) => {
   const location = useLocation();
@@ -111,8 +109,7 @@ const Header = ({ currentView, cartCount }) => {
   };
 
   const processImage = (imageUrl) => {
-    if (!imageUrl) return '';
-    return imageUrl.startsWith('http') ? imageUrl : `${BASE_URL}${imageUrl}`;
+    return resolveImageUrl(imageUrl);
   };
 
   return (

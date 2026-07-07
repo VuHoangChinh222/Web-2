@@ -265,8 +265,12 @@ erDiagram
   * Quy trình này hoạt động tự động trong tầng nghiệp vụ của Danh mục sản phẩm, Sản phẩm và Bài viết tin tức khi người dùng bỏ trống trường `slug`.
 * **Cơ Chế Tạo Mã Đơn Hàng Tự Động (Auto OrderCode Generator)**:
   * Mã đơn hàng được tự động sinh ngẫu nhiên khi khách hàng tạo đơn nếu để trống. Định dạng mã theo cấu trúc `ORD-ddMMyyyy-XXXXX` (với `XXXXX` là chuỗi 5 ký tự ngẫu nhiên hoặc số tuần tự mã hóa), vừa hiển thị chuyên nghiệp vừa đảm bảo tính duy nhất, tránh trùng lặp mã đơn trong hệ thống.
-* **Quản Lý Trạng Thái Đơn Hàng & Đồng Bộ Kho Hàng (Inventory Sync)**:
-  * Khi đơn hàng chuyển trạng thái (`Completed` hoặc hủy bỏ `Cancelled`), hệ thống tự động tính toán lại và tăng/giảm lượng tồn kho thực tế của các biến thể sản phẩm tương ứng, đảm bảo số liệu sản phẩm trên trang chủ luôn đồng bộ.
+* **Quản Lý Tồn Kho Đồng Thời & Chống Race Condition (Atomic Inventory Sync)**:
+  * **Giải quyết bài toán "Tranh mua sản phẩm"**: Khi khách hàng tiến hành thanh toán, hệ thống áp dụng kỹ thuật truy vấn nguyên tử (Atomic Update) cấp độ cơ sở dữ liệu thông qua `@Modifying @Query` (trừ tồn kho trực tiếp bằng raw SQL trên MySQL). Kỹ thuật này ngăn chặn hoàn toàn hiện tượng Race Condition khi nhiều khách hàng cùng mua một mặt hàng cuối cùng.
+  * Nếu kho hàng vừa bị thay đổi bởi người khác, hệ thống lập tức kích hoạt `Rollback Transaction` để hủy bỏ toàn bộ tiến trình tạo hóa đơn bị lỗi, đồng thời đẩy phản hồi HTTP 400 Bad Request. Giao diện Frontend sẽ khéo léo hiển thị cảnh báo từ chối thanh toán và yêu cầu khách cập nhật lại giỏ hàng thay vì báo lỗi crash hệ thống.
+* **Tối Ưu Trải Nghiệm Mua Sắm (Cart & Buy Now UX)**:
+  * Hệ thống kiểm soát số lượng cực kỳ chặt chẽ bằng cách cộng dồn chéo tất cả các biến thể (kích cỡ, màu sắc) của cùng một sản phẩm đang có trong giỏ, đảm bảo không một ai có thể vượt rào giới hạn tồn kho.
+  * Nút "Mua ngay" (Buy Now) được tối ưu thông minh: tự động gạt bỏ các cảnh báo lỗi gây phiền nhiễu nếu khách hàng đã đạt hạn mức tồn kho, thay vào đó hệ thống tự động chốt số lượng tối đa và đưa khách qua trang thanh toán một cách mượt mà nhất.
 * **Database Auto-Seeder (Tự Động Khởi Tạo Dữ Liệu Chạy Thử)**:
   * Sử dụng lớp `DataSeeder` triển khai giao diện `CommandLineRunner` của Spring Boot. Khi ứng dụng khởi chạy lần đầu tiên trên cơ sở dữ liệu trắng, lớp này tự động kiểm tra và thêm mới toàn bộ:
     * Các vai trò chuẩn hệ thống: `ROLE_ADMIN`, `ROLE_EDITOR`, `ROLE_EMPLOYEE` kèm phân quyền tương ứng.

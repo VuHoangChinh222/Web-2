@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import orderService from '../../services/orderService';
-import { IMAGE_BASE_URL } from '../../config';
+import { resolveImageUrl } from '../../config';
 import '../../assets/css/OrderDetail.css';
 
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
@@ -96,7 +96,7 @@ const OrderDetailModal = ({ orderId, onClose }) => {
                         <tr key={item.id}>
                           <td>
                             <img 
-                              src={item.productImageUrl ? (item.productImageUrl.startsWith('http') ? item.productImageUrl : `${IMAGE_BASE_URL}${item.productImageUrl}`) : ''} 
+                              src={resolveImageUrl(item.productImageUrl)} 
                               alt={item.productName} 
                               className="order-modal-item-img"
                               onError={(e) => {

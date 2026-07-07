@@ -119,6 +119,28 @@ public class ProductController {
     }
 
     /**
+     * API Lấy 5 sản phẩm mới nhất.
+     * GET /api/products/newest
+     */
+    @GetMapping("/newest")
+    public ResponseEntity<?> getNewestProducts() {
+        Pageable pageable = PageRequest.of(0, 5, Sort.by("id").descending());
+        Page<Product> newestProducts = productRepository.findAll(pageable);
+        return ResponseEntity.ok(newestProducts.getContent());
+    }
+
+    /**
+     * API Lấy 5 sản phẩm bán chạy nhất (fallback lấy theo ID tăng dần).
+     * GET /api/products/best-sellers
+     */
+    @GetMapping("/best-sellers")
+    public ResponseEntity<?> getBestSellers() {
+        Pageable pageable = PageRequest.of(0, 5, Sort.by("id").ascending());
+        Page<Product> bestSellers = productRepository.findAll(pageable);
+        return ResponseEntity.ok(bestSellers.getContent());
+    }
+
+    /**
      * API Lấy thông tin chi tiết một sản phẩm thông qua ID.
      * GET /api/products/{id}
      */

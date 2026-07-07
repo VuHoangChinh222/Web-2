@@ -1,6 +1,6 @@
 import { getCookie } from '../utils/cookieHelper';
 import '../assets/css/productCSS/ProductCard.css';
-import { IMAGE_BASE_URL } from '../config';
+import { resolveImageUrl } from '../config';
 
 export const productsData = [
   { id: 1, name: 'Ignite Red X', category: 'Giày bóng rổ', price: 3500000, image: 'src/assets/images/shoe_product_1_1778727884422.png', badge: 'Mới', desc: 'Đôi giày bứt phá mọi giới hạn tốc độ. Thiết kế ôm sát cổ chân, đế đệm bật nảy cực cao, giúp bạn thực hiện những pha lên rổ hoàn hảo.' },
@@ -15,9 +15,9 @@ export const categories = ['Tất cả', 'Giày bóng rổ', 'Áo', 'Quần', 'V
 export const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
 const ProductCard = ({ product, addToCart, navigate }) => {
-  const imageSrc = product.image || (product.imageUrl ? (product.imageUrl.startsWith('http') ? product.imageUrl : `${IMAGE_BASE_URL}${product.imageUrl}`) : 'src/assets/images/default_product.png');
+  const imageSrc = product.image || resolveImageUrl(product.imageUrl, 'src/assets/images/shoe_product_1_1778727884422.png');
   const categoryName = product.categoryName || product.category || '';
-  const stock = product.stockQuantity !== undefined && product.stockQuantity !== null ? product.stockQuantity : 99;
+  const stock = product.stockQuantity !== undefined && product.stockQuantity !== null ? product.stockQuantity : 0;
 
   const handleCardClick = () => {
     navigate('detail', { slug: product.slug || product.id });
@@ -55,8 +55,10 @@ const ProductCard = ({ product, addToCart, navigate }) => {
       return;
     }
 
-    addToCart(productForCart, defaultSize, 1);
-    alert(`Đã thêm sản phẩm "${product.name}" vào giỏ hàng thành công!`);
+    const success = addToCart(productForCart, defaultSize, 1);
+    if (success) {
+      alert(`Đã thêm sản phẩm "${product.name}" vào giỏ hàng thành công!`);
+    }
   };
 
   const handleBuyNow = (e) => {
@@ -91,7 +93,9 @@ const ProductCard = ({ product, addToCart, navigate }) => {
       return;
     }
 
-    addToCart(productForCart, defaultSize, 1);
+    // Suppress alert to prevent user frustration. 
+    // If it fails (stock limit reached), it simply won't add the extra unit, but STILL proceeds to checkout.
+    addToCart(productForCart, defaultSize, 1, true);
     navigate('checkout');
   };
 

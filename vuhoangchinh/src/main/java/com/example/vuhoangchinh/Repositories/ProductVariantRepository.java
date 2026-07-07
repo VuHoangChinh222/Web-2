@@ -13,6 +13,10 @@ import org.springframework.stereotype.Repository; // Đánh dấu đây là mộ
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 /**
  * @Repository: Khai báo interface này là một Repository kết nối cơ sở dữ liệu.
  * Spring Data JPA sẽ tự động tạo lớp triển khai (implementation) chạy trên môi trường MySQL.
@@ -43,4 +47,15 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
      * @return Một Optional chứa biến thể nếu tồn tại, hoặc rỗng nếu không tìm thấy
      */
     Optional<ProductVariant> findBySku(String sku);
+
+    /**
+     * Truy vấn trừ tồn kho ở cấp độ cơ sở dữ liệu (Atomic Update).
+     * Ngăn chặn hoàn toàn Race Condition khi nhiều khách hàng cùng tranh mua một mặt hàng cuối cùng.
+     * @param variantId ID của biến thể
+     * @param quantity Số lượng cần trừ
+     * @return Số bản ghi được cập nhật thành công (sẽ là 0 nếu tồn kho hiện tại không đủ)
+     */
+    @Modifying
+    @Query("UPDATE ProductVariant v SET v.stockQuantity = v.stockQuantity - :quantity WHERE v.id = :variantId AND v.stockQuantity >= :quantity")
+    int decrementStockAtomic(@Param("variantId") Long variantId, @Param("quantity") Integer quantity);
 }

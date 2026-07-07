@@ -1,0 +1,24 @@
+# Bỏ qua toàn bộ node_modules của cả 2 phân hệ UI
+**/node_modules/
+backendUI/node_modules/
+frontendUI/node_modules/
+
+# Bỏ qua thư mục build của React/Vite
+**/dist/
+backendUI/dist/
+frontendUI/dist/
+
+# Bỏ qua thư mục build và file tạm của Spring Boot (Java)
+**/target/
+vuhoangchinh/target/
+**/.mvn/
+vuhoangchinh/.mvn/
+vuhoangchinh/mvnw
+vuhoangchinh/mvnw.cmd
+
+# Bỏ qua các file cấu hình môi trường cục bộ và log
+**.log
+**.env
+.metadata/
+.settings/
+.bin/

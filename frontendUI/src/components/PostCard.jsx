@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import { IMAGE_BASE_URL } from '../config';
+import { resolveImageUrl } from '../config';
 
 const PostCard = ({ post }) => {
-    const imageSrc = post.image || (post.imageUrl ? (post.imageUrl.startsWith('http') ? post.imageUrl : `${IMAGE_BASE_URL}${post.imageUrl}`) : 'src/assets/images/default_post.png');
+    const imageSrc = post.image || resolveImageUrl(post.imageUrl, 'src/assets/images/default_post.png');
 
     return (
         <Link

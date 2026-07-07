@@ -11,9 +11,7 @@ import productService from '../../services/productService';
 import ProductCategoryList from './ProductCategoryList';
 import IsLoading from '../../components/IsLoading';
 import '../../assets/css/productCSS/Product.css';
-import { IMAGE_BASE_URL } from '../../config';
-
-const BASE_URL = IMAGE_BASE_URL;
+import { resolveImageUrl } from '../../config';
 
 const ProductView = ({ params, navigate, addToCart }) => {
     // --- Khai báo các State quản lý dữ liệu ---
@@ -313,9 +311,7 @@ const ProductView = ({ params, navigate, addToCart }) => {
                                     {products.map(product => {
                                         const processedProduct = {
                                             ...product,
-                                            image: product.imageUrl
-                                                ? (product.imageUrl.startsWith('http') ? product.imageUrl : `${BASE_URL}${product.imageUrl}`)
-                                                : 'src/assets/images/default_product.png'
+                                            image: resolveImageUrl(product.imageUrl, 'src/assets/images/shoe_product_1_1778727884422.png')
                                         };
 
                                         return (

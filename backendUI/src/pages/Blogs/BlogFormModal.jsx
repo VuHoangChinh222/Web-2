@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { User as UserIcon } from 'lucide-react';
 import GlassModal from '../../components/GlassModal';
 
 const BlogFormModal = ({
@@ -21,8 +22,10 @@ const BlogFormModal = ({
     categoryId: '',
     authorId: '',
     createdDate: '',
-    status: 'Published'
+    status: 1
   });
+
+  const isViewMode = modalType === 'view';
 
   useEffect(() => {
     if (isOpen) {
@@ -36,7 +39,7 @@ const BlogFormModal = ({
           categoryId: categoriesBlog[0]?.id || '',
           authorId: users[0]?.id || '',
           createdDate: new Date().toISOString(),
-          status: 'Published'
+          status: 1
         });
       } else if (blogData) {
         setForm(blogData);
@@ -69,114 +72,171 @@ const BlogFormModal = ({
     <GlassModal
       isOpen={isOpen}
       onClose={onClose}
-      title={modalType === 'add' ? 'Write New Blog Post' : 'Edit Post Details'}
+      title={modalType === 'add' ? 'Write New Blog Post' : (modalType === 'edit' ? 'Edit Post Details' : 'View Post Details')}
       maxWidth="max-w-2xl"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        
-        {/* Title */}
-        <div className="space-y-1">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Post Title *</label>
-          <input 
-            type="text" 
-            required
-            placeholder="e.g. Modern Fashion Trends of 2026"
-            value={form.title}
-            onChange={(e) => setForm({...form, title: e.target.value})}
-            className="w-full px-3 py-2 rounded-lg text-xs glass-input"
-          />
-        </div>
+      {isViewMode ? (
+        <div className="space-y-6 text-slate-300">
+          <div className="relative aspect-[21/9] w-full rounded-xl overflow-hidden border border-white/10 bg-slate-900 shadow-2xl">
+            {form.image ? (
+              <img src={resolveImageUrl(form.image)} alt="Cover" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-slate-500">No Cover Image</div>
+            )}
+            <div className="absolute top-4 left-4 flex gap-2">
+              <span className="px-3 py-1 rounded-md text-xs font-bold bg-purple-500/80 text-white shadow-lg backdrop-blur-md border border-purple-400/30">
+                {categoriesBlog.find(c => c.id === parseInt(form.categoryId) || String(c.id) === String(form.categoryId))?.name || 'Category'}
+              </span>
+              <span className={`px-3 py-1 rounded-md text-xs font-bold shadow-lg backdrop-blur-md border ${form.status === 1 ? 'bg-emerald-500/80 text-white border-emerald-400/30' : 'bg-zinc-800/80 text-zinc-400 border-zinc-600/50'}`}>
+                {form.status === 1 ? 'Active' : 'Hidden'}
+              </span>
+            </div>
+          </div>
+          
+          <div>
+            <h1 className="text-2xl font-bold text-white mb-2 leading-tight">{form.title}</h1>
+            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400">
+              <span className="flex items-center gap-1.5">
+                <span className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 border border-purple-500/30">
+                  <UserIcon size={12} />
+                </span>
+                By <strong className="text-slate-200">{users.find(u => u.id === parseInt(form.authorId) || String(u.id) === String(form.authorId))?.fullname || 'Unknown'}</strong>
+              </span>
+              <span>•</span>
+              <span>Slug: <span className="font-mono text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20">{form.slug}</span></span>
+            </div>
+          </div>
 
-        {/* Slug & category */}
-        <div className="grid grid-cols-2 gap-4">
+          <div className="p-5 rounded-xl border border-white/5 bg-[#0F1224]/50 shadow-inner min-h-[200px] text-sm leading-relaxed whitespace-pre-wrap text-slate-300">
+            {form.content || <span className="text-slate-600 italic">No content available...</span>}
+          </div>
+
+          <div className="flex justify-end pt-4 border-t border-white/5">
+            <button type="button" onClick={onClose} className="glass-btn px-6 py-2 rounded-xl text-sm font-semibold hover:bg-white/10">
+              Close Preview
+            </button>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          
+          {/* Title */}
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Slug (URL segment) *</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Post Title *</label>
             <input 
               type="text" 
               required
-              placeholder="e.g. modern-fashion-trends-2026"
-              value={form.slug}
-              onChange={(e) => setForm({...form, slug: e.target.value})}
+              placeholder="e.g. Modern Fashion Trends of 2026"
+              value={form.title}
+              onChange={(e) => setForm({...form, title: e.target.value})}
               className="w-full px-3 py-2 rounded-lg text-xs glass-input"
             />
           </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Category Taxonomy *</label>
-            <select
-              value={form.categoryId}
-              onChange={(e) => setForm({...form, categoryId: e.target.value})}
-              className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
-            >
-              {categoriesBlog.map(cat => (
-                <option key={cat.id} value={cat.id} className="bg-[#0F1224] text-white">{cat.name}</option>
-              ))}
-            </select>
-          </div>
-        </div>
 
-        {/* Author/User Selection */}
-        <div className="space-y-1">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Assign Author (User)</label>
-          <select
-            value={form.authorId}
-            onChange={(e) => setForm({...form, authorId: e.target.value})}
-            className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
-          >
-            {users.map(usr => (
-              <option key={usr.id} value={usr.id} className="bg-[#0F1224] text-white">{usr.fullname} ({usr.username})</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Image File Input */}
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Post Cover Image *</label>
-          <div className="flex items-center gap-4">
-            {form.image && (
-              <img src={resolveImageUrl(form.image)} alt="Preview" className="w-14 h-10 rounded object-cover border border-purple-500/20" />
-            )}
-            <div className="flex-1">
+          {/* Slug & category */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Slug (URL segment) *</label>
               <input 
-                type="file" 
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-purple-600/20 file:text-purple-300 hover:file:bg-purple-600/30 file:cursor-pointer glass-input cursor-pointer"
+                type="text" 
+                required
+                placeholder="e.g. modern-fashion-trends-2026"
+                value={form.slug}
+                onChange={(e) => setForm({...form, slug: e.target.value})}
+                className="w-full px-3 py-2 rounded-lg text-xs glass-input"
               />
-              <span className="text-[9px] text-slate-500 block mt-1">Select an image banner from your device.</span>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Category Taxonomy *</label>
+              <select
+                value={form.categoryId}
+                onChange={(e) => setForm({...form, categoryId: e.target.value})}
+                className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
+              >
+                {categoriesBlog.map(cat => (
+                  <option key={cat.id} value={cat.id} className="bg-[#0F1224] text-white">{cat.name}</option>
+                ))}
+              </select>
             </div>
           </div>
-        </div>
 
-        {/* Post Content */}
-        <div className="space-y-1">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Article Content *</label>
-          <textarea 
-            rows="6"
-            required
-            placeholder="Write Markdown or standard textual content..."
-            value={form.content}
-            onChange={(e) => setForm({...form, content: e.target.value})}
-            className="w-full px-3 py-2 rounded-lg text-xs glass-input"
-          />
-        </div>
+          {/* Author & Status */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Assign Author (User)</label>
+              <select
+                value={form.authorId}
+                onChange={(e) => setForm({...form, authorId: e.target.value})}
+                className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
+              >
+                {users.map(usr => (
+                  <option key={usr.id} value={usr.id} className="bg-[#0F1224] text-white">{usr.fullname} ({usr.username})</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Post Status *</label>
+              <select
+                value={form.status}
+                onChange={(e) => setForm({...form, status: e.target.value})}
+                className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
+              >
+                <option value="1" className="bg-[#0F1224] text-white">Active (Published)</option>
+                <option value="0" className="bg-[#0F1224] text-white">Hidden (Draft)</option>
+              </select>
+            </div>
+          </div>
 
-        {/* Submit Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
-          <button 
-            type="button" 
-            onClick={onClose}
-            className="glass-btn px-4 py-2 rounded-xl text-xs font-semibold"
-          >
-            Cancel
-          </button>
-          <button 
-            type="submit" 
-            className="glass-btn-primary px-5 py-2 rounded-xl text-xs font-semibold"
-          >
-            Publish Post
-          </button>
-        </div>
-      </form>
+          {/* Image File Input */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Post Cover Image *</label>
+            <div className="flex items-center gap-4">
+              {form.image && (
+                <img src={resolveImageUrl(form.image)} alt="Preview" className="w-14 h-10 rounded object-cover border border-purple-500/20" />
+              )}
+              <div className="flex-1">
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-purple-600/20 file:text-purple-300 hover:file:bg-purple-600/30 file:cursor-pointer cursor-pointer glass-input"
+                />
+                <span className="text-[9px] text-slate-500 block mt-1">Select an image banner from your device.</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Post Content */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Article Content *</label>
+            <textarea 
+              rows="6"
+              required
+              placeholder="Write Markdown or standard textual content..."
+              value={form.content}
+              onChange={(e) => setForm({...form, content: e.target.value})}
+              className="w-full px-3 py-2 rounded-lg text-xs glass-input"
+            />
+          </div>
+
+          {/* Submit Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+            <button 
+              type="button" 
+              onClick={onClose}
+              className="glass-btn px-4 py-2 rounded-xl text-xs font-semibold"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              className="glass-btn-primary px-5 py-2 rounded-xl text-xs font-semibold"
+            >
+              Publish Post
+            </button>
+          </div>
+        </form>
+      )}
     </GlassModal>
   );
 };

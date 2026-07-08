@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Search, UserPlus, ShoppingBag } from 'lucide-react';
+import { Search, UserPlus, ShoppingBag, LayoutGrid, List } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 import CustomerFormModal from './CustomerFormModal';
 import RelatedOrdersModal from './RelatedOrdersModal';
 import CustomerGridCard from './CustomerGridCard';
+import CustomerListItem from './CustomerListItem';
 import customerService from '../../services/customerService';
 import userAddressService from '../../services/userAddressService';
 import orderService from '../../services/orderService';
@@ -22,6 +23,7 @@ const Customers = () => {
 
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState('grid');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('add');
   const [currentCustomer, setCurrentCustomer] = useState(null);
@@ -198,12 +200,22 @@ const Customers = () => {
           <h2 className="text-xl font-bold text-white tracking-wide">Customers Directory</h2>
           <p className="text-xs text-slate-400">Total customers: {mappedCustomers.length} subscribers</p>
         </div>
-        <button
-          onClick={handleOpenAdd}
-          className="glass-btn-primary px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 self-end sm:self-auto"
-        >
-          <UserPlus size={16} /> Add Customer
-        </button>
+        <div className="flex items-center gap-3 self-end sm:self-auto">
+          <div className="flex bg-[#0F1224]/50 border border-white/10 rounded-lg p-0.5">
+            <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-purple-500/20 text-purple-400' : 'text-slate-400 hover:text-slate-200'}`}>
+              <LayoutGrid size={16} />
+            </button>
+            <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-purple-500/20 text-purple-400' : 'text-slate-400 hover:text-slate-200'}`}>
+              <List size={16} />
+            </button>
+          </div>
+          <button
+            onClick={handleOpenAdd}
+            className="glass-btn-primary px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5"
+          >
+            <UserPlus size={16} /> Add Customer
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 rounded-xl border border-white/5 bg-[#0F1224]/30 backdrop-blur-md">
@@ -219,24 +231,62 @@ const Customers = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCustomers.length === 0 ? (
-          <div className="col-span-full h-40 flex flex-col items-center justify-center text-slate-500 border border-white/5 rounded-2xl bg-[#0F1224]/10">
-            <ShoppingBag size={24} className="text-slate-600 mb-2" />
-            <p className="text-xs font-semibold">No customers matched.</p>
-          </div>
-        ) : (
-          filteredCustomers.map(cust => (
-            <CustomerGridCard
-              key={cust.id}
-              cust={cust}
-              resolveImageUrl={resolveImageUrl}
-              handleOpenEdit={handleOpenEdit}
-              handleDelete={handleDelete}
-            />
-          ))
-        )}
-      </div>
+      {viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredCustomers.length === 0 ? (
+            <div className="col-span-full h-40 flex flex-col items-center justify-center text-slate-500 border border-white/5 rounded-2xl bg-[#0F1224]/10">
+              <ShoppingBag size={24} className="text-slate-600 mb-2" />
+              <p className="text-xs font-semibold">No customers matched.</p>
+            </div>
+          ) : (
+            filteredCustomers.map(cust => (
+              <CustomerGridCard
+                key={cust.id}
+                cust={cust}
+                resolveImageUrl={resolveImageUrl}
+                handleOpenEdit={handleOpenEdit}
+                handleDelete={handleDelete}
+              />
+            ))
+          )}
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-xl border border-white/10 bg-[#0F1224]/50 backdrop-blur-md">
+          <table className="w-full text-left border-collapse min-w-[800px]">
+            <thead>
+              <tr className="bg-white/5 border-b border-white/10 text-[10px] uppercase tracking-wider text-slate-400">
+                <th className="p-3 font-semibold w-14">Avatar</th>
+                <th className="p-3 font-semibold">Name & ID</th>
+                <th className="p-3 font-semibold w-40">Contact</th>
+                <th className="p-3 font-semibold w-48">Address</th>
+                <th className="p-3 font-semibold w-32">Orders & Spent</th>
+                <th className="p-3 font-semibold w-24">Status</th>
+                <th className="p-3 font-semibold text-right w-20">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredCustomers.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="p-8 text-center text-slate-500">
+                    <ShoppingBag size={24} className="mx-auto mb-2 opacity-50" />
+                    No customers matched.
+                  </td>
+                </tr>
+              ) : (
+                filteredCustomers.map(cust => (
+                  <CustomerListItem
+                    key={cust.id}
+                    cust={cust}
+                    resolveImageUrl={resolveImageUrl}
+                    handleOpenEdit={handleOpenEdit}
+                    handleDelete={handleDelete}
+                  />
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <CustomerFormModal
         isOpen={isModalOpen}

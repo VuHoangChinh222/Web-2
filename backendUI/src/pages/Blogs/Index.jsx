@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Plus, Search, BookOpen } from 'lucide-react';
+import { Plus, Search, BookOpen, LayoutGrid, List } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 import BlogFormModal from './BlogFormModal';
 import BlogGridCard from './BlogGridCard';
+import BlogListItem from './BlogListItem';
 import blogService from '../../services/blogService';
 
 const mapBlogFromBackend = (blog) => {
@@ -15,7 +16,8 @@ const mapBlogFromBackend = (blog) => {
     image: blog.thumbnail || blog.imageUrl || '',
     categoryId: blog.categoryBlog ? blog.categoryBlog.id : (blog.category ? blog.category.id : ''),
     authorId: blog.author ? blog.author.id : (blog.userId || ''),
-    createdDate: blog.createdAt
+    createdDate: blog.createdAt,
+    status: blog.status !== undefined ? blog.status : 1
   };
 };
 
@@ -35,6 +37,7 @@ const Blogs = () => {
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [viewMode, setViewMode] = useState('grid');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('add');
@@ -69,6 +72,12 @@ const Blogs = () => {
     setIsModalOpen(true);
   };
 
+  const handleOpenView = (blog) => {
+    setCurrentBlog(blog);
+    setModalType('view');
+    setIsModalOpen(true);
+  };
+
   // Submit Operations
   const handleFormSubmit = async (formData) => {
     const imgVal = formData.image || formData.thumbnail || '';
@@ -79,7 +88,8 @@ const Blogs = () => {
       slug: formData.slug || '',
       content: formData.content,
       thumbnail: imgVal,
-      imageUrl: imgVal
+      imageUrl: imgVal,
+      status: parseInt(formData.status)
     };
 
     try {
@@ -107,6 +117,26 @@ const Blogs = () => {
     }
   };
 
+  const handleToggleStatus = async (blog) => {
+    const newStatus = blog.status === 1 ? 0 : 1;
+    const body = {
+      categoryId: blog.categoryId,
+      authorId: blog.authorId,
+      title: blog.title,
+      slug: blog.slug,
+      content: blog.content,
+      thumbnail: blog.image,
+      imageUrl: blog.image,
+      status: newStatus
+    };
+    try {
+      const updated = await blogService.update(blog.id, body);
+      setBlogs(prev => prev.map(b => b.id === blog.id ? updated : b));
+    } catch (err) {
+      alert("Lỗi khi cập nhật trạng thái: " + err.message);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header and Add Action */}
@@ -115,12 +145,22 @@ const Blogs = () => {
           <h2 className="text-xl font-bold text-white tracking-wide">Blogs & Articles</h2>
           <p className="text-xs text-slate-400">Total posts: {mappedBlogs.length} articles published</p>
         </div>
-        <button
-          onClick={handleOpenAdd}
-          className="glass-btn-primary px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 self-end sm:self-auto"
-        >
-          <Plus size={16} /> Write Post
-        </button>
+        <div className="flex items-center gap-3 self-end sm:self-auto">
+          <div className="flex bg-[#0F1224]/50 border border-white/10 rounded-lg p-0.5">
+            <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-purple-500/20 text-purple-400' : 'text-slate-400 hover:text-slate-200'}`}>
+              <LayoutGrid size={16} />
+            </button>
+            <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-purple-500/20 text-purple-400' : 'text-slate-400 hover:text-slate-200'}`}>
+              <List size={16} />
+            </button>
+          </div>
+          <button
+            onClick={handleOpenAdd}
+            className="glass-btn-primary px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5"
+          >
+            <Plus size={16} /> Write Post
+          </button>
+        </div>
       </div>
 
       {/* Filter toolbar */}
@@ -155,32 +195,80 @@ const Blogs = () => {
         </div>
       </div>
 
-      {/* Blogs Catalog Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredBlogs.length === 0 ? (
-          <div className="col-span-full h-40 flex flex-col items-center justify-center text-slate-500 border border-white/5 rounded-2xl bg-[#0F1224]/10">
-            <BookOpen size={24} className="text-slate-600 mb-2" />
-            <p className="text-xs font-semibold">No articles found.</p>
-          </div>
-        ) : (
-          filteredBlogs.map(blog => {
-            const author = mappedUsers.find(u => u.id === blog.authorId);
-            const category = categoriesBlog.find(c => c.id === blog.categoryId);
-            return (
-              <BlogGridCard 
-                key={blog.id}
-                blog={blog}
-                author={author}
-                category={category}
-                formatDate={formatDate}
-                resolveImageUrl={resolveImageUrl}
-                handleOpenEdit={handleOpenEdit}
-                handleDelete={handleDelete}
-              />
-            );
-          })
-        )}
-      </div>
+      {/* Blogs Catalog Grid / List */}
+      {viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {filteredBlogs.length === 0 ? (
+            <div className="col-span-full h-40 flex flex-col items-center justify-center text-slate-500 border border-white/5 rounded-2xl bg-[#0F1224]/10">
+              <BookOpen size={24} className="text-slate-600 mb-2" />
+              <p className="text-xs font-semibold">No articles found.</p>
+            </div>
+          ) : (
+            filteredBlogs.map(blog => {
+              const author = mappedUsers.find(u => u.id === blog.authorId);
+              const category = categoriesBlog.find(c => c.id === blog.categoryId);
+              return (
+                <BlogGridCard 
+                  key={blog.id}
+                  blog={blog}
+                  author={author}
+                  category={category}
+                  formatDate={formatDate}
+                  resolveImageUrl={resolveImageUrl}
+                  handleOpenView={handleOpenView}
+                  handleOpenEdit={handleOpenEdit}
+                  handleDelete={handleDelete}
+                  handleToggleStatus={handleToggleStatus}
+                />
+              );
+            })
+          )}
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-xl border border-white/10 bg-[#0F1224]/50 backdrop-blur-md">
+          <table className="w-full text-left border-collapse min-w-[800px]">
+            <thead>
+              <tr className="bg-white/5 border-b border-white/10 text-[10px] uppercase tracking-wider text-slate-400">
+                <th className="p-3 font-semibold w-16">Image</th>
+                <th className="p-3 font-semibold">Title & Excerpt</th>
+                <th className="p-3 font-semibold w-32">Category</th>
+                <th className="p-3 font-semibold w-32">Author & Date</th>
+                <th className="p-3 font-semibold w-24">Status</th>
+                <th className="p-3 font-semibold text-right w-24">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredBlogs.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-slate-500">
+                    <BookOpen size={24} className="mx-auto mb-2 opacity-50" />
+                    No articles found.
+                  </td>
+                </tr>
+              ) : (
+                filteredBlogs.map(blog => {
+                  const author = mappedUsers.find(u => u.id === blog.authorId);
+                  const category = categoriesBlog.find(c => c.id === blog.categoryId);
+                  return (
+                    <BlogListItem 
+                      key={blog.id}
+                      blog={blog}
+                      author={author}
+                      category={category}
+                      formatDate={formatDate}
+                      resolveImageUrl={resolveImageUrl}
+                      handleOpenView={handleOpenView}
+                      handleOpenEdit={handleOpenEdit}
+                      handleDelete={handleDelete}
+                      handleToggleStatus={handleToggleStatus}
+                    />
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Add / Edit Article Modal */}
       <BlogFormModal

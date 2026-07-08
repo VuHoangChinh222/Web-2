@@ -302,6 +302,10 @@ erDiagram
   * Trang Quản lý Banner được tích hợp thư viện lõi `@dnd-kit` hiện đại. Cho phép quản trị viên kéo thả các thẻ hình ảnh (Grid Layout) để sắp xếp thứ tự hiển thị. Đặc biệt, khi di chuyển một banner tới vị trí của banner khác, các thẻ sẽ lập tức "trượt mượt mà" để hoán đổi chỗ cho nhau (Live Layout Animation), tạo cảm giác tương tác cực kỳ cao cấp ngang ngửa các hệ thống quản trị hàng đầu. Dữ liệu sau đó sẽ được hệ thống đồng bộ ngầm toàn bộ vị trí (position) mới xuống Backend thông qua API Bulk Update.
 * **Cơ Chế Tự Động Tái Cấp Phát Vị Trí (Auto-sequencing State)**:
   * Khi người quản trị thêm một banner mới hoặc xóa một banner bất kỳ ở giữa danh sách, Frontend sẽ ngay lập tức tính toán và dồn lại số thứ tự (`position`) của tất cả các banner còn lại để lấp đầy khoảng trống (đảm bảo tính liên tục 1, 2, 3...). Sau đó hệ thống sẽ âm thầm gọi API Bulk Update xuống Backend để bảo toàn tính nhất quán tuyệt đối giữa Cơ sở dữ liệu và Giao diện UI.
+* **Hệ Thống Thư Viện Ảnh (Multi-Image Gallery) & Hiệu Ứng Nâng Cao**:
+  * Cho phép người quản trị upload 1 ảnh đại diện và tối đa 4 ảnh phụ trợ (gallery) cho mỗi sản phẩm.
+  * Tích hợp cơ chế lấy ảnh qua API bất đồng bộ và tự động hiển thị dải Thumbnail trên giao diện khách hàng.
+  * Ứng dụng CSS nâng cao: tự động Scale, Hover, Fade-in mượt mà khi khách hàng chuyển đổi ảnh, cùng thanh cuộn Custom Scrollbar chuyên nghiệp mô phỏng các nền tảng thương mại điện tử lớn.
 
 ---
 

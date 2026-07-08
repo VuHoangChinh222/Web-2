@@ -39,6 +39,14 @@
     font-size: 2.2rem;
     font-weight: 800;
     box-shadow: 0 5px 15px var(--accent-neon);
+    overflow: hidden;
+}
+
+.user-profile-avatar-circle .user-profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 .user-profile-details {

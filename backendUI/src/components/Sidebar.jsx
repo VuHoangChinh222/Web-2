@@ -7,6 +7,12 @@ import { useAdmin } from '../context/AdminContext';
 
 const Sidebar = ({ activePage, setActivePage, isCollapsed, setIsCollapsed, currentUser }) => {
   const { logout, resolveImageUrl } = useAdmin();
+  const [avatarError, setAvatarError] = React.useState(false);
+
+  React.useEffect(() => {
+    setAvatarError(false);
+  }, [currentUser]);
+
   const menuGroups = [
     {
       title: "Core Commerce",
@@ -117,11 +123,18 @@ const Sidebar = ({ activePage, setActivePage, isCollapsed, setIsCollapsed, curre
       {/* User Information Footer */}
       <div className="p-4 border-t border-white/5 flex flex-col gap-2.5 overflow-hidden bg-black/10">
         <div className="flex items-center gap-3 w-full">
-          <img 
-            src={resolveImageUrl(currentUser.avatar)} 
-            alt={currentUser.fullname} 
-            className="w-10 h-10 rounded-full border border-purple-500/30 object-cover flex-shrink-0"
-          />
+          {currentUser.avatar && !avatarError ? (
+            <img 
+              src={resolveImageUrl(currentUser.avatar)} 
+              alt={currentUser.fullname} 
+              className="w-10 h-10 rounded-full border border-purple-500/30 object-cover flex-shrink-0"
+              onError={() => setAvatarError(true)}
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full border border-purple-500/30 bg-purple-600/30 text-purple-200 flex items-center justify-center font-bold text-sm flex-shrink-0">
+              {currentUser.fullname ? currentUser.fullname.charAt(0).toUpperCase() : 'A'}
+            </div>
+          )}
           {!isCollapsed && (
             <div className="overflow-hidden flex-1">
               <h4 className="text-xs font-semibold text-white truncate">{currentUser.fullname}</h4>

@@ -16,6 +16,8 @@ const Header = ({ currentView, cartCount }) => {
   const [results, setResults] = useState({ products: [], posts: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
+  const [mobileAvatarError, setMobileAvatarError] = useState(false);
 
   const searchRef = useRef(null);
 
@@ -44,6 +46,8 @@ const Header = ({ currentView, cartCount }) => {
   useEffect(() => {
     const loggedCustomer = getCookie('customer');
     setCustomer(loggedCustomer || null);
+    setAvatarError(false);
+    setMobileAvatarError(false);
   }, [location]);
 
   // Debounced API call for autocomplete search
@@ -212,7 +216,16 @@ const Header = ({ currentView, cartCount }) => {
               <Link className="header-user-profile" to="/user" title="Tài khoản" onClick={() => setIsMobileMenuOpen(false)}>
                 <span className="welcome-text">Chào, {customer.fullName}</span>
                 <div className="user-profile-avatar-circle">
-                  {customer.fullName ? customer.fullName.charAt(0).toUpperCase() : 'U'}
+                  {customer.imageUrl && !avatarError ? (
+                    <img 
+                      src={resolveImageUrl(customer.imageUrl)} 
+                      alt={customer.fullName} 
+                      className="user-profile-avatar-img"
+                      onError={() => setAvatarError(true)}
+                    />
+                  ) : (
+                    customer.fullName ? customer.fullName.charAt(0).toUpperCase() : 'U'
+                  )}
                 </div>
               </Link>
             ) : (
@@ -239,7 +252,16 @@ const Header = ({ currentView, cartCount }) => {
           {customer ? (
             <Link to="/user" className="mobile-user-row" onClick={() => setIsMobileMenuOpen(false)}>
               <div className="user-profile-avatar-circle">
-                {customer.fullName ? customer.fullName.charAt(0).toUpperCase() : 'U'}
+                {customer.imageUrl && !mobileAvatarError ? (
+                  <img 
+                    src={resolveImageUrl(customer.imageUrl)} 
+                    alt={customer.fullName} 
+                    className="user-profile-avatar-img"
+                    onError={() => setMobileAvatarError(true)}
+                  />
+                ) : (
+                  customer.fullName ? customer.fullName.charAt(0).toUpperCase() : 'U'
+                )}
               </div>
               <span className="welcome-text">Chào, {customer.fullName}</span>
             </Link>

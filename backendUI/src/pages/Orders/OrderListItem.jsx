@@ -15,7 +15,29 @@ const OrderListItem = ({ order, mappedCustomers, formatDate, getStatusBadge, han
       </td>
       <td className="py-3.5">
         <div className="flex items-center gap-2">
-          <img src={resolveImageUrl(cust?.avatar)} alt="" className="w-6 h-6 rounded-full object-cover" />
+          {cust?.avatar ? (
+            <>
+              <img 
+                src={resolveImageUrl(cust.avatar)} 
+                alt="" 
+                className="w-6 h-6 rounded-full object-cover" 
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+              <div 
+                className="w-6 h-6 rounded-full border border-purple-500/30 bg-purple-600/30 text-purple-200 flex items-center justify-center font-bold text-[10px] flex-shrink-0"
+                style={{ display: 'none' }}
+              >
+                {cust.fullname ? cust.fullname.charAt(0).toUpperCase() : 'C'}
+              </div>
+            </>
+          ) : (
+            <div className="w-6 h-6 rounded-full border border-purple-500/30 bg-purple-600/30 text-purple-200 flex items-center justify-center font-bold text-[10px] flex-shrink-0">
+              {cust ? cust.fullname.charAt(0).toUpperCase() : 'C'}
+            </div>
+          )}
           <div>
             <p className="font-semibold text-white">{cust ? cust.fullname : 'Unknown'}</p>
             <p className="text-[10px] text-slate-500">{cust?.phone}</p>

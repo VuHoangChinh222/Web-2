@@ -5,7 +5,29 @@ const CustomerListItem = ({ cust, resolveImageUrl, handleOpenEdit, handleDelete 
   return (
     <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
       <td className="p-3 w-14">
-        <img src={resolveImageUrl(cust.avatar)} alt={cust.fullname} className="w-10 h-10 rounded-full object-cover border border-purple-500/20" />
+        {cust.avatar ? (
+          <>
+            <img 
+              src={resolveImageUrl(cust.avatar)} 
+              alt={cust.fullname} 
+              className="w-10 h-10 rounded-full object-cover border border-purple-500/20"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+            <div 
+              className="w-10 h-10 rounded-full border border-purple-500/30 bg-purple-600/30 text-purple-200 flex items-center justify-center font-bold text-sm flex-shrink-0"
+              style={{ display: 'none' }}
+            >
+              {cust.fullname ? cust.fullname.charAt(0).toUpperCase() : 'C'}
+            </div>
+          </>
+        ) : (
+          <div className="w-10 h-10 rounded-full border border-purple-500/30 bg-purple-600/30 text-purple-200 flex items-center justify-center font-bold text-sm flex-shrink-0">
+            {cust.fullname ? cust.fullname.charAt(0).toUpperCase() : 'C'}
+          </div>
+        )}
       </td>
       <td className="p-3">
         <h3 className="font-bold text-white text-sm">{cust.fullname}</h3>

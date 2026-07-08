@@ -4,15 +4,31 @@
  * Môn học: Chuyên đề ASP.NET Core & ReactJS
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { resolveImageUrl } from '../../config';
 
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + ' VND';
 
 const UserProfileHeader = ({ customer, totalSpent, vipRank, navigate, onLogout }) => {
+  const [avatarError, setAvatarError] = useState(false);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [customer]);
+
   return (
     <div className="user-profile-header">
       <div className="user-profile-avatar-circle">
-        {customer.fullName ? customer.fullName.charAt(0).toUpperCase() : 'U'}
+        {customer.imageUrl && !avatarError ? (
+          <img 
+            src={resolveImageUrl(customer.imageUrl)} 
+            alt={customer.fullName} 
+            className="user-profile-avatar-img"
+            onError={() => setAvatarError(true)}
+          />
+        ) : (
+          customer.fullName ? customer.fullName.charAt(0).toUpperCase() : 'U'
+        )}
       </div>
       <div className="user-profile-details">
         <h3 className="user-profile-name">{customer.fullName}</h3>

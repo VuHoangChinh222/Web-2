@@ -245,7 +245,29 @@ const Users = () => {
                   <tr key={usr.id} className="hover:bg-white/[0.01] transition-colors">
                     <td className="py-3.5">
                       <div className="flex items-center gap-3">
-                        <img src={resolveImageUrl(usr.avatar)} alt="" className="w-9 h-9 rounded-full object-cover border border-white/10" />
+                        {usr.avatar ? (
+                          <>
+                            <img 
+                              src={resolveImageUrl(usr.avatar)} 
+                              alt="" 
+                              className="w-9 h-9 rounded-full object-cover border border-white/10" 
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                            <div 
+                              className="w-9 h-9 rounded-full border border-purple-500/30 bg-purple-600/30 text-purple-200 flex items-center justify-center font-bold text-xs flex-shrink-0"
+                              style={{ display: 'none' }}
+                            >
+                              {usr.fullname ? usr.fullname.charAt(0).toUpperCase() : 'U'}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="w-9 h-9 rounded-full border border-purple-500/30 bg-purple-600/30 text-purple-200 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                            {usr.fullname ? usr.fullname.charAt(0).toUpperCase() : 'U'}
+                          </div>
+                        )}
                         <div>
                           <p className="font-semibold text-white text-sm flex items-center gap-1.5">
                             <span>{usr.fullname}</span>

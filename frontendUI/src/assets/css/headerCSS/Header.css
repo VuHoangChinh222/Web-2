@@ -486,7 +486,6 @@
     /* Tạo dấu ba chấm (...) nếu tên quá dài */
 }
 
-/* Ảnh đại diện hình tròn phiên bản nhỏ (32px) cho Header */
 .header-user-profile .user-profile-avatar-circle {
     width: 32px;
     height: 32px;
@@ -502,6 +501,14 @@
     /* Bóng đổ chuyển sắc cam nhẹ */
     border: 1px solid rgba(255, 255, 255, 0.15);
     /* Viền mờ bao quanh */
+    overflow: hidden;
+}
+
+.user-profile-avatar-circle .user-profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 /* Tự động ẩn dòng chữ chào mừng khi thu màn hình quá nhỏ để nhường không gian cho logo */

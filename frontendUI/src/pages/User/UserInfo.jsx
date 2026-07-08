@@ -9,6 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { getCookie, setCookie } from '../../utils/cookieHelper';
 import customerService from '../../services/customerService';
 import IsLoading from '../../components/IsLoading';
+import { resolveImageUrl } from '../../config';
 import '../../assets/css/UserInfoView.css';
 
 const UserInfo = ({ navigate }) => {
@@ -19,8 +20,30 @@ const UserInfo = ({ navigate }) => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const response = await fetch('http://localhost:8080/api/uploads/image', {
+          method: 'POST',
+          body: formData,
+        });
+        if (!response.ok) {
+          throw new Error('Upload thất bại');
+        }
+        const url = await response.text();
+        setImageUrl(url);
+      } catch (err) {
+        alert("Lỗi tải lên hình ảnh: " + err.message);
+      }
+    }
+  };
 
   // States quản lý trạng thái tải & thông báo lỗi/thành công
   const [loading, setLoading] = useState(true);
@@ -42,6 +65,7 @@ const UserInfo = ({ navigate }) => {
     setEmail(loggedCustomer.email || '');
     setPhone(loggedCustomer.phone || '');
     setAddress(loggedCustomer.address || '');
+    setImageUrl(loggedCustomer.imageUrl || '');
     setLoading(false);
   }, [navigate]);
 
@@ -93,12 +117,13 @@ const UserInfo = ({ navigate }) => {
         email: email.trim(),
         phone: phone.trim() || null,
         address: address.trim() || null,
+        imageUrl: imageUrl || null,
         password: password || null
       });
 
-      if (response && response.customer) {
+      if (response && response.id) {
         // Cập nhật lại cookie lưu trữ phiên làm việc của khách hàng với thời hạn 7 ngày
-        setCookie('customer', response.customer, 7);
+        setCookie('customer', response, 7);
         alert("Cập nhật thông tin tài khoản thành công!");
         navigate('user');
         window.location.reload(); // Tải lại trang để đồng bộ họ tên mới trên Header chào mừng
@@ -134,6 +159,45 @@ const UserInfo = ({ navigate }) => {
               <i className="fa-solid fa-circle-exclamation"></i> {errorMsg}
             </div>
           )}
+
+          {/* Ảnh đại diện */}
+          <div className="user-info-form-group" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', marginBottom: '2rem' }}>
+            <label style={{ alignSelf: 'flex-start' }}>Ảnh đại diện</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', width: '100%' }}>
+              <div className="user-profile-avatar-circle" style={{ margin: 0, flexShrink: 0 }}>
+                {imageUrl ? (
+                  <img 
+                    src={resolveImageUrl(imageUrl)} 
+                    alt="Avatar Preview" 
+                    className="user-profile-avatar-img"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  fullName ? fullName.charAt(0).toUpperCase() : 'U'
+                )}
+              </div>
+              <div style={{ flex: 1 }}>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    color: 'var(--text-color)',
+                    cursor: 'pointer'
+                  }}
+                />
+                <small style={{ color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>Hỗ trợ tải lên ảnh đại diện cá nhân.</small>
+              </div>
+            </div>
+          </div>
 
           {/* Trường Email */}
           <div className="user-info-form-group">

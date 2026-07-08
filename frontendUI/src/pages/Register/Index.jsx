@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import customerService from '../../services/customerService';
 import { getCookie } from '../../utils/cookieHelper';
+import { resolveImageUrl } from '../../config';
 
 const RegisterView = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const RegisterView = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -32,6 +34,27 @@ const RegisterView = () => {
   // Trạng thái xử lý
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const response = await fetch('http://localhost:8080/api/uploads/image', {
+          method: 'POST',
+          body: formData,
+        });
+        if (!response.ok) {
+          throw new Error('Upload thất bại');
+        }
+        const url = await response.text();
+        setImageUrl(url);
+      } catch (err) {
+        alert("Lỗi tải lên hình ảnh: " + err.message);
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,6 +81,7 @@ const RegisterView = () => {
         email,
         phone: phone || null,
         address: address || null,
+        imageUrl: imageUrl || null,
         password
       };
 
@@ -95,6 +119,59 @@ const RegisterView = () => {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
             />
+          </div>
+
+          {/* Ảnh đại diện */}
+          <div className="form-group" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', marginBottom: '1.5rem' }}>
+            <label style={{ alignSelf: 'flex-start' }}>Ảnh đại diện</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', width: '100%' }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, var(--accent), var(--accent-hover))',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '2rem',
+                fontWeight: '800',
+                boxShadow: '0 5px 15px var(--accent-neon)',
+                overflow: 'hidden',
+                flexShrink: 0
+              }}>
+                {imageUrl ? (
+                  <img
+                    src={resolveImageUrl(imageUrl)}
+                    alt="Avatar Preview"
+                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  fullName ? fullName.charAt(0).toUpperCase() : 'U'
+                )}
+              </div>
+              <div style={{ flex: 1 }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    color: 'var(--text-color)',
+                    cursor: 'pointer'
+                  }}
+                />
+                <small style={{ color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>Hỗ trợ tải lên ảnh đại diện cá nhân.</small>
+              </div>
+            </div>
           </div>
 
           <div className="form-group">

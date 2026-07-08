@@ -17,7 +17,29 @@ const CustomerGridCard = ({ cust, resolveImageUrl, handleOpenEdit, handleDelete 
       {/* Profile Card Header */}
       <div>
         <div className="flex items-center gap-3.5 mb-4">
-          <img src={resolveImageUrl(cust.avatar)} alt={cust.fullname} className="w-12 h-12 rounded-full object-cover border border-purple-500/20" />
+          {cust.avatar ? (
+            <>
+              <img 
+                src={resolveImageUrl(cust.avatar)} 
+                alt={cust.fullname} 
+                className="w-12 h-12 rounded-full object-cover border border-purple-500/20"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+              <div 
+                className="w-12 h-12 rounded-full border border-purple-500/30 bg-purple-600/30 text-purple-200 flex items-center justify-center font-bold text-sm flex-shrink-0"
+                style={{ display: 'none' }}
+              >
+                {cust.fullname ? cust.fullname.charAt(0).toUpperCase() : 'C'}
+              </div>
+            </>
+          ) : (
+            <div className="w-12 h-12 rounded-full border border-purple-500/30 bg-purple-600/30 text-purple-200 flex items-center justify-center font-bold text-sm flex-shrink-0">
+              {cust.fullname ? cust.fullname.charAt(0).toUpperCase() : 'C'}
+            </div>
+          )}
           <div>
             <h3 className="font-bold text-white text-base">{cust.fullname}</h3>
             <p className="text-[10px] font-mono text-slate-500">ID: {cust.id}</p>

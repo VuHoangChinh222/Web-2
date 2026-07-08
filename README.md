@@ -11,9 +11,9 @@ Dự án **Hệ Thống Quản Trị & API Bán Hàng** là một giải pháp q
 
 ## 🏗️ Kiến Trúc Hệ Thống
 
-Dự án áp dụng mô hình kiến trúc sạch (Clean Architecture) với sự tách biệt rõ ràng ở cả Frontend và Backend:
+Dự án áp dụng mô hình kiến trúc phân tầng tách biệt rõ ràng ở cả Frontend và Backend:
 * **Frontend Quản Trị (backendUI)**: Loại bỏ kiến trúc Context-monolith (không gán logic API cồng kềnh trong Context). Thay vào đó, các **Page Components** tương tác trực tiếp với các **API Services** riêng biệt, nhận dữ liệu phản hồi rồi sử dụng **AdminContext** (Lean State Store) làm kho chứa trạng thái và bộ cập nhật (setters) để đồng bộ lại dữ liệu toàn cục.
-* **Backend (vuhoangchinh)**: Phân tầng chuẩn mực (Controller - Service - Repository) bảo mật qua JWT Filter, xử lý các ràng buộc toàn vẹn cơ sở dữ liệu.
+* **Backend (vuhoangchinh)**: Kiến trúc tinh gọn dạng **REST Controller - JPA Repository** trực tiếp (không sử dụng tầng Service trung gian dư thừa). Các Controller đảm nhận cả nghiệp vụ và giao tiếp qua Filter bảo mật của **Spring Security & JWT Filter Chain** trước khi ghi dữ liệu xuống MySQL.
 
 ```mermaid
 graph TD
@@ -30,22 +30,20 @@ graph TD
 
     subgraph Service ["Phân Hệ Máy Chủ (Server Side - vuhoangchinh)"]
         direction TB
-        C["API Controllers<br/>(REST API)"]
         D["Spring Security & JWT Filter"]
-        E["Service Layer<br/>(Business Logic)"]
+        C["API Controllers<br/>(REST API & Business Logic)"]
         F["Repository Layer<br/>(Spring Data JPA)"]
         
-        C --> D
-        D --> E
-        E --> F
+        D --> C
+        C --> F
     end
 
     subgraph Database ["Cơ Sở Dữ Liệu"]
         G[("MySQL Database")]
     end
 
-    AS -- "2. HTTP Request & JWT" --> C
-    B -- "HTTP Requests" --> C
+    AS -- "2. HTTP Request & JWT" --> D
+    B -- "HTTP Requests" --> D
     F --> G
 ```
 
@@ -53,11 +51,12 @@ graph TD
 
 ## 🗃️ Sơ Đồ Quan Hệ Thực Thể (Database ERD Diagram)
 
-Dưới đây là sơ đồ quan hệ của toàn bộ 13 thực thể (Entities) của hệ thống được ánh xạ từ Java Spring Boot (`com.example.vuhoangchinh.Entities`) xuống cơ sở dữ liệu MySQL:
+Dưới đây là sơ đồ quan hệ của toàn bộ 13 thực thể (Entities) của hệ thống được ánh xạ từ Java Spring Boot (`com.example.vuhoangchinh.Entities`) xuống cơ sở dữ liệu MySQL, cùng với bảng quyền hạn lưu động:
 
 ```mermaid
 erDiagram
     ROLE ||--o{ USER : "has"
+    ROLE ||--o{ RolePermission : "has"
     USER ||--o{ BLOG : "writes"
     CategoryBlog ||--o{ BLOG : "contains"
     CategoryProduct ||--o{ PRODUCT : "contains"
@@ -72,6 +71,11 @@ erDiagram
         Long id PK
         String name "unique, nullable=false"
         String description
+    }
+
+    RolePermission {
+        Long role_id FK
+        String permission "nullable=false"
     }
 
     USER {
@@ -145,8 +149,10 @@ erDiagram
         String size
         String color
         BigDecimal price
+        BigDecimal salePrice
         Integer stockQuantity "default=0"
         String sku "unique"
+        Integer status "default=1"
     }
 
     CUSTOMER {

@@ -1,6 +1,11 @@
 import apiClient from './apiClient';
 
 const productVariantService = {
+  // Lấy tất cả biến thể sản phẩm
+  getAll: (page = 0, size = 1000) => {
+    return apiClient.get(`/product-variants?page=${page}&size=${size}`);
+  },
+
   // Lấy tất cả biến thể của 1 sản phẩm
   getByProductId: (productId, page = 0, size = 100) => {
     return apiClient.get(`/product-variants/product/${productId}?page=${page}&size=${size}`);

@@ -13,20 +13,23 @@ const OrderListItem = ({ order, mappedCustomers, formatDate, getStatusBadge, han
       <td className="py-3.5 font-mono text-purple-400 font-bold text-sm">
         {order.id}
       </td>
+      <td className="py-3.5 font-mono text-slate-300 font-medium text-xs">
+        {order.orderCode || 'N/A'}
+      </td>
       <td className="py-3.5">
         <div className="flex items-center gap-2">
           {cust?.avatar ? (
             <>
-              <img 
-                src={resolveImageUrl(cust.avatar)} 
-                alt="" 
-                className="w-6 h-6 rounded-full object-cover" 
+              <img
+                src={resolveImageUrl(cust.avatar)}
+                alt=""
+                className="w-6 h-6 rounded-full object-cover"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.nextSibling.style.display = 'flex';
                 }}
               />
-              <div 
+              <div
                 className="w-6 h-6 rounded-full border border-purple-500/30 bg-purple-600/30 text-purple-200 flex items-center justify-center font-bold text-[10px] flex-shrink-0"
                 style={{ display: 'none' }}
               >

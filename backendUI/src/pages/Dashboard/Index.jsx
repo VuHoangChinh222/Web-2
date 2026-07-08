@@ -1,14 +1,15 @@
-import React from 'react';
-import {
-  DollarSign, ShoppingCart, Package, Users2,
-  ArrowUpRight, AlertTriangle, TrendingUp, CheckCircle, Clock
-} from 'lucide-react';
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Cell
-} from 'recharts';
+import React, { useState, useEffect } from 'react';
+import { ArrowUpRight } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
-import GlassCard from '../../components/GlassCard';
+import productVariantService from '../../services/productVariantService';
+
+// Import refactored subcomponents
+import MetricCards from './MetricCards';
+import RevenueChart from './RevenueChart';
+import StockShareChart from './StockShareChart';
+import RecentOrdersTable from './RecentOrdersTable';
+import StockAndBestSellersCard from './StockAndBestSellersCard';
+import InvoiceModal from './InvoiceModal';
 
 const mapOrderFromBackend = (order) => {
   if (!order) return null;
@@ -18,6 +19,7 @@ const mapOrderFromBackend = (order) => {
     orderCode: order.orderCode || `ORD-${order.id}`,
     orderDate: order.createdAt || order.orderDate,
     totalAmount: order.totalPrice ? parseFloat(order.totalPrice) : 0,
+    shippingFee: order.shippingFee ? parseFloat(order.shippingFee) : 0,
     shippingAddress: order.shippingAddress || 'Hà Nội',
     paymentMethod: order.paymentMethod || 'COD',
     paymentStatus: order.paymentStatus || 'PENDING',
@@ -68,8 +70,72 @@ const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN').format(price) + ' VND';
 };
 
-const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) => {
-  const { products, orders, customers, categoriesProduct, resolveImageUrl } = useAdmin();
+const formatDate = (dateVal) => {
+  if (!dateVal) return 'N/A';
+  if (Array.isArray(dateVal)) {
+    const [year, month, day, hour, minute, second] = dateVal;
+    const d = new Date(year, month - 1, day, hour || 0, minute || 0, second || 0);
+    return d.toLocaleString();
+  }
+  const d = new Date(dateVal);
+  return isNaN(d.getTime()) ? 'N/A' : d.toLocaleString();
+};
+
+const parseOrderDate = (dateVal) => {
+  if (!dateVal) return null;
+  if (Array.isArray(dateVal)) {
+    const [year, month, day] = dateVal;
+    return new Date(year, month - 1, day);
+  }
+  const d = new Date(dateVal);
+  return isNaN(d.getTime()) ? null : d;
+};
+
+// Helper for Order Status badges in RecentOrders list
+const getStatusBadge = (status) => {
+  switch (status) {
+    case '2':
+    case 'Completed':
+      return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Completed</span>;
+    case '0':
+    case 'Processing':
+      return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">Processing</span>;
+    case '1':
+    case 'Shipped':
+      return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30">Shipped</span>;
+    case '3':
+    case 'Cancelled':
+      return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30">Cancelled</span>;
+    default:
+      return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-500/20 text-slate-400">{status}</span>;
+  }
+};
+
+const Dashboard = ({ setActivePage }) => {
+  const { products, orders, customers, categoriesProduct, resolveImageUrl, orderDetails } = useAdmin();
+
+  // State to hold all product variants for low-stock variant checks
+  const [allVariants, setAllVariants] = useState([]);
+  const [variantsLoading, setVariantsLoading] = useState(false);
+
+  // States for Invoice Popup
+  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null);
+  const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchAllVariants = async () => {
+      try {
+        setVariantsLoading(true);
+        const res = await productVariantService.getAll(0, 2000);
+        setAllVariants(res.content || res.Content || res || []);
+      } catch (e) {
+        console.error("Error fetching all variants for low stock widget:", e);
+      } finally {
+        setVariantsLoading(false);
+      }
+    };
+    fetchAllVariants();
+  }, []);
 
   // Map collections locally
   const mappedOrders = (orders || []).map(mapOrderFromBackend).filter(Boolean);
@@ -81,66 +147,79 @@ const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) =
   const totalRevenue = completedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
   const processingOrdersCount = mappedOrders.filter(o => o.status === '0' || o.status === 'Processing').length;
   const activeCustomersCount = mappedCustomers.filter(c => c.active).length;
-  const lowStockProducts = mappedProducts.filter(p => p.stock <= 10);
 
-  // 2. Prepare sales chart data (last 7 days simulation)
-  const salesChartData = [
-    { name: 'Mon', sales: 420, orders: 3 },
-    { name: 'Tue', sales: 980, orders: 4 },
-    { name: 'Wed', sales: 710, orders: 2 },
-    { name: 'Thu', sales: 1200, orders: 5 },
-    { name: 'Fri', sales: 850, orders: 3 },
-    { name: 'Sat', sales: 1600, orders: 7 },
-    { name: 'Sun', sales: totalRevenue > 2000 ? totalRevenue - 2500 : 900, orders: 4 },
-  ];
-
-  // 3. Prepare category chart data
-  const COLORS = ['#8B5CF6', '#EC4899', '#3B82F6', '#10B981', '#F59E0B'];
-  const categoryData = categoriesProduct.map((cat, idx) => {
-    // Count products under this category
-    const productCount = mappedProducts.filter(p => p.categoryId === cat.id).length;
+  // 2. Prepare Low-Stock Items (including specific variants <= 10)
+  const lowStockVariants = allVariants.filter(v => v.stockQuantity <= 10).map(v => {
+    const sizePart = v.size ? ` - Size ${v.size}` : '';
+    const colorPart = v.color && v.color !== 'Mặc định' && v.color !== 'Default' ? ` - ${v.color}` : '';
     return {
-      name: cat.name,
-      count: productCount,
-      color: COLORS[idx % COLORS.length]
+      id: `var-${v.id}`,
+      name: `${v.product?.name || 'Unknown Product'}${sizePart}${colorPart}`,
+      image: v.product?.thumbnail || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80',
+      stock: v.stockQuantity,
+      categoryName: v.product?.category?.name || 'N/A',
+      isVariant: true
     };
   });
 
-  // Helper for Order Status colors
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case '2':
-      case 'Completed':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Completed</span>;
-      case '0':
-      case 'Processing':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">Processing</span>;
-      case '1':
-      case 'Shipped':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30">Shipped</span>;
-      case '3':
-      case 'Cancelled':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30">Cancelled</span>;
-      default:
-        return <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-500/20 text-slate-400">{status}</span>;
-    }
+  const displayLowStock = lowStockVariants.length > 0 ? lowStockVariants : mappedProducts.filter(p => p.stock <= 10).map(p => ({
+    id: `prod-${p.id}`,
+    name: p.name,
+    image: p.image,
+    stock: p.stock,
+    categoryName: categoriesProduct.find(c => c.id === p.categoryId)?.name || 'N/A',
+    isVariant: false
+  }));
+
+  // 3. Prepare Best Sellers (calculated dynamically from orderDetails)
+  const getBestSellers = () => {
+    const salesCount = {};
+    (orderDetails || []).forEach(detail => {
+      const varObj = detail.productVariant;
+      if (varObj && varObj.product) {
+        const prodId = varObj.product.id;
+        const qty = detail.quantity || 0;
+        if (!salesCount[prodId]) {
+          salesCount[prodId] = {
+            product: varObj.product,
+            qtySold: 0
+          };
+        }
+        salesCount[prodId].qtySold += qty;
+      }
+    });
+
+    const sorted = Object.values(salesCount)
+      .sort((a, b) => b.qtySold - a.qtySold)
+      .slice(0, 4);
+
+    return sorted.map(item => ({
+      id: `best-${item.product.id}`,
+      name: item.product.name,
+      image: item.product.thumbnail || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80',
+      sold: item.qtySold,
+      categoryName: item.product.category?.name || 'N/A'
+    }));
   };
 
-  const handleViewOrder = (orderId) => {
-    setSelectedOrderId(orderId);
-    setIsOrderModalOpen(true);
-    setActivePage('orders');
+  const bestSellers = getBestSellers();
+  const displayBestSellers = bestSellers.length > 0 ? bestSellers : mappedProducts.slice(0, 4).map((p, idx) => ({
+    id: `mock-best-${p.id}`,
+    name: p.name,
+    image: p.image,
+    sold: [15, 12, 8, 5][idx] || 0,
+    categoryName: categoriesProduct.find(c => c.id === p.categoryId)?.name || 'N/A'
+  }));
+
+  // Handlers for Invoice
+  const handleOpenInvoice = (order) => {
+    setSelectedInvoiceOrder(order);
+    setIsInvoiceOpen(true);
   };
 
-  const formatDate = (dateVal) => {
-    if (!dateVal) return 'N/A';
-    if (Array.isArray(dateVal)) {
-      const [year, month, day] = dateVal;
-      return new Date(year, month - 1, day).toLocaleDateString();
-    }
-    const d = new Date(dateVal);
-    return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString();
-  };
+  const invoiceCustomer = selectedInvoiceOrder 
+    ? mappedCustomers.find(c => c.id === selectedInvoiceOrder.customerId) 
+    : null;
 
   return (
     <div className="space-y-6">
@@ -158,226 +237,65 @@ const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) =
         </button>
       </div>
 
-      {/* Metric Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Metric 1 */}
-        <GlassCard hoverEffect={true} className="relative overflow-hidden">
-          <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 text-purple-500">
-            <DollarSign size={100} />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Revenue</span>
-            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
-              <DollarSign size={18} />
-            </div>
-          </div>
-          <div className="mt-4">
-            <h3 className="text-2xl font-bold text-white">{formatPrice(totalRevenue)}</h3>
-            <p className="text-xs text-emerald-400 flex items-center gap-1 mt-1 font-semibold">
-              <TrendingUp size={12} />
-              <span>+12.4% vs last week</span>
-            </p>
-          </div>
-        </GlassCard>
+      {/* 4 Metric Cards Grid */}
+      <MetricCards
+        totalRevenue={totalRevenue}
+        processingOrdersCount={processingOrdersCount}
+        totalProducts={mappedProducts.length}
+        lowStockCount={displayLowStock.length}
+        activeCustomersCount={activeCustomersCount}
+        totalCustomers={mappedCustomers.length}
+        formatPrice={formatPrice}
+      />
 
-        {/* Metric 2 */}
-        <GlassCard hoverEffect={true} className="relative overflow-hidden">
-          <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 text-pink-500">
-            <ShoppingCart size={100} />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Processing Orders</span>
-            <div className="p-2 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20">
-              <Clock size={18} />
-            </div>
-          </div>
-          <div className="mt-4">
-            <h3 className="text-2xl font-bold text-white">{processingOrdersCount}</h3>
-            <p className="text-xs text-slate-400 mt-1">
-              Requires immediate action
-            </p>
-          </div>
-        </GlassCard>
-
-        {/* Metric 3 */}
-        <GlassCard hoverEffect={true} className="relative overflow-hidden">
-          <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 text-blue-500">
-            <Package size={100} />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Products</span>
-            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              <Package size={18} />
-            </div>
-          </div>
-          <div className="mt-4">
-            <h3 className="text-2xl font-bold text-white">{mappedProducts.length}</h3>
-            <p className="text-xs text-amber-400 flex items-center gap-1 mt-1 font-semibold">
-              <AlertTriangle size={12} />
-              <span>{lowStockProducts.length} low-stock items</span>
-            </p>
-          </div>
-        </GlassCard>
-
-        {/* Metric 4 */}
-        <GlassCard hoverEffect={true} className="relative overflow-hidden">
-          <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-5 text-emerald-500">
-            <Users2 size={100} />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Customers</span>
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <Users2 size={18} />
-            </div>
-          </div>
-          <div className="mt-4">
-            <h3 className="text-2xl font-bold text-white">{activeCustomersCount}</h3>
-            <p className="text-xs text-emerald-400 flex items-center gap-1 mt-1 font-semibold font-mono">
-              <span>{mappedCustomers.length ? Math.round((activeCustomersCount / mappedCustomers.length) * 100) : 0}% active rate</span>
-            </p>
-          </div>
-        </GlassCard>
-      </div>
-
-      {/* Charts section */}
+      {/* Analytics & Stock Share Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Sales Trend Chart */}
-        <GlassCard hoverEffect={false} title="Revenue Analytics" className="lg:col-span-2">
-          <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={salesChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" />
-                <XAxis dataKey="name" stroke="#64748B" fontSize={11} tickLine={false} />
-                <YAxis stroke="#64748B" fontSize={11} tickLine={false} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#0F1224',
-                    borderColor: 'rgba(255,255,255,0.1)',
-                    borderRadius: '8px',
-                    color: '#fff',
-                    fontSize: '12px'
-                  }}
-                />
-                <Area type="monotone" dataKey="sales" stroke="#8B5CF6" strokeWidth={2} fillOpacity={1} fill="url(#colorSales)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </GlassCard>
+        {/* Revenue Analytics Chart with 7 Days / Month / Quarter / Year filters */}
+        <RevenueChart
+          completedOrders={completedOrders}
+          parseOrderDate={parseOrderDate}
+          formatPrice={formatPrice}
+        />
 
-        {/* Product Categories Share */}
-        <GlassCard hoverEffect={false} title="Product Stock Share" subtitle="Item distribution by category">
-          <div className="h-72 flex flex-col justify-between">
-            <div className="flex-1 min-h-[180px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={categoryData} layout="vertical" margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                  <XAxis type="number" stroke="#64748B" fontSize={10} hide />
-                  <YAxis dataKey="name" type="category" stroke="#94A3B8" fontSize={11} tickLine={false} width={80} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#0F1224',
-                      borderColor: 'rgba(255,255,255,0.1)',
-                      borderRadius: '8px',
-                      color: '#fff',
-                      fontSize: '11px'
-                    }}
-                  />
-                  <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={10}>
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Legend */}
-            <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-400 border-t border-white/5 pt-4">
-              {categoryData.slice(0, 4).map((entry, idx) => (
-                <div key={idx} className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
-                  <span className="truncate">{entry.name} ({entry.count})</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </GlassCard>
+        {/* Stock Share Chart */}
+        <StockShareChart
+          categoriesProduct={categoriesProduct}
+          mappedProducts={mappedProducts}
+        />
       </div>
 
-      {/* Tables Row: Recent Orders & Stock Alerts */}
+      {/* Recent Orders & Stock / Bestsellers Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Orders */}
-        <GlassCard hoverEffect={false} title="Recent Orders" className="lg:col-span-2" subtitle="Latest store checkouts">
-          <div className="overflow-x-auto glass-scrollbar -mx-5 px-5">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-white/5 text-slate-400 font-medium">
-                  <th className="py-3 pr-2">ID</th>
-                  <th className="py-3">Customer</th>
-                  <th className="py-3">Date</th>
-                  <th className="py-3">Total</th>
-                  <th className="py-3">Status</th>
-                  <th className="py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {mappedOrders.slice(0, 4).map((order) => {
-                  const cust = mappedCustomers.find(c => c.id === order.customerId);
-                  return (
-                    <tr key={order.id} className="hover:bg-white/[0.01] transition-colors">
-                      <td className="py-3 pr-2 font-mono text-purple-400 font-semibold">{order.id}</td>
-                      <td className="py-3 font-medium text-white">{cust ? cust.fullname : 'Unknown'}</td>
-                      <td className="py-3 text-slate-400">{formatDate(order.orderDate)}</td>
-                      <td className="py-3 font-semibold text-white">{formatPrice(order.totalAmount)}</td>
-                      <td className="py-3">{getStatusBadge(order.status)}</td>
-                      <td className="py-3 text-right">
-                        <button
-                          onClick={() => handleViewOrder(order.id)}
-                          className="glass-btn px-2.5 py-1 rounded-md text-[11px] font-semibold hover:border-purple-500/40 hover:text-purple-300"
-                        >
-                          Details
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </GlassCard>
+        {/* Recent Orders with Detailed View Modal triggers */}
+        <RecentOrdersTable
+          mappedOrders={mappedOrders}
+          mappedCustomers={mappedCustomers}
+          formatDate={formatDate}
+          formatPrice={formatPrice}
+          getStatusBadge={getStatusBadge}
+          onOpenInvoice={handleOpenInvoice}
+        />
 
-        {/* Inventory Warning Alerts */}
-        <GlassCard hoverEffect={false} title="Stock Alerts" subtitle="Items with critical stock levels (<= 10)">
-          <div className="space-y-3 max-h-[260px] overflow-y-auto pr-1 glass-scrollbar">
-            {lowStockProducts.length === 0 ? (
-              <div className="h-40 flex flex-col items-center justify-center text-slate-500 gap-1.5">
-                <CheckCircle size={24} className="text-emerald-500" />
-                <span className="text-xs font-semibold">All products fully stocked.</span>
-              </div>
-            ) : (
-              lowStockProducts.map((prod) => (
-                <div key={prod.id} className="flex items-center gap-3 p-2.5 rounded-xl border border-white/5 bg-white/[0.01] hover:border-white/10 transition-colors">
-                  <img src={resolveImageUrl(prod.image)} alt={prod.name} className="w-10 h-10 rounded-lg object-cover border border-white/10" />
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-semibold text-white truncate">{prod.name}</h4>
-                    <p className="text-[10px] text-slate-400 truncate">Category: {categoriesProduct.find(c => c.id === prod.categoryId)?.name || 'N/A'}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${prod.stock === 0 ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}`}>
-                      {prod.stock} left
-                    </span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </GlassCard>
+        {/* Stock Alerts & Best Sellers toggle card */}
+        <StockAndBestSellersCard
+          displayLowStock={displayLowStock}
+          displayBestSellers={displayBestSellers}
+          resolveImageUrl={resolveImageUrl}
+          loading={variantsLoading}
+        />
       </div>
+
+      {/* Invoice Modal Details Popup */}
+      <InvoiceModal
+        isOpen={isInvoiceOpen}
+        onClose={() => setIsInvoiceOpen(false)}
+        order={selectedInvoiceOrder}
+        customer={invoiceCustomer}
+        orderDetails={orderDetails}
+        formatPrice={formatPrice}
+        formatDate={formatDate}
+        resolveImageUrl={resolveImageUrl}
+      />
     </div>
   );
 };

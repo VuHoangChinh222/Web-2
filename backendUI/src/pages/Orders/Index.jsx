@@ -32,7 +32,8 @@ const mapOrderDetailFromBackend = (detail) => {
     productId: detail.productId || (detail.productVariant ? (detail.productVariant.product ? detail.productVariant.product.id : detail.productVariant.productId) : 1),
     price: detail.price ? parseFloat(detail.price) : 0,
     quantity: detail.quantity || 1,
-    total: (detail.price ? parseFloat(detail.price) : 0) * (detail.quantity || 1)
+    total: (detail.price ? parseFloat(detail.price) : 0) * (detail.quantity || 1),
+    productVariant: detail.productVariant
   };
 };
 
@@ -115,6 +116,8 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
       (statusFilter === '3' && o.status === 'Cancelled');
     return matchesSearch && matchesStatus;
   });
+
+  console.log("DEBUG ORDERS - raw:", orders, "mapped:", mappedOrders, "filtered:", filteredOrders);
 
   const handleOpenDetail = (id) => {
     setSelectedOrderId(id);
@@ -275,6 +278,7 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
             <thead>
               <tr className="border-b border-white/5 text-slate-400 font-medium">
                 <th className="py-3">Order ID</th>
+                <th className="py-3">Order Code</th>
                 <th className="py-3">Customer</th>
                 <th className="py-3">Order Date</th>
                 <th className="py-3">Amount</th>
@@ -286,7 +290,7 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
             <tbody className="divide-y divide-white/5">
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="py-8 text-center text-slate-500">
+                  <td colSpan="8" className="py-8 text-center text-slate-500">
                     No orders found.
                   </td>
                 </tr>

@@ -68,6 +68,14 @@ public class UserAddressController {
         
         @com.fasterxml.jackson.annotation.JsonProperty("isDefault")
         private Boolean isDefault; // Đánh dấu đây có phải địa chỉ giao hàng mặc định hay không
+
+        public Boolean getIsDefault() {
+            return isDefault;
+        }
+
+        public void setIsDefault(Boolean isDefault) {
+            this.isDefault = isDefault;
+        }
     }
 
     /**
@@ -115,14 +123,15 @@ public class UserAddressController {
         // Thiết lập trạng thái mặc định, nếu không truyền mặc định sẽ là false
         userAddress.setIsDefault(request.getIsDefault() != null ? request.getIsDefault() : false);
 
-        // NẾU địa chỉ mới được đặt là Mặc định (isDefault = true):
-        // Cần cập nhật lại tất cả địa chỉ cũ của khách hàng này về trạng thái không mặc định (false)
-        if (Boolean.TRUE.equals(userAddress.getIsDefault())) {
-            resetDefaultAddresses(customer.getId());
-        }
-
         // Lưu thông tin địa chỉ mới vào Database
         UserAddress savedAddress = userAddressRepository.save(userAddress);
+
+        // NẾU địa chỉ mới được đặt là Mặc định (isDefault = true):
+        // Cần cập nhật lại tất cả địa chỉ cũ của khách hàng này về trạng thái không mặc định (false)
+        if (Boolean.TRUE.equals(savedAddress.getIsDefault())) {
+            resetDefaultAddresses(customer.getId(), savedAddress.getId());
+        }
+
         return ResponseEntity.ok(savedAddress);
     }
 
@@ -156,9 +165,9 @@ public class UserAddressController {
         userAddress.setIsDefault(request.getIsDefault() != null ? request.getIsDefault() : false);
 
         // NẾU cập nhật địa chỉ này thành địa chỉ Mặc định:
-        // Cần reset lại toàn bộ địa chỉ khác của khách hàng đó về false
+        // Cần reset lại toàn bộ địa chỉ khác của khách hàng đó về false (loại trừ địa chỉ đang sửa này)
         if (Boolean.TRUE.equals(userAddress.getIsDefault())) {
-            resetDefaultAddresses(userAddress.getCustomer().getId());
+            resetDefaultAddresses(userAddress.getCustomer().getId(), userAddress.getId());
         }
 
         // Lưu địa chỉ đã cập nhật vào Database
@@ -184,10 +193,14 @@ public class UserAddressController {
      * Hàm nội bộ hỗ trợ: Chuyển toàn bộ các địa chỉ giao hàng của một khách hàng về trạng thái false (không mặc định).
      * Được gọi mỗi khi có một địa chỉ mới được đặt làm mặc định (isDefault = true).
      */
-    private void resetDefaultAddresses(Long customerId) {
+    private void resetDefaultAddresses(Long customerId, Long excludeAddressId) {
         // Lấy toàn bộ danh sách địa chỉ của khách hàng này
         List<UserAddress> addresses = userAddressRepository.findByCustomerId(customerId);
         for (UserAddress addr : addresses) {
+            // Loại trừ địa chỉ hiện tại đang được đặt làm mặc định
+            if (excludeAddressId != null && addr.getId().equals(excludeAddressId)) {
+                continue;
+            }
             // Nếu phát hiện địa chỉ nào đang là mặc định thì cập nhật về false
             if (Boolean.TRUE.equals(addr.getIsDefault())) {
                 addr.setIsDefault(false);

@@ -64,4 +64,12 @@ public class UserAddress {
     @Column(name = "is_default", nullable = false)
     @JsonProperty("isDefault")
     private Boolean isDefault = false;
+
+    public Boolean getIsDefault() {
+        return isDefault;
+    }
+
+    public void setIsDefault(Boolean isDefault) {
+        this.isDefault = isDefault;
+    }
 }

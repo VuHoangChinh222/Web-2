@@ -4,6 +4,7 @@ import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import UserFormModal from './UserFormModal';
 import RelatedContentModal from './RelatedContentModal';
+import UserViewModal from './UserViewModal';
 import userService from '../../services/userService';
 import blogService from '../../services/blogService';
 
@@ -53,6 +54,8 @@ const Users = () => {
 
   // Form State
   const [currentUserForm, setCurrentUserForm] = useState(null);
+  const [viewUserModalOpen, setViewUserModalOpen] = useState(false);
+  const [selectedUserForView, setSelectedUserForView] = useState(null);
 
   const mappedUsers = (users || []).map(mapUserFromBackend).filter(Boolean);
 
@@ -75,9 +78,8 @@ const Users = () => {
   };
 
   const handleOpenView = (usr) => {
-    setCurrentUserForm(usr);
-    setModalType('view');
-    setIsModalOpen(true);
+    setSelectedUserForView(usr);
+    setViewUserModalOpen(true);
   };
 
   const handleToggleStatus = async (usr) => {
@@ -242,7 +244,14 @@ const Users = () => {
                 const assignedRole = roles.find(r => r.id === usr.roleId);
                 const isSelf = usr.id === currentUser?.id;
                 return (
-                  <tr key={usr.id} className="hover:bg-white/[0.01] transition-colors">
+                  <tr 
+                    key={usr.id} 
+                    className={`hover:bg-white/[0.01] transition-colors ${
+                      !usr.active 
+                        ? 'opacity-60 bg-rose-500/[0.02] border-l-2 border-l-rose-500/40 grayscale-[20%]' 
+                        : ''
+                    }`}
+                  >
                     <td className="py-3.5">
                       <div className="flex items-center gap-3">
                         {usr.avatar ? (
@@ -373,6 +382,18 @@ const Users = () => {
         deleteBlog={handleDeleteBlog}
         deleteUser={handleDeleteUser}
         currentUser={currentUser}
+      />
+
+      <UserViewModal
+        isOpen={viewUserModalOpen}
+        onClose={() => {
+          setViewUserModalOpen(false);
+          setSelectedUserForView(null);
+        }}
+        user={selectedUserForView}
+        roles={roles}
+        blogs={blogs}
+        resolveImageUrl={resolveImageUrl}
       />
     </div>
   );

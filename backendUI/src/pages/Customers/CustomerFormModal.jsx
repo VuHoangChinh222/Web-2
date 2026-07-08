@@ -76,8 +76,8 @@ const CustomerFormModal = ({
               <div className="w-12 h-12 rounded-full bg-purple-600/10 border border-dashed border-purple-500/30 flex items-center justify-center text-slate-500 text-[10px]">No Pic</div>
             )}
             <div className="flex-1">
-              <input 
-                type="file" 
+              <input
+                type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
                 className="w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-purple-600/20 file:text-purple-300 hover:file:bg-purple-600/30 file:cursor-pointer glass-input cursor-pointer"
@@ -90,12 +90,12 @@ const CustomerFormModal = ({
         {/* Full Name */}
         <div className="space-y-1">
           <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Full Name *</label>
-          <input 
-            type="text" 
+          <input
+            type="text"
             required
             placeholder="e.g. Phạm Minh Trí"
             value={form.fullname}
-            onChange={(e) => setForm({...form, fullname: e.target.value})}
+            onChange={(e) => setForm({ ...form, fullname: e.target.value })}
             className="w-full px-3 py-2 rounded-lg text-xs glass-input"
           />
         </div>
@@ -104,23 +104,23 @@ const CustomerFormModal = ({
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Email Address *</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               required
               placeholder="tri.pm@example.com"
               value={form.email}
-              onChange={(e) => setForm({...form, email: e.target.value})}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
               className="w-full px-3 py-2 rounded-lg text-xs glass-input"
             />
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Phone Number *</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               required
               placeholder="0912345678"
               value={form.phone}
-              onChange={(e) => setForm({...form, phone: e.target.value})}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
               className="w-full px-3 py-2 rounded-lg text-xs glass-input"
             />
           </div>
@@ -132,37 +132,26 @@ const CustomerFormModal = ({
             <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Customer Status</label>
             <select
               value={form.active}
-              onChange={(e) => setForm({...form, active: e.target.value === 'true'})}
+              onChange={(e) => setForm({ ...form, active: e.target.value === 'true' })}
               className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
             >
               <option value="true" className="bg-[#0F1224] text-white">Active (Access Allowed)</option>
-              <option value="false" className="bg-[#0F1224] text-white">Suspended / Suspended</option>
+              <option value="false" className="bg-[#0F1224] text-white">Suspended (Access Revoked)</option>
             </select>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Default Address</label>
-            <textarea 
-              rows="2"
-              placeholder="Enter street, city, region..."
-              value={form.address}
-              onChange={(e) => setForm({...form, address: e.target.value})}
-              className="w-full px-3 py-2 rounded-lg text-xs glass-input"
-            />
           </div>
         </div>
 
         {/* Modal Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={onClose}
             className="glass-btn px-4 py-2 rounded-xl text-xs font-semibold"
           >
             Cancel
           </button>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="glass-btn-primary px-5 py-2 rounded-xl text-xs font-semibold"
           >
             Save Customer Details

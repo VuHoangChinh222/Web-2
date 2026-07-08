@@ -1,7 +1,7 @@
 /* 
  * PRODUCTDETAILVIEW COMPONENT - DYNAMIC DATABASE API INTEGRATION
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  */
 
 import { useState, useEffect } from 'react';
@@ -82,7 +82,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
           .then(res => {
             const activeVariants = res.content ? res.content.filter(v => v.status === 1) : [];
             setVariants(activeVariants);
-            
+
             if (activeVariants.length > 0) {
               const colors = [...new Set(activeVariants.map(v => v.color).filter(Boolean))];
               setAvailableColors(colors);
@@ -120,7 +120,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
         .filter(v => v.color === selectedColor)
         .map(v => v.size)
         .filter(Boolean);
-      
+
       const uniqueSizes = [...new Set(sizesForColor)];
       setAvailableSizes(uniqueSizes);
       if (uniqueSizes.length > 0 && !uniqueSizes.includes(selectedSize)) {
@@ -219,16 +219,16 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
         : ['S', 'M', 'L', 'XL'];
 
   // Chuẩn hóa và bảo vệ số lượng tồn kho và giá cả
-  const stockQuantity = currentVariant 
+  const stockQuantity = currentVariant
     ? (currentVariant.stockQuantity !== null ? currentVariant.stockQuantity : 0)
     : (product.stockQuantity !== undefined && product.stockQuantity !== null ? product.stockQuantity : 0);
 
-  const displayPrice = currentVariant 
+  const displayPrice = currentVariant
     ? (currentVariant.salePrice > 0 ? currentVariant.salePrice : currentVariant.price)
     : product.price;
 
-  const originalPrice = currentVariant && currentVariant.salePrice > 0 
-    ? currentVariant.price 
+  const originalPrice = currentVariant && currentVariant.salePrice > 0
+    ? currentVariant.price
     : null;
 
   // Xử lý thêm vào giỏ hàng
@@ -316,9 +316,9 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
           <div className="product-category-badge">
             <i className="fa-solid fa-tag"></i> {product.categoryName}
           </div>
-          
+
           <h1 className="detail-name-heading">{product.name}</h1>
-          
+
           <div className="detail-price-wrap">
             {originalPrice ? (
               <>
@@ -329,16 +329,16 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
             ) : (
               <span className="detail-price">{formatPrice(displayPrice)}</span>
             )}
-            
+
             {stockQuantity > 20 && (
               <span className="detail-status-badge">
                 <i className="fa-solid fa-fire"></i> Best Seller
               </span>
             )}
           </div>
-          
+
           <p className="detail-short-desc">
-            Sản phẩm chính hãng với thiết kế đột phá, mang lại trải nghiệm tuyệt vời nhất. 
+            Sản phẩm chính hãng với thiết kế đột phá, mang lại trải nghiệm tuyệt vời nhất.
             Được chế tác từ các vật liệu cao cấp, phù hợp cho cả hoạt động thể thao cường độ cao và phong cách thời trang năng động hàng ngày.
           </p>
 
@@ -357,7 +357,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
           {/* Color Selector */}
           {availableColors.length > 0 && (
             <>
-              <span className="detail-section-title">Màu sắc / Color: <span style={{color: 'var(--accent)', fontWeight: 'bold'}}>{selectedColor}</span></span>
+              <span className="detail-section-title">Màu sắc / Color: <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>{selectedColor}</span></span>
               <div className="color-selector">
                 {availableColors.map(c => (
                   <button
@@ -376,7 +376,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
           {/* Size Selector */}
           {availableSizes.length > 0 ? (
             <>
-              <span className="detail-section-title">Kích cỡ / Size: <span style={{color: 'var(--accent)', fontWeight: 'bold'}}>{selectedSize}</span></span>
+              <span className="detail-section-title">Kích cỡ / Size: <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>{selectedSize}</span></span>
               <div className="size-selector">
                 {availableSizes.map(s => {
                   const v = variants.find(vr => vr.color === selectedColor && vr.size === s);
@@ -415,8 +415,8 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
           <span className="detail-section-title">Số lượng mua:</span>
           <div className="add-cart-wrap">
             <div className="qty-selector-wrapper">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="qty-btn"
                 onClick={decrementQty}
                 disabled={stockQuantity <= 0 || qty <= 1}
@@ -451,8 +451,8 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
                   }
                 }}
               />
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="qty-btn"
                 onClick={incrementQty}
                 disabled={stockQuantity <= 0 || qty >= stockQuantity}
@@ -470,7 +470,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
               </button>
             )}
           </div>
-          
+
           {stockWarning && (
             <div className="stock-warning-text" style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: '500' }}>
               <i className="fa-solid fa-circle-exclamation"></i> Số lượng đặt mua đã được tự động giới hạn ở mức tối đa tồn kho ({stockQuantity} sản phẩm).

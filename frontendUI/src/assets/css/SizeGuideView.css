@@ -1,7 +1,7 @@
 /* 
  * SIZE GUIDE VIEW - STYLESHEET
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  * Mô tả: Cung cấp style cho bảng hướng dẫn chọn size, chuyển đổi tab và mô tả cách đo size
  */
 
@@ -34,7 +34,8 @@
     background: var(--accent);
     color: white;
     border-color: var(--accent);
-    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); /* Bóng đổ cam mờ */
+    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+    /* Bóng đổ cam mờ */
 }
 
 /* Khung chứa bảng cuộn ngang trên mobile */
@@ -85,7 +86,8 @@
 
 @media (max-width: 768px) {
     .measure-instruction-grid {
-        grid-template-columns: 1fr; /* Trở về 1 cột trên mobile */
+        grid-template-columns: 1fr;
+        /* Trở về 1 cột trên mobile */
     }
 }
 

@@ -1,7 +1,7 @@
 /* 
  * BLOGVIEW COMPONENT - DEDICATED BLOG PORTAL WITH DYNAMIC CATEGORY FILTER & PAGINATION
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  */
 
 import { useState, useEffect } from 'react';

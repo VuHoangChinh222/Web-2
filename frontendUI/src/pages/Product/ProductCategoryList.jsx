@@ -1,7 +1,7 @@
 /* 
  * PRODUCTCATEGORYLIST COMPONENT - DYNAMIC DATABASE API CATEGORIES
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  */
 
 import React, { useState, useEffect } from 'react';
@@ -21,11 +21,11 @@ const ProductCategoryList = ({ activeCategoryId, onSelectCategory, onCategoriesL
         setLoading(true);
         const data = await categoryProductService.getAllCategoryProducts();
         const categoryList = Array.isArray(data) ? data : (data?.content || data?.Content || []);
-        
+
         // Kiểm tra xem backend đã trả về "Tất cả sản phẩm" chưa
         const hasAll = categoryList.some(c => c.name === 'Tất cả sản phẩm');
         const dynamicCategories = hasAll ? categoryList : [{ id: 'all', name: 'Tất cả sản phẩm' }, ...categoryList];
-        
+
         setCategories(dynamicCategories);
         if (onCategoriesLoaded) {
           onCategoriesLoaded(dynamicCategories);

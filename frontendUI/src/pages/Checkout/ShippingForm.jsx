@@ -1,7 +1,7 @@
 /* 
  * SHIPPINGFORM COMPONENT - WITH SHOPEE STYLE SAVED ADDRESS SELECTOR & INLINE ADD ADDRESS
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  */
 
 import React, { useState, useEffect } from 'react';
@@ -57,10 +57,10 @@ const ShippingForm = ({
 
   const preprocessVnData = (data) => {
     if (!Array.isArray(data)) return [];
-    
+
     // Clone data to avoid mutating original
     let processed = JSON.parse(JSON.stringify(data));
-    
+
     // 1. Rename "Tỉnh Đồng Nai" to "Thành phố Đồng Nai"
     processed = processed.map(prov => {
       if (prov.Name && prov.Name.includes("Đồng Nai")) {
@@ -68,12 +68,12 @@ const ShippingForm = ({
       }
       return prov;
     });
-    
+
     // 2. Merge "Bà Rịa - Vũng Tàu" and "Bình Dương" into "Thành phố Hồ Chí Minh"
     const hcmc = processed.find(p => p.Name && p.Name.includes("Hồ Chí Minh"));
     const baria = processed.find(p => p.Name && p.Name.includes("Bà Rịa"));
     const binhduong = processed.find(p => p.Name && p.Name.includes("Bình Dương"));
-    
+
     if (hcmc) {
       let extraDistricts = [];
       if (baria && Array.isArray(baria.Districts)) {
@@ -82,17 +82,17 @@ const ShippingForm = ({
       if (binhduong && Array.isArray(binhduong.Districts)) {
         extraDistricts = [...extraDistricts, ...binhduong.Districts];
       }
-      
+
       hcmc.Districts = [...(hcmc.Districts || []), ...extraDistricts];
     }
-    
+
     // 3. Remove "Bà Rịa - Vũng Tàu" and "Bình Dương" from the top-level list
     processed = processed.filter(prov => {
       const isBaria = prov.Name && prov.Name.includes("Bà Rịa");
       const isBinhduong = prov.Name && prov.Name.includes("Bình Dương");
       return !isBaria && !isBinhduong;
     });
-    
+
     return processed;
   };
 
@@ -135,7 +135,7 @@ const ShippingForm = ({
     setSelectedDistrictId('');
     setSelectedWardId('');
     setWards([]);
-    
+
     if (provId) {
       const province = provinces.find(p => p.Id === provId);
       setCity(province.Name);
@@ -154,7 +154,7 @@ const ShippingForm = ({
     const distId = e.target.value;
     setSelectedDistrictId(distId);
     setSelectedWardId('');
-    
+
     if (distId) {
       const dist = districts.find(d => d.Id === distId);
       setDistrict(dist.Name);
@@ -170,7 +170,7 @@ const ShippingForm = ({
   const handleWardChange = (e) => {
     const wId = e.target.value;
     setSelectedWardId(wId);
-    
+
     if (wId) {
       const w = wards.find(wd => wd.Id === wId);
       setWard(w.Name);
@@ -327,7 +327,7 @@ const ShippingForm = ({
 
       {/* Main Order Form */}
       <form onSubmit={handleSubmit}>
-        
+
         {/* Order Notes Field */}
         <div className="form-group" style={{ marginTop: '1rem' }}>
           <label>Ghi chú đơn hàng (Tùy chọn)</label>
@@ -357,7 +357,7 @@ const ShippingForm = ({
             <h3 className="address-modal-title">
               Địa Chỉ Của Tôi
             </h3>
-            
+
             <div style={{ maxHeight: '350px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '4px' }}>
               {addresses.map((addr) => {
                 const formattedAddrStr = `${addr.addressLine}, ${addr.ward}, ${addr.district}, ${addr.city}`;
@@ -438,7 +438,7 @@ const ShippingForm = ({
             )}
 
             <form onSubmit={handleSaveNewAddress} className="address-form-grid" style={{ marginTop: '1rem' }}>
-              
+
               {/* Họ tên người nhận */}
               <div className="form-group">
                 <label>Họ và tên người nhận <span style={{ color: '#ef4444' }}>*</span></label>

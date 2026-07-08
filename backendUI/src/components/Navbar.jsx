@@ -46,7 +46,7 @@ const Navbar = ({ activePage, currentUser, onChangeUser }) => {
     });
   });
 
-  // 3. Draft/Inactive products status warnings
+  // 3. Draft/suspended products status warnings
   const draftProducts = (products || [])
     .filter(p => p.status === 0)
     .slice(0, 2);

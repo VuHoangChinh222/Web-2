@@ -1,7 +1,7 @@
 /* 
  * BANNERSERVICE - DATABASE API INTEGRATION
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  */
 
 import axiosClient from '../axiosClient';

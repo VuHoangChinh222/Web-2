@@ -1,7 +1,7 @@
 /* 
  * USERPROFILEHEADER COMPONENT
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  */
 
 import React, { useState, useEffect } from 'react';
@@ -20,9 +20,9 @@ const UserProfileHeader = ({ customer, totalSpent, vipRank, navigate, onLogout }
     <div className="user-profile-header">
       <div className="user-profile-avatar-circle">
         {customer.imageUrl && !avatarError ? (
-          <img 
-            src={resolveImageUrl(customer.imageUrl)} 
-            alt={customer.fullName} 
+          <img
+            src={resolveImageUrl(customer.imageUrl)}
+            alt={customer.fullName}
             className="user-profile-avatar-img"
             onError={() => setAvatarError(true)}
           />

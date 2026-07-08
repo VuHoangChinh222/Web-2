@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import productService from '../services/productService';
 import postService from '../services/postService';
-import { getCookie } from '../utils/cookieHelper';
+import customerService from '../services/customerService';
+import { getCookie, setCookie } from '../utils/cookieHelper';
 import '../assets/css/headerCSS/Header.css';
 
 import { resolveImageUrl } from '../config';
@@ -45,7 +46,24 @@ const Header = ({ currentView, cartCount }) => {
   // Sync customer cookie on load and on route transitions
   useEffect(() => {
     const loggedCustomer = getCookie('customer');
-    setCustomer(loggedCustomer || null);
+    if (loggedCustomer && loggedCustomer.id) {
+      // Đầu tiên cứ hiển thị thông tin cũ từ cookie
+      setCustomer(loggedCustomer);
+      
+      // Đồng thời tải thông tin mới nhất từ Backend để cập nhật cookie và state
+      customerService.getCustomerById(loggedCustomer.id)
+        .then(freshCustomer => {
+          if (freshCustomer) {
+            setCookie('customer', freshCustomer, 7);
+            setCustomer(freshCustomer);
+          }
+        })
+        .catch(err => {
+          console.error("Lỗi khi tải thông tin khách hàng mới nhất:", err);
+        });
+    } else {
+      setCustomer(null);
+    }
     setAvatarError(false);
     setMobileAvatarError(false);
   }, [location]);

@@ -1,12 +1,12 @@
 /* 
  * ORDERSUMMARY COMPONENT
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  */
 
 const OrderSummary = ({ cart }) => {
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + ' VND';
-  
+
   const totalProducts = cart.reduce((sum, item) => sum + (parseInt(item.qty) || 0), 0);
   const totalAmount = cart.reduce((sum, item) => sum + item.price * (parseInt(item.qty) || 0), 0);
 

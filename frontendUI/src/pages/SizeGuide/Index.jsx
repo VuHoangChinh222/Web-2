@@ -1,7 +1,7 @@
 /* 
  * SIZE GUIDE VIEW
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  * Mô tả: Trang hướng dẫn chọn size chi tiết cho giày bóng rổ và áo thi đấu tại Chinh Hoops
  */
 
@@ -39,21 +39,21 @@ const SizeGuideView = () => {
   return (
     <div className="page-container page-transition">
       <h2 className="page-title">Hướng Dẫn <span>Chọn Size Trang Phục</span></h2>
-      
+
       <p className="about-text-lead" style={{ textAlign: 'center', marginBottom: '2rem', maxWidth: '800px', marginLeft: 'auto', marginRight: 'auto' }}>
-        Để sở hữu những bộ quần áo thi đấu vừa vặn hay những đôi giày bóng rổ ôm chân hỗ trợ tốt nhất trên sân đấu, 
+        Để sở hữu những bộ quần áo thi đấu vừa vặn hay những đôi giày bóng rổ ôm chân hỗ trợ tốt nhất trên sân đấu,
         quý khách vui lòng tham khảo bảng kích cỡ chuẩn dưới đây của <strong>Chinh Hoops</strong>.
       </p>
 
       {/* Bộ chọn Tab để chuyển đổi nhanh giữa 2 bảng kích cỡ */}
       <div className="size-guide-tabs">
-        <button 
+        <button
           className={`size-tab-btn ${activeTab === 'shoes' ? 'active' : ''}`}
           onClick={() => setActiveTab('shoes')}
         >
           <i className="fa-solid fa-shoe-prints" style={{ marginRight: '8px' }}></i> Bảng Size Giày
         </button>
-        <button 
+        <button
           className={`size-tab-btn ${activeTab === 'apparel' ? 'active' : ''}`}
           onClick={() => setActiveTab('apparel')}
         >
@@ -110,7 +110,7 @@ const SizeGuideView = () => {
 
       {/* Grid hướng dẫn đo kích thước thực tế tại nhà */}
       <div className="measure-instruction-grid">
-        
+
         {/* Hướng dẫn cách đo chiều dài chân để chọn size giày */}
         <div className="instruction-card">
           <h3 className="instruction-title">

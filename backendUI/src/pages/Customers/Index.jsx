@@ -5,6 +5,8 @@ import CustomerFormModal from './CustomerFormModal';
 import RelatedOrdersModal from './RelatedOrdersModal';
 import CustomerGridCard from './CustomerGridCard';
 import CustomerListItem from './CustomerListItem';
+import CustomerAddressModal from './CustomerAddressModal';
+import CustomerViewModal from './CustomerViewModal';
 import customerService from '../../services/customerService';
 import userAddressService from '../../services/userAddressService';
 import orderService from '../../services/orderService';
@@ -27,10 +29,16 @@ const Customers = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('add');
   const [currentCustomer, setCurrentCustomer] = useState(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedCustomerForView, setSelectedCustomerForView] = useState(null);
 
   // Related orders modal state
   const [relatedModalOpen, setRelatedModalOpen] = useState(false);
   const [selectedCustomerForDelete, setSelectedCustomerForDelete] = useState(null);
+
+  // Customer address management modal state
+  const [addressModalOpen, setAddressModalOpen] = useState(false);
+  const [selectedCustomerForAddress, setSelectedCustomerForAddress] = useState(null);
 
   // Map customers locally
   const mappedCustomers = (customers || []).map(cust => {
@@ -83,6 +91,44 @@ const Customers = () => {
     cust.phone.includes(searchTerm)
   );
 
+  const handleManageAddresses = (customer) => {
+    setSelectedCustomerForAddress(customer);
+    setAddressModalOpen(true);
+  };
+
+  const handleAddressChanged = async () => {
+    try {
+      const allAddresses = await userAddressService.getAll();
+      const addrList = Array.isArray(allAddresses.data) ? allAddresses.data : (Array.isArray(allAddresses) ? allAddresses : []);
+      setUserAddresses(addrList);
+    } catch (e) {
+      console.error("Lỗi đồng bộ danh sách địa chỉ:", e);
+    }
+  };
+
+  const handleToggleStatus = async (customer) => {
+    // Tìm object khách hàng gốc trong context/state
+    const rawCustomer = customers.find(c => c.id === customer.id);
+    if (!rawCustomer) return;
+
+    const nextStatus = rawCustomer.status === 1 ? 0 : 1;
+    const body = {
+      username: rawCustomer.username,
+      fullName: rawCustomer.fullName || rawCustomer.fullname,
+      email: rawCustomer.email,
+      phone: rawCustomer.phone || '',
+      imageUrl: rawCustomer.imageUrl || rawCustomer.avatar || '',
+      status: nextStatus
+    };
+
+    try {
+      const updated = await customerService.update(customer.id, body);
+      setCustomers(prev => prev.map(c => c.id === customer.id ? updated : c));
+    } catch (err) {
+      alert("Lỗi cập nhật trạng thái khách hàng: " + err.message);
+    }
+  };
+
   const handleOpenAdd = () => {
     setCurrentCustomer(null);
     setModalType('add');
@@ -93,6 +139,11 @@ const Customers = () => {
     setCurrentCustomer(customer);
     setModalType('edit');
     setIsModalOpen(true);
+  };
+
+  const handleOpenView = (customer) => {
+    setSelectedCustomerForView(customer);
+    setViewModalOpen(true);
   };
 
   // Submit Operations
@@ -245,7 +296,10 @@ const Customers = () => {
                 cust={cust}
                 resolveImageUrl={resolveImageUrl}
                 handleOpenEdit={handleOpenEdit}
+                handleOpenView={handleOpenView}
                 handleDelete={handleDelete}
+                handleManageAddresses={handleManageAddresses}
+                handleToggleStatus={handleToggleStatus}
               />
             ))
           )}
@@ -279,7 +333,10 @@ const Customers = () => {
                     cust={cust}
                     resolveImageUrl={resolveImageUrl}
                     handleOpenEdit={handleOpenEdit}
+                    handleOpenView={handleOpenView}
                     handleDelete={handleDelete}
+                    handleManageAddresses={handleManageAddresses}
+                    handleToggleStatus={handleToggleStatus}
                   />
                 ))
               )}
@@ -308,6 +365,28 @@ const Customers = () => {
         orders={orders}
         deleteOrder={handleDeleteOrder}
         deleteCustomer={handleDeleteCustomer}
+      />
+
+      <CustomerAddressModal
+        isOpen={addressModalOpen}
+        onClose={() => {
+          setAddressModalOpen(false);
+          setSelectedCustomerForAddress(null);
+        }}
+        customer={selectedCustomerForAddress}
+        onAddressChanged={handleAddressChanged}
+      />
+
+      <CustomerViewModal
+        isOpen={viewModalOpen}
+        onClose={() => {
+          setViewModalOpen(false);
+          setSelectedCustomerForView(null);
+        }}
+        customer={selectedCustomerForView}
+        userAddresses={userAddresses}
+        orders={orders}
+        resolveImageUrl={resolveImageUrl}
       />
     </div>
   );

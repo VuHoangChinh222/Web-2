@@ -1,7 +1,7 @@
 /* 
  * RETURN POLICY VIEW
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  * Mô tả: Trang hiển thị chính sách đổi trả hàng chi tiết cho khách hàng mua sắm tại Chinh Hoops
  */
 
@@ -13,18 +13,18 @@ const ReturnPolicyView = () => {
     <div className="page-container page-transition">
       {/* Tiêu đề trang nổi bật dạng chữ chuyển màu đặc trưng */}
       <h2 className="page-title">Chính Sách <span>Đổi Trả Hàng</span></h2>
-      
+
       {/* Dòng chữ dẫn nhập giới thiệu */}
       <p className="about-text-lead" style={{ textAlign: 'center', marginBottom: '2.5rem', maxWidth: '800px', marginLeft: 'auto', marginRight: 'auto' }}>
-        Tại <strong>Chinh Hoops</strong>, chúng tôi luôn trân trọng sự tin tưởng và đặt sự hài lòng của khách hàng lên hàng đầu. 
+        Tại <strong>Chinh Hoops</strong>, chúng tôi luôn trân trọng sự tin tưởng và đặt sự hài lòng của khách hàng lên hàng đầu.
         Chính sách đổi trả hàng dưới đây được thiết kế linh hoạt nhằm đảm bảo tối đa quyền lợi cho khách hàng khi mua sắm tại cửa hàng.
       </p>
 
       <div className="policy-content-wrapper">
-        
+
         {/* Cột trái: Nội dung chính sách chính */}
         <div className="policy-main-section">
-          
+
           {/* Card 1: Thời gian và điều kiện */}
           <div className="policy-card">
             <h3 className="policy-card-title">
@@ -99,7 +99,7 @@ const ReturnPolicyView = () => {
 
         {/* Cột phải: Sidebar hỗ trợ nhanh */}
         <div className="policy-sidebar">
-          
+
           {/* Card 3: Chi phí đổi trả */}
           <div className="policy-card">
             <h3 className="policy-card-title">

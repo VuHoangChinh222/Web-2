@@ -1,16 +1,33 @@
-import React from 'react';
-import { Edit2, Trash2, Mail, Phone, MapPin, ShoppingBag } from 'lucide-react';
+import { Edit2, Trash2, Mail, Phone, MapPin, ShoppingBag, Eye } from 'lucide-react';
 import GlassCard from '../../components/GlassCard';
 
-const CustomerGridCard = ({ cust, resolveImageUrl, handleOpenEdit, handleDelete }) => {
+const CustomerGridCard = ({ cust, resolveImageUrl, handleOpenEdit, handleOpenView, handleDelete, handleManageAddresses, handleToggleStatus }) => {
   return (
-    <GlassCard hoverEffect={true} className="flex flex-col justify-between h-full relative overflow-hidden">
+    <GlassCard
+      hoverEffect={true}
+      className={`flex flex-col justify-between h-full relative overflow-hidden transition-all duration-300 ${!cust.active
+        ? 'opacity-60 bg-rose-500/[0.01] border-rose-500/20 hover:border-rose-500/35 grayscale-[20%]'
+        : ''
+        }`}
+    >
       {/* Active / Inactive Tag */}
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 z-10">
         {cust.active ? (
-          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Active</span>
+          <button
+            onClick={() => handleToggleStatus(cust)}
+            className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-all cursor-pointer select-none"
+            title="Click to suspend customer"
+          >
+            Active
+          </button>
         ) : (
-          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-500/20 text-slate-400 border border-slate-500/30">Inactive</span>
+          <button
+            onClick={() => handleToggleStatus(cust)}
+            className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-500/20 text-slate-400 border border-slate-500/30 hover:bg-slate-500/30 transition-all cursor-pointer select-none"
+            title="Click to activate customer"
+          >
+            Suspended
+          </button>
         )}
       </div>
 
@@ -19,16 +36,16 @@ const CustomerGridCard = ({ cust, resolveImageUrl, handleOpenEdit, handleDelete 
         <div className="flex items-center gap-3.5 mb-4">
           {cust.avatar ? (
             <>
-              <img 
-                src={resolveImageUrl(cust.avatar)} 
-                alt={cust.fullname} 
+              <img
+                src={resolveImageUrl(cust.avatar)}
+                alt={cust.fullname}
                 className="w-12 h-12 rounded-full object-cover border border-purple-500/20"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.nextSibling.style.display = 'flex';
                 }}
               />
-              <div 
+              <div
                 className="w-12 h-12 rounded-full border border-purple-500/30 bg-purple-600/30 text-purple-200 flex items-center justify-center font-bold text-sm flex-shrink-0"
                 style={{ display: 'none' }}
               >
@@ -82,6 +99,20 @@ const CustomerGridCard = ({ cust, resolveImageUrl, handleOpenEdit, handleDelete 
 
         {/* CRUD Controls */}
         <div className="flex gap-1.5">
+          <button
+            onClick={() => handleOpenView(cust)}
+            className="p-2 rounded-lg glass-btn text-emerald-400 hover:border-emerald-500/40"
+            title="View Customer Profile"
+          >
+            <Eye size={13} />
+          </button>
+          <button
+            onClick={() => handleManageAddresses(cust)}
+            className="p-2 rounded-lg glass-btn text-purple-400 hover:border-purple-500/40"
+            title="Quản lý địa chỉ"
+          >
+            <MapPin size={13} />
+          </button>
           <button
             onClick={() => handleOpenEdit(cust)}
             className="p-2 rounded-lg glass-btn text-blue-400 hover:border-blue-500/40"

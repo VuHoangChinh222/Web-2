@@ -1,7 +1,7 @@
 /* 
  * PRIVACY POLICY VIEW
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  * Mô tả: Trang thông tin chính sách bảo mật thông tin khách hàng tại Chinh Hoops
  */
 
@@ -12,17 +12,17 @@ const PrivacyPolicyView = () => {
   return (
     <div className="page-container page-transition">
       <h2 className="page-title">Chính Sách <span>Bảo Mật Thông Tin</span></h2>
-      
+
       <p className="about-text-lead" style={{ textAlign: 'center', marginBottom: '2.5rem', maxWidth: '800px', marginLeft: 'auto', marginRight: 'auto' }}>
-        <strong>Chinh Hoops</strong> cam kết bảo vệ thông tin riêng tư và dữ liệu cá nhân của quý khách một cách tuyệt đối. 
+        <strong>Chinh Hoops</strong> cam kết bảo vệ thông tin riêng tư và dữ liệu cá nhân của quý khách một cách tuyệt đối.
         Vui lòng đọc bản chính sách bảo mật dưới đây để hiểu rõ hơn về các quyền lợi và cách thức chúng tôi quản lý dữ liệu.
       </p>
 
       <div className="policy-content-wrapper">
-        
+
         {/* Cột trái: Chi tiết chính sách bảo mật */}
         <div className="policy-main-section">
-          
+
           {/* Card 1: Thu thập dữ liệu */}
           <div className="policy-card">
             <h3 className="policy-card-title">
@@ -96,7 +96,7 @@ const PrivacyPolicyView = () => {
 
         {/* Cột phải: Quyền lợi & Thông tin liên hệ nhanh */}
         <div className="policy-sidebar">
-          
+
           {/* Card 4: Quyền lợi của khách hàng */}
           <div className="policy-card">
             <h3 className="policy-card-title">

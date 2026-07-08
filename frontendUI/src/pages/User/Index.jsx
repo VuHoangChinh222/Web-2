@@ -1,7 +1,7 @@
 /* 
  * USERINFOVIEW COMPONENT - PERSONAL CABINET & DYNAMIC VIP RANKING
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  */
 
 import { useState, useEffect } from 'react';
@@ -38,7 +38,7 @@ const UserInfoView = ({ navigate }) => {
       .then(data => {
         // Hỗ trợ cả Page object từ Spring Boot lẫn danh sách mảng trực tiếp
         const ordersList = (data && data.content) ? data.content : (Array.isArray(data) ? data : []);
-        
+
         const mappedOrders = ordersList.map(order => {
           const statusVal = parseInt(order.orderStatus) || 0;
           return {

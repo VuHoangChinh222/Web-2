@@ -1,7 +1,7 @@
 /* 
  * CHECKOUTVIEW COMPONENT - SECURE TRANSACTION & DATABASE INTEGRATION
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  */
 
 import { useState, useEffect } from 'react';
@@ -43,7 +43,7 @@ const CheckoutView = ({ cart, navigate }) => {
       const data = await userAddressService.getByCustomerId(targetId);
       const addrList = Array.isArray(data) ? data : [];
       setAddresses(addrList);
-      
+
       // Nếu có địa chỉ đã lưu, tìm địa chỉ mặc định hoặc dùng địa chỉ đầu tiên
       if (addrList.length > 0) {
         let selectedAddr = null;

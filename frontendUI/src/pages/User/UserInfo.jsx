@@ -1,7 +1,7 @@
 /* 
  * USERINFO COMPONENT - DETAILED PROFILE CARD & PROFILE EDIT FORM
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  * Mô tả: Trang chỉnh sửa thông tin cá nhân khách hàng, đồng bộ dữ liệu với API và cập nhật lại Cookie
  */
 
@@ -50,7 +50,7 @@ const UserInfo = ({ navigate }) => {
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // 1. Kiểm tra trạng thái đăng nhập từ cookie khi nạp trang
+  // 1. Kiểm tra trạng thái đăng nhập từ cookie khi nạp trang và fetch thông tin mới nhất
   useEffect(() => {
     const loggedCustomer = getCookie('customer');
     if (!loggedCustomer) {
@@ -59,14 +59,34 @@ const UserInfo = ({ navigate }) => {
       return;
     }
 
-    // Gán dữ liệu khách hàng vào các input fields
+    // Gán dữ liệu tạm thời từ cookie trước
     setCustomer(loggedCustomer);
     setFullName(loggedCustomer.fullName || '');
     setEmail(loggedCustomer.email || '');
     setPhone(loggedCustomer.phone || '');
     setAddress(loggedCustomer.address || '');
     setImageUrl(loggedCustomer.imageUrl || '');
-    setLoading(false);
+    setLoading(true);
+
+    // Tải dữ liệu mới nhất từ CSDL để cập nhật lại
+    customerService.getCustomerById(loggedCustomer.id)
+      .then(freshCustomer => {
+        if (freshCustomer) {
+          setCookie('customer', freshCustomer, 7);
+          setCustomer(freshCustomer);
+          setFullName(freshCustomer.fullName || '');
+          setEmail(freshCustomer.email || '');
+          setPhone(freshCustomer.phone || '');
+          setAddress(freshCustomer.address || '');
+          setImageUrl(freshCustomer.imageUrl || '');
+        }
+      })
+      .catch(err => {
+        console.error("Lỗi khi đồng bộ thông tin khách hàng mới nhất:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [navigate]);
 
   // 2. Hàm xử lý gửi yêu cầu cập nhật thông tin
@@ -166,9 +186,9 @@ const UserInfo = ({ navigate }) => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', width: '100%' }}>
               <div className="user-profile-avatar-circle" style={{ margin: 0, flexShrink: 0 }}>
                 {imageUrl ? (
-                  <img 
-                    src={resolveImageUrl(imageUrl)} 
-                    alt="Avatar Preview" 
+                  <img
+                    src={resolveImageUrl(imageUrl)}
+                    alt="Avatar Preview"
                     className="user-profile-avatar-img"
                     onError={(e) => {
                       e.target.style.display = 'none';
@@ -179,8 +199,8 @@ const UserInfo = ({ navigate }) => {
                 )}
               </div>
               <div style={{ flex: 1 }}>
-                <input 
-                  type="file" 
+                <input
+                  type="file"
                   accept="image/*"
                   onChange={handleImageUpload}
                   style={{

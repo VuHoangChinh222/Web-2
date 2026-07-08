@@ -19,6 +19,12 @@ const customerService = {
         return axiosClient.put(url, customerData);
     },
 
+    // API Lấy chi tiết thông tin khách hàng
+    getCustomerById: (id) => {
+        const url = `/customers/${id}`;
+        return axiosClient.get(url);
+    },
+
     // API Quên mật khẩu khách hàng
     forgotPassword: (email) => {
         const url = '/customers/forgot-password';

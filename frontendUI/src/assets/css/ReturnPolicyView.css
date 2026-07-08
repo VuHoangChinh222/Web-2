@@ -1,7 +1,7 @@
 /* 
  * RETURN POLICY VIEW - STYLESHEET
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề WEB 2 & ReactJS
  * Mô tả: Định nghĩa style cho trang chính sách đổi trả với thiết kế Glassmorphism và responsive
  */
 
@@ -15,7 +15,8 @@
 /* Responsive cho màn hình máy tính bảng và di động */
 @media (max-width: 992px) {
     .policy-content-wrapper {
-        grid-template-columns: 1fr; /* Chuyển thành bố cục 1 cột */
+        grid-template-columns: 1fr;
+        /* Chuyển thành bố cục 1 cột */
     }
 }
 
@@ -62,7 +63,8 @@
 }
 
 .policy-card-title i {
-    color: var(--accent); /* Biểu tượng icon màu cam */
+    color: var(--accent);
+    /* Biểu tượng icon màu cam */
     font-size: 1.4rem;
 }
 

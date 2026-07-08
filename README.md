@@ -372,10 +372,11 @@ Giao diện quản trị Admin được thiết kế theo phong cách Dark Mode 
 2. **Products (Sản phẩm)**: Thêm/Sửa/Xóa sản phẩm, tải ảnh lên server. Nổi bật với hệ thống **Quản lý biến thể thông minh (Intelligent Variant Management)** hỗ trợ tạo hàng loạt (Bulk Generate) bằng tổ hợp chéo Size x Color siêu tốc, và thiết lập giá Base Price / Sale Price độc lập cho từng biến thể để tối ưu chiến lược xả kho.
 3. **Categories (Danh mục)**: Quản lý phân loại sản phẩm và tin tức.
 4. **Orders (Đơn hàng)**: Theo dõi đơn hàng, cập nhật trạng thái (`Pending` -> `Processing` -> `Shipped` -> `Completed` -> `Cancelled`).
-5. **Customers (Khách hàng)**: Quản lý danh sách khách hàng và trạng thái khóa/mở khóa tài khoản.
+5. **Customers (Khách hàng)**: Quản lý danh sách khách hàng và trạng thái khóa/mở khóa tài khoản. Tích hợp nút **Quick Toggle Status** thay đổi trạng thái nhanh với hiệu ứng chuyển màu trực quan khi không ở trạng thái Active. Modal **"View Details"** nâng cấp hiển thị trực quan thông tin liên hệ, tổng đơn hàng, tổng chi tiêu (VND), danh sách Sổ địa chỉ (Shipping Addresses) và lịch sử Đơn hàng đã đặt (Associated Orders) kèm trạng thái đơn hàng cụ thể. Hỗ trợ **Quản lý Sổ Địa Chỉ Khách Hàng (Customer Address Management)** bằng tiếng Anh hóa 100%, chọn phân cấp hành chính (Province, District, Ward) chuẩn xác và cấu hình đặt làm địa chỉ mặc định, khắc phục hoàn toàn lỗi hiển thị chữ trắng nền trắng trên các thẻ dropdown trong môi trường Dark Mode.
 6. **Blogs (Tin tức)**: Biên tập bài viết tin tức và tối ưu hóa SEO URL.
 7. **Banners (Banner Quảng cáo)**: Quản lý hình ảnh quảng cáo thanh trượt trang chủ. Tích hợp tính năng thông minh: **Kéo thả (Drag & Drop)** trực quan để thay đổi thứ tự hiển thị của slider, các nút thao tác nhanh (Quick Actions) cho phép **bật/tắt (Active/Disable)**, và cơ chế **Auto-sequencing** tự động tính toán lại vị trí hiển thị khi thêm/xóa ảnh để tránh các khoảng trống (gaps) dữ liệu.
 8. **Roles & Permissions (Phân quyền & Vai trò)**: Giao diện trực quan tích hợp danh sách 12 Entity hệ thống. Cho phép tích chọn cập nhật quyền và lưu đồng bộ trực tiếp vào cơ sở dữ liệu.
+9. **Users (Nhân sự & Staff)**: Quản lý tài khoản nhân viên. Tích hợp nút **Quick Toggle Status** thay đổi trạng thái hoạt động nhanh. Modal **"View Details"** được xây dựng riêng biệt, thiết kế cao cấp để hiển thị thông tin chi tiết và danh sách toàn bộ các bài viết (Blog posts) do nhân viên đó đã đăng tải trên hệ thống.
 
 ---
 

@@ -41,11 +41,11 @@ const ProfileCard = () => {
           </div>
           <div className="profile-card-badge-row">
             <span>Giáo viên hướng dẫn:</span>
-            <span className="profile-card-badge-value">Nguyễn Cao Thái</span>
+            <span className="profile-card-badge-value">Hồ Diên Lợi</span>
           </div>
           <div className="profile-card-badge-row">
             <span>Học phần:</span>
-            <span className="profile-card-badge-value">Chuyên đề ASP.NET</span>
+            <span className="profile-card-badge-value">Chuyên đề ứng dụng lập trình Web 2</span>
           </div>
         </div>
         {/* Action Buttons */}

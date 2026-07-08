@@ -1,7 +1,7 @@
 /* 
  * ABOUT US PAGE WITH INTEGRATED PROFILE CARD
  * Sinh viên: Vũ Hoàng Chính
- * Môn học: Chuyên đề ASP.NET Core & ReactJS
+ * Môn học: Chuyên đề ứng dụng lập trình Web 2
  */
 
 import React from 'react';
@@ -29,7 +29,7 @@ const AboutView = () => (
             THÔNG TIN ĐỒ ÁN CHINHCMS
           </h4>
           <p className="project-info-box-desc">
-            Dự án này là sản phẩm thực hành Chuyên đề ASP.NET Core kết hợp ReactJS của sinh viên Vũ Hoàng Chính.
+            Dự án này là sản phẩm thực hành Chuyên đề ứng dụng lập trình Web 2 (Java Spring Boot kết hợp ReactJS) của sinh viên Vũ Hoàng Chính.
             Backend cung cấp hệ thống quản trị dữ liệu sản phẩm, đơn hàng và danh mục kết hợp RESTful API mạnh mẽ,
             kết hợp cùng Frontend ReactJS tối ưu trải nghiệm người dùng cuối.
           </p>

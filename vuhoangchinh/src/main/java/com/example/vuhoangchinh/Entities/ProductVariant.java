@@ -20,7 +20,9 @@ import java.math.BigDecimal;
  * @AllArgsConstructor: Lombok tự động sinh constructor có đầy đủ tham số.
  */
 @Entity
-@Table(name = "product_variants")
+@Table(name = "product_variants", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"product_id", "size", "color"})
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -53,6 +55,11 @@ public class ProductVariant {
     @Min(value = 0, message = "Giá bán của biến thể không được là số âm")
     private BigDecimal price;
 
+    // Giá khuyến mãi riêng của biến thể
+    @Column(name = "sale_price", precision = 12, scale = 2)
+    @Min(value = 0, message = "Giá khuyến mãi không được là số âm")
+    private BigDecimal salePrice;
+
     // Số lượng tồn kho của biến thể cụ thể này, không được null, mặc định là 0, không được âm
     @Column(name = "stock_quantity", nullable = false)
     @NotNull(message = "Số lượng tồn kho không được để trống")
@@ -63,4 +70,8 @@ public class ProductVariant {
     @Column(unique = true, length = 50)
     @Size(max = 50, message = "Mã SKU quản lý kho hàng tối đa 50 ký tự")
     private String sku;
+
+    // Trạng thái của biến thể (1: Đang kinh doanh/Hiển thị, 0: Ngừng kinh doanh/Ẩn)
+    @Column(nullable = false)
+    private Integer status = 1;
 }

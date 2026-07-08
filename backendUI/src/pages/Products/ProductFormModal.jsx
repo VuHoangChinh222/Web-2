@@ -52,7 +52,7 @@ const ProductFormModal = ({
         // Tải ảnh phụ đã lưu
         productImageService.getByProductId(productData.id).then(res => {
           setAdditionalImages(res);
-        }).catch(err => console.log("Lỗi tải ảnh phụ", err));
+        }).catch(err => console.log("Error loading additional images", err));
       }
     }
   }, [isOpen, modalType, productData, categoriesProduct]);
@@ -64,7 +64,7 @@ const ProductFormModal = ({
         const url = await uploadImage(file);
         setForm(prev => ({ ...prev, image: url }));
       } catch (err) {
-        alert("Lỗi tải lên hình đại diện: " + err.message);
+        alert("Error uploading cover image: " + err.message);
       }
     }
   };
@@ -73,7 +73,7 @@ const ProductFormModal = ({
     let files = Array.from(e.target.files);
     
     if (additionalImages.length + files.length > 4) {
-      alert("Bạn chỉ được phép tải lên tối đa 4 hình ảnh phụ (Gallery) cho mỗi sản phẩm.");
+      alert("You can only upload up to 4 additional gallery images per product.");
       const allowedSlots = 4 - additionalImages.length;
       files = files.slice(0, allowedSlots);
       if (files.length === 0) return;
@@ -89,7 +89,7 @@ const ProductFormModal = ({
         const newImages = urls.map(url => ({ id: null, imageUrl: url, isNew: true }));
         setAdditionalImages(prev => [...prev, ...newImages]);
       } catch (err) {
-        alert("Lỗi tải lên bộ sưu tập ảnh: " + err.message);
+        alert("Error uploading gallery: " + err.message);
       }
     }
   };
@@ -101,7 +101,7 @@ const ProductFormModal = ({
           await productImageService.delete(image.id);
           setAdditionalImages(prev => prev.filter(img => img.id !== image.id));
        } catch (err) {
-          alert("Lỗi xóa ảnh khỏi hệ thống: " + err.message);
+          alert("Error deleting image from system: " + err.message);
        }
     } else {
        // Chỉ xóa ảnh mới up chưa lưu
@@ -117,7 +117,7 @@ const ProductFormModal = ({
     }
     
     if (!form.image) {
-      alert("Ảnh Thumbnail (đại diện) là bắt buộc để hiển thị bên ngoài trang chủ cửa hàng!");
+      alert("Primary thumbnail is required for storefront display!");
       return;
     }
 
@@ -244,7 +244,7 @@ const ProductFormModal = ({
                 onChange={handleImageUpload}
                 className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-purple-600/20 file:text-purple-300 hover:file:bg-purple-600/30 file:cursor-pointer glass-input cursor-pointer"
               />
-              <span className="text-[9px] text-slate-500 block mt-1">Ảnh đại diện chính của sản phẩm.</span>
+              <span className="text-[9px] text-slate-500 block mt-1">Primary display image of the product.</span>
             </div>
           </div>
         </div>
@@ -260,7 +260,7 @@ const ProductFormModal = ({
               onChange={handleMultipleImageUpload}
               className="w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-semibold file:bg-blue-600/20 file:text-blue-300 hover:file:bg-blue-600/30 file:cursor-pointer glass-input cursor-pointer"
             />
-            <span className="text-[9px] text-slate-500 block">Bạn có thể chọn (Ctrl/Shift) nhiều hình ảnh cùng lúc (Tối đa 4 ảnh).</span>
+            <span className="text-[9px] text-slate-500 block">You can select multiple images at once (Max 4).</span>
           </div>
           
           {/* Gallery Preview */}
@@ -273,7 +273,7 @@ const ProductFormModal = ({
                      type="button" 
                      onClick={() => handleDeleteAdditionalImage(img, index)}
                      className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                     title="Xóa hình này"
+                     title="Delete this image"
                    >
                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                    </button>

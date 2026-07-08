@@ -6,6 +6,7 @@ import ProductFormModal from './ProductFormModal';
 import ProductViewModal from './ProductViewModal';
 import ProductGridCard from './ProductGridCard';
 import ProductListItem from './ProductListItem';
+import ProductVariantModal from './ProductVariantModal';
 import productService from '../../services/productService';
 import productImageService from '../../services/productImageService';
 
@@ -35,10 +36,11 @@ const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
-  
+
   // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
   const [modalType, setModalType] = useState('add');
   const [currentProduct, setCurrentProduct] = useState(null);
 
@@ -70,6 +72,11 @@ const Products = () => {
     setIsViewModalOpen(true);
   };
 
+  const handleOpenVariants = (product) => {
+    setCurrentProduct(product);
+    setIsVariantModalOpen(true);
+  };
+
   const handleFormSubmit = async (formData) => {
     const body = {
       categoryId: parseInt(formData.categoryId),
@@ -88,11 +95,11 @@ const Products = () => {
         const newProduct = await productService.create(body);
         if (formData.additionalImages && formData.additionalImages.length > 0) {
           try {
-            await Promise.all(formData.additionalImages.map(img => 
+            await Promise.all(formData.additionalImages.map(img =>
               productImageService.create({ productId: newProduct.id, imageUrl: img.imageUrl })
             ));
           } catch (e) {
-            console.error("Lỗi khi đồng bộ mảng ảnh phụ (Thêm mới):", e);
+            console.error("Error syncing additional images (Create):", e);
           }
         }
         setProducts(prev => [newProduct, ...prev]);
@@ -102,18 +109,18 @@ const Products = () => {
           const newImages = formData.additionalImages.filter(img => img.isNew);
           if (newImages.length > 0) {
             try {
-              await Promise.all(newImages.map(img => 
+              await Promise.all(newImages.map(img =>
                 productImageService.create({ productId: formData.id, imageUrl: img.imageUrl })
               ));
             } catch (e) {
-              console.error("Lỗi khi đồng bộ mảng ảnh phụ (Cập nhật):", e);
+              console.error("Error syncing additional images (Update):", e);
             }
           }
         }
         setProducts(prev => prev.map(p => p.id === formData.id ? updated : p));
       }
     } catch (err) {
-      alert("Lỗi khi lưu sản phẩm: " + err.message);
+      alert("Error saving product: " + err.message);
     }
     setIsModalOpen(false);
   };
@@ -135,14 +142,14 @@ const Products = () => {
       const updated = await productService.update(prod.id, body);
       setProducts(prev => prev.map(p => p.id === prod.id ? updated : p));
     } catch (err) {
-      alert("Lỗi khi thay đổi trạng thái: " + err.message);
+      alert("Error changing status: " + err.message);
     }
   };
 
   const handleDelete = async (id) => {
     const hasOrders = orderDetails.some(det => det.productId === id);
     if (hasOrders) {
-      alert("Không thể xóa sản phẩm: Đã có đơn hàng chứa mặt hàng này.");
+      alert("Cannot delete product: It is already linked to existing orders.");
       return;
     }
     if (confirm("Are you sure you want to delete this product?")) {
@@ -150,7 +157,7 @@ const Products = () => {
         await productService.delete(id);
         setProducts(prev => prev.filter(p => p.id !== id));
       } catch (err) {
-        alert("Lỗi khi xóa sản phẩm: " + err.message);
+        alert("Error deleting product: " + err.message);
       }
     }
   };
@@ -233,14 +240,15 @@ const Products = () => {
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProducts.map((prod) => (
-            <ProductGridCard 
-              key={prod.id} 
+            <ProductGridCard
+              key={prod.id}
               prod={prod}
               categoriesProduct={categoriesProduct}
               getStatusBadge={getStatusBadge}
               resolveImageUrl={resolveImageUrl}
               handleOpenView={handleOpenView}
               handleOpenEdit={handleOpenEdit}
+              handleOpenVariants={handleOpenVariants}
               handleDelete={handleDelete}
               handleToggleStatus={handleToggleStatus}
             />
@@ -263,7 +271,7 @@ const Products = () => {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {filteredProducts.map((prod) => (
-                  <ProductListItem 
+                  <ProductListItem
                     key={prod.id}
                     prod={prod}
                     categoriesProduct={categoriesProduct}
@@ -271,6 +279,7 @@ const Products = () => {
                     resolveImageUrl={resolveImageUrl}
                     handleOpenView={handleOpenView}
                     handleOpenEdit={handleOpenEdit}
+                    handleOpenVariants={handleOpenVariants}
                     handleDelete={handleDelete}
                     handleToggleStatus={handleToggleStatus}
                   />
@@ -292,13 +301,21 @@ const Products = () => {
         onSubmit={handleFormSubmit}
       />
 
-      <ProductViewModal 
+      <ProductViewModal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
         productData={currentProduct}
         categoriesProduct={categoriesProduct}
         resolveImageUrl={resolveImageUrl}
       />
+
+      {isVariantModalOpen && (
+        <ProductVariantModal
+          isOpen={isVariantModalOpen}
+          onClose={() => setIsVariantModalOpen(false)}
+          product={currentProduct}
+        />
+      )}
     </div>
   );
 };

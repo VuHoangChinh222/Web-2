@@ -54,25 +54,29 @@ public class ProductVariantController {
     @AllArgsConstructor
     public static class ProductVariantRequest {
         
-        @NotNull(message = "Mã ID sản phẩm trực thuộc là bắt buộc")
-        private Long productId; // ID của sản phẩm gốc sở hữu biến thể này
+        @NotNull(message = "Product ID is required")
+        private Long productId;
 
-        @Size(max = 20, message = "Kích cỡ tối đa 20 ký tự")
-        private String size; // Kích cỡ (size)
+        @Size(max = 20, message = "Size must be at most 20 characters")
+        private String size;
 
-        @Size(max = 50, message = "Màu sắc tối đa 50 ký tự")
-        private String color; // Màu sắc (color)
+        @Size(max = 50, message = "Color must be at most 50 characters")
+        private String color;
 
-        @Min(value = 0, message = "Giá bán biến thể không được là số âm")
-        private BigDecimal price; // Giá bán riêng của biến thể (nếu có)
+        @Min(value = 0, message = "Price cannot be negative")
+        private BigDecimal price;
 
-        @NotNull(message = "Số lượng tồn kho là bắt buộc")
-        @Min(value = 0, message = "Số lượng tồn kho không được là số âm")
-        private Integer stockQuantity = 0; // Số lượng tồn kho của biến thể
+        @Min(value = 0, message = "Sale price cannot be negative")
+        private BigDecimal salePrice;
 
-        @NotBlank(message = "Mã SKU quản lý kho hàng không được để trống")
-        @Size(max = 50, message = "Mã SKU tối đa 50 ký tự")
-        private String sku; // Mã quản lý kho hàng riêng biệt (e.g. NIKE-AM40-B)
+        @NotNull(message = "Stock quantity is required")
+        @Min(value = 0, message = "Stock quantity cannot be negative")
+        private Integer stockQuantity = 0;
+
+        @Size(max = 50, message = "SKU must be at most 50 characters")
+        private String sku; // Removed @NotBlank to allow auto-generation when empty
+
+        private Integer status = 1;
     }
 
     /**
@@ -123,19 +127,30 @@ public class ProductVariantController {
         return ResponseEntity.ok(variant);
     }
 
-    /**
-     * API Thêm mới một biến thể sản phẩm (Kiểm tra trùng SKU).
-     * POST /api/product-variants
-     */
     @PostMapping
     public ResponseEntity<?> createVariant(@Valid @RequestBody ProductVariantRequest request) {
         // Tìm sản phẩm gốc xem có tồn tại không
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found with id " + request.getProductId()));
 
-        // Kiểm tra xem mã SKU này đã tồn tại trong CSDL hay chưa
-        if (productVariantRepository.findBySku(request.getSku()).isPresent()) {
-            return ResponseEntity.badRequest().body("Mã SKU '" + request.getSku() + "' đã tồn tại trong hệ thống");
+        // Bẫy lỗi 1: Kiểm tra trùng lặp Size và Color
+        if (productVariantRepository.findByProductIdAndSizeAndColor(product.getId(), request.getSize(), request.getColor()).isPresent()) {
+            return ResponseEntity.badRequest().body("Error: Variant with Size '" + request.getSize() + "' and Color '" + request.getColor() + "' already exists for this product!");
+        }
+
+        // Tự sinh SKU nếu Admin để trống
+        String sku = request.getSku();
+        if (sku == null || sku.trim().isEmpty()) {
+            String safeSize = request.getSize() != null ? request.getSize().replaceAll("\\s+", "").toUpperCase() : "X";
+            String safeColor = request.getColor() != null ? request.getColor().replaceAll("\\s+", "").toUpperCase() : "X";
+            sku = "PROD" + product.getId() + "-" + safeSize + "-" + safeColor + "-" + java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+        } else {
+            sku = sku.trim();
+        }
+
+        // Bẫy lỗi 2: Kiểm tra xem mã SKU này đã tồn tại trong CSDL hay chưa
+        if (productVariantRepository.findBySku(sku).isPresent()) {
+            return ResponseEntity.badRequest().body("SKU code '" + sku + "' already exists in the system");
         }
 
         // Tạo đối tượng thực thể và sao chép dữ liệu từ request DTO
@@ -144,17 +159,15 @@ public class ProductVariantController {
         variant.setSize(request.getSize());
         variant.setColor(request.getColor());
         variant.setPrice(request.getPrice());
+        variant.setSalePrice(request.getSalePrice());
         variant.setStockQuantity(request.getStockQuantity());
-        variant.setSku(request.getSku().trim());
+        variant.setSku(sku);
+        variant.setStatus(request.getStatus() != null ? request.getStatus() : 1);
 
         ProductVariant savedVariant = productVariantRepository.save(variant);
         return ResponseEntity.ok(savedVariant);
     }
 
-    /**
-     * API Cập nhật thông tin biến thể sản phẩm theo ID (Kiểm tra trùng chéo SKU).
-     * PUT /api/product-variants/{id}
-     */
     @PutMapping("/{id}")
     public ResponseEntity<?> updateVariant(@PathVariable Long id, @Valid @RequestBody ProductVariantRequest request) {
         // Tìm biến thể cũ trong DB
@@ -168,11 +181,23 @@ public class ProductVariantController {
             variant.setProduct(product);
         }
 
-        // Kiểm tra trùng chéo SKU với biến thể khác khi cập nhật SKU
-        String newSku = request.getSku().trim();
+        // Bẫy lỗi 1: Kiểm tra trùng chéo Size và Color với một biến thể khác (khác ID hiện tại)
+        java.util.Optional<ProductVariant> existingClash = productVariantRepository.findByProductIdAndSizeAndColor(variant.getProduct().getId(), request.getSize(), request.getColor());
+        if (existingClash.isPresent() && !existingClash.get().getId().equals(id)) {
+            return ResponseEntity.badRequest().body("Error: Cannot update to Size '" + request.getSize() + "' and Color '" + request.getColor() + "' because this configuration already exists in another variant!");
+        }
+
+        // Bẫy lỗi 2: Kiểm tra trùng chéo SKU với biến thể khác khi cập nhật SKU
+        String newSku = request.getSku();
+        if (newSku == null || newSku.trim().isEmpty()) {
+            newSku = variant.getSku(); // Giữ nguyên SKU nếu Admin bỏ trống
+        } else {
+            newSku = newSku.trim();
+        }
+
         if (!variant.getSku().equalsIgnoreCase(newSku)) {
             if (productVariantRepository.findBySku(newSku).isPresent()) {
-                return ResponseEntity.badRequest().body("Mã SKU '" + newSku + "' đã tồn tại ở một biến thể khác");
+                return ResponseEntity.badRequest().body("SKU code '" + newSku + "' already exists in another variant");
             }
             variant.setSku(newSku);
         }
@@ -181,21 +206,68 @@ public class ProductVariantController {
         variant.setSize(request.getSize());
         variant.setColor(request.getColor());
         variant.setPrice(request.getPrice());
+        variant.setSalePrice(request.getSalePrice());
         variant.setStockQuantity(request.getStockQuantity());
+        if (request.getStatus() != null) {
+            variant.setStatus(request.getStatus());
+        }
 
         ProductVariant updatedVariant = productVariantRepository.save(variant);
         return ResponseEntity.ok(updatedVariant);
     }
 
-    /**
-     * API Xóa biến thể sản phẩm khỏi CSDL theo ID.
-     * DELETE /api/product-variants/{id}
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteVariant(@PathVariable Long id) {
         ProductVariant variant = productVariantRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product variant not found with id " + id));
-        productVariantRepository.delete(variant);
-        return ResponseEntity.ok("Xóa biến thể sản phẩm thành công");
+        
+        try {
+            productVariantRepository.delete(variant);
+            return ResponseEntity.ok("Product variant deleted successfully");
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            return ResponseEntity.badRequest().body("SECURITY ERROR: This variant is linked to existing transactions/orders and cannot be hard deleted. Please change its status to Hidden instead!");
+        }
+    }
+
+    @PostMapping("/bulk")
+    public ResponseEntity<?> createVariantsBulk(@Valid @RequestBody java.util.List<ProductVariantRequest> requests) {
+        java.util.List<ProductVariant> savedVariants = new java.util.ArrayList<>();
+        
+        for (ProductVariantRequest request : requests) {
+            Product product = productRepository.findById(request.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found with id " + request.getProductId()));
+
+            // Skip if already exists
+            if (productVariantRepository.findByProductIdAndSizeAndColor(product.getId(), request.getSize(), request.getColor()).isPresent()) {
+                continue; 
+            }
+
+            String sku = request.getSku();
+            if (sku == null || sku.trim().isEmpty()) {
+                String safeSize = request.getSize() != null ? request.getSize().replaceAll("\\s+", "").toUpperCase() : "X";
+                String safeColor = request.getColor() != null ? request.getColor().replaceAll("\\s+", "").toUpperCase() : "X";
+                sku = "PROD" + product.getId() + "-" + safeSize + "-" + safeColor + "-" + java.util.UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+            } else {
+                sku = sku.trim();
+            }
+
+            // Skip if sku exists
+            if (productVariantRepository.findBySku(sku).isPresent()) {
+                continue;
+            }
+
+            ProductVariant variant = new ProductVariant();
+            variant.setProduct(product);
+            variant.setSize(request.getSize());
+            variant.setColor(request.getColor());
+            variant.setPrice(request.getPrice());
+            variant.setSalePrice(request.getSalePrice());
+            variant.setStockQuantity(request.getStockQuantity());
+            variant.setSku(sku);
+            variant.setStatus(request.getStatus() != null ? request.getStatus() : 1);
+
+            savedVariants.add(productVariantRepository.save(variant));
+        }
+        return ResponseEntity.ok(savedVariants);
     }
 }

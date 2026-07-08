@@ -49,6 +49,11 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
     Optional<ProductVariant> findBySku(String sku);
 
     /**
+     * Truy vấn kiểm tra trùng lặp cấu hình Size và Color của một sản phẩm.
+     */
+    Optional<ProductVariant> findByProductIdAndSizeAndColor(Long productId, String size, String color);
+
+    /**
      * Truy vấn trừ tồn kho ở cấp độ cơ sở dữ liệu (Atomic Update).
      * Ngăn chặn hoàn toàn Race Condition khi nhiều khách hàng cùng tranh mua một mặt hàng cuối cùng.
      * @param variantId ID của biến thể

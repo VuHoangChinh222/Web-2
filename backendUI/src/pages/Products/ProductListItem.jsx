@@ -1,7 +1,7 @@
 import React from 'react';
-import { Eye, Edit2, Trash2 } from 'lucide-react';
+import { Eye, Edit2, Trash2, Layers } from 'lucide-react';
 
-const ProductListItem = ({ prod, categoriesProduct, getStatusBadge, resolveImageUrl, handleOpenView, handleOpenEdit, handleDelete, handleToggleStatus }) => {
+const ProductListItem = ({ prod, categoriesProduct, getStatusBadge, resolveImageUrl, handleOpenView, handleOpenEdit, handleOpenVariants, handleDelete, handleToggleStatus }) => {
   return (
     <tr className={`transition-all duration-300 hover:bg-white/[0.02] ${prod.status === 'Draft' ? 'opacity-50 grayscale hover:opacity-100 hover:grayscale-0' : ''}`}>
       <td className="py-2.5 pr-2">
@@ -15,9 +15,9 @@ const ProductListItem = ({ prod, categoriesProduct, getStatusBadge, resolveImage
       </td>
       <td className="py-2.5">
         <div className="flex items-center gap-1.5">
-          <span className="font-bold text-white">${prod.salePrice.toFixed(2)}</span>
+          <span className="font-bold text-white">{prod.salePrice.toLocaleString()} VND</span>
           {prod.salePrice < prod.price && (
-            <span className="text-[10px] text-slate-500 line-through">${prod.price.toFixed(2)}</span>
+            <span className="text-[10px] text-slate-500 line-through">{prod.price.toLocaleString()} VND</span>
           )}
         </div>
       </td>
@@ -35,21 +35,28 @@ const ProductListItem = ({ prod, categoriesProduct, getStatusBadge, resolveImage
           <button
             onClick={() => handleOpenView(prod)}
             className="p-1.5 rounded glass-btn text-emerald-400 hover:border-emerald-500/40"
-            title="Xem chi tiết"
+            title="View Details"
           >
             <Eye size={12} />
           </button>
           <button
             onClick={() => handleOpenEdit(prod)}
             className="p-1.5 rounded glass-btn text-blue-400 hover:border-blue-500/40"
-            title="Chỉnh sửa"
+            title="Edit Product"
           >
             <Edit2 size={12} />
           </button>
           <button
+            onClick={() => handleOpenVariants(prod)}
+            className="p-1.5 rounded glass-btn text-purple-400 hover:border-purple-500/40"
+            title="Manage Variants"
+          >
+            <Layers size={12} />
+          </button>
+          <button
             onClick={() => handleDelete(prod.id)}
             className="p-1.5 rounded glass-btn text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30"
-            title="Xóa"
+            title="Delete Product"
           >
             <Trash2 size={12} />
           </button>

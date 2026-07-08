@@ -6,7 +6,7 @@ import {
 import { useAdmin } from '../context/AdminContext';
 
 const Sidebar = ({ activePage, setActivePage, isCollapsed, setIsCollapsed, currentUser }) => {
-  const { logout } = useAdmin();
+  const { logout, resolveImageUrl } = useAdmin();
   const menuGroups = [
     {
       title: "Core Commerce",
@@ -118,7 +118,7 @@ const Sidebar = ({ activePage, setActivePage, isCollapsed, setIsCollapsed, curre
       <div className="p-4 border-t border-white/5 flex flex-col gap-2.5 overflow-hidden bg-black/10">
         <div className="flex items-center gap-3 w-full">
           <img 
-            src={currentUser.avatar} 
+            src={resolveImageUrl(currentUser.avatar)} 
             alt={currentUser.fullname} 
             className="w-10 h-10 rounded-full border border-purple-500/30 object-cover flex-shrink-0"
           />

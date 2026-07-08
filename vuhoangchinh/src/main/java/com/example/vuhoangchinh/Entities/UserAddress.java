@@ -6,6 +6,8 @@ import jakarta.persistence.*; // Annotations như @Entity, @Table, @ManyToOne, @
 // Import thư viện Lombok hỗ trợ viết code ngắn gọn
 import lombok.*; // Annotations như @Data, @NoArgsConstructor, @AllArgsConstructor
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * @Entity: Khai báo đây là một thực thể JPA được quản lý bởi Hibernate.
  * @Table(name = "user_addresses"): Chỉ định tên bảng trong cơ sở dữ liệu MySQL tương ứng là "user_addresses".
@@ -60,5 +62,6 @@ public class UserAddress {
 
     // Đánh dấu địa chỉ giao hàng mặc định (true: Mặc định, false: Bình thường), mặc định là false
     @Column(name = "is_default", nullable = false)
+    @JsonProperty("isDefault")
     private Boolean isDefault = false;
 }

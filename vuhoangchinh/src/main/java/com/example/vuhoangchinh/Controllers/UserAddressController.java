@@ -66,6 +66,7 @@ public class UserAddressController {
         @NotBlank(message = "Tỉnh/Thành phố không được để trống")
         private String city; // Tỉnh/Thành phố
         
+        @com.fasterxml.jackson.annotation.JsonProperty("isDefault")
         private Boolean isDefault; // Đánh dấu đây có phải địa chỉ giao hàng mặc định hay không
     }
 

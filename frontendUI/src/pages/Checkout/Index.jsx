@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { getCookie } from '../../utils/cookieHelper';
 import ShippingForm from './ShippingForm';
 import OrderSummary from './OrderSummary';
+import userAddressService from '../../services/userAddressService';
 import '../../assets/css/checkoutCSS/Index.css';
 
 const CheckoutView = ({ cart, navigate }) => {
@@ -18,6 +19,7 @@ const CheckoutView = ({ cart, navigate }) => {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
+  const [addresses, setAddresses] = useState([]);
 
   // Trạng thái xử lý lỗi
   const [errorMessage, setErrorMessage] = useState('');
@@ -31,12 +33,44 @@ const CheckoutView = ({ cart, navigate }) => {
       return;
     }
     setCustomer(loggedCustomer);
-
-    // Tự động điền (Pre-populate) thông tin khách hàng từ Cookie
-    setFullName(loggedCustomer.fullName || '');
-    setPhone(loggedCustomer.phone || '');
-    setAddress(loggedCustomer.address || '');
+    refreshAddresses(loggedCustomer.id);
   }, [navigate]);
+
+  const refreshAddresses = async (customerId, selectNewAddrId = null) => {
+    const targetId = customerId || customer?.id;
+    if (!targetId) return;
+    try {
+      const data = await userAddressService.getByCustomerId(targetId);
+      const addrList = Array.isArray(data) ? data : [];
+      setAddresses(addrList);
+      
+      // Nếu có địa chỉ đã lưu, tìm địa chỉ mặc định hoặc dùng địa chỉ đầu tiên
+      if (addrList.length > 0) {
+        let selectedAddr = null;
+        if (selectNewAddrId) {
+          selectedAddr = addrList.find(a => a.id === selectNewAddrId);
+        }
+        if (!selectedAddr) {
+          selectedAddr = addrList.find(a => a.isDefault) || addrList[0];
+        }
+        setFullName(selectedAddr.recipientName);
+        setPhone(selectedAddr.recipientPhone);
+        setAddress(`${selectedAddr.addressLine}, ${selectedAddr.ward}, ${selectedAddr.district}, ${selectedAddr.city}`);
+      } else {
+        const loggedCustomer = getCookie('customer');
+        setFullName(loggedCustomer?.fullName || '');
+        setPhone(loggedCustomer?.phone || '');
+        setAddress(loggedCustomer?.address || '');
+      }
+      return addrList;
+    } catch (err) {
+      console.error("Lỗi khi tải địa chỉ:", err);
+      const loggedCustomer = getCookie('customer');
+      setFullName(loggedCustomer?.fullName || '');
+      setPhone(loggedCustomer?.phone || '');
+      setAddress(loggedCustomer?.address || '');
+    }
+  };
 
   // 2. Xử lý lưu thông tin giao hàng tạm thời và chuyển đến trang Thanh toán
   const handleSubmit = (e) => {
@@ -99,6 +133,9 @@ const CheckoutView = ({ cart, navigate }) => {
           setNotes={setNotes}
           navigate={navigate}
           errorMessage={errorMessage}
+          addresses={addresses}
+          customer={customer}
+          refreshAddresses={refreshAddresses}
         />
 
         {/* Right Column: Order Summary */}

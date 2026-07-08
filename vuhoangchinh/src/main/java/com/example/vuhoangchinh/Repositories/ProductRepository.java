@@ -35,4 +35,19 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * Do số lượng sản phẩm có thể rất lớn, nên trả về định dạng phân trang (Page).
      */
     Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
+
+    /**
+     * Lọc sản phẩm theo danh mục, từ khóa tìm kiếm và khoảng giá.
+     */
+    @org.springframework.data.jpa.repository.Query("SELECT p FROM Product p WHERE " +
+            "(:categoryId IS NULL OR p.category.id = :categoryId) AND " +
+            "(:keyword IS NULL OR :keyword = '' OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.shortDescription) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+            "(:minPrice IS NULL OR COALESCE(p.discountPrice, p.basePrice) >= :minPrice) AND " +
+            "(:maxPrice IS NULL OR COALESCE(p.discountPrice, p.basePrice) <= :maxPrice)")
+    Page<Product> filterProducts(
+            @org.springframework.data.repository.query.Param("categoryId") Long categoryId,
+            @org.springframework.data.repository.query.Param("keyword") String keyword,
+            @org.springframework.data.repository.query.Param("minPrice") java.math.BigDecimal minPrice,
+            @org.springframework.data.repository.query.Param("maxPrice") java.math.BigDecimal maxPrice,
+            Pageable pageable);
 }

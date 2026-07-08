@@ -83,7 +83,11 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page, // Trang số mấy
             @RequestParam(defaultValue = "10") int size, // Tối đa bao nhiêu mục một trang
             @RequestParam(defaultValue = "id") String sortBy, // Thuộc tính sắp xếp
-            @RequestParam(defaultValue = "asc") String sortDir) { // Sắp xếp Tăng (asc) hay Giảm (desc)
+            @RequestParam(defaultValue = "asc") String sortDir, // Sắp xếp Tăng (asc) hay Giảm (desc)
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice) {
         
         // Thiết lập bộ quy tắc sắp xếp
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
@@ -92,8 +96,14 @@ public class ProductController {
         // Áp dụng bộ thông số sắp xếp và phân trang vào đối tượng Pageable
         Pageable pageable = PageRequest.of(page, size, sort);
         
-        // Trả về kết quả từ truy vấn CSDL
-        return productRepository.findAll(pageable);
+        // Nếu không có bất kỳ bộ lọc nào được cung cấp, sử dụng findAll
+        if (categoryId == null && (keyword == null || keyword.trim().isEmpty()) && minPrice == null && maxPrice == null) {
+            return productRepository.findAll(pageable);
+        }
+        
+        // Ngược lại, thực hiện lọc theo các tham số được cung cấp
+        String searchKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
+        return productRepository.filterProducts(categoryId, searchKeyword, minPrice, maxPrice, pageable);
     }
 
     /**

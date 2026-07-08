@@ -373,6 +373,29 @@ Giao diện quản trị Admin được thiết kế theo phong cách Dark Mode 
 
 ---
 
+## 🛍️ Phân Hệ Store Frontend: `frontendUI`
+
+Giao diện bán hàng (Store UI) được thiết kế đồng bộ với phong cách **Premium Glassmorphic** trên nền tối (Dark-mode), mang lại trải nghiệm mua sắm hiện đại và chuyên nghiệp cho khách hàng.
+
+### ✨ Các Tính Năng Giao Diện Nổi Bật
+1. **Thiết Kế Glassmorphic Cao Cấp**:
+   * Áp dụng hiệu ứng mờ hậu cảnh (`backdrop-filter: blur()`), kết hợp với viền trắng bán trong suốt (`border: 1px solid rgba(255, 255, 255, 0.05)`) và đổ bóng mịn.
+   * Palette màu huyền bí (Dark slate, Indigo, Violet) kết hợp dải màu chuyển sắc (gradient) cho các nút hành động nổi bật.
+2. **Trang Chi Tiết Sản Phẩm (Premium Product Detail UI/UX)**:
+   * **Bảng điều khiển số lượng Capsule**: Thiết kế tối giản, dạng bo tròn với nút tăng giảm (`+`/`-`) dễ thao tác.
+   * **Chỉ báo tồn kho trực tiếp (Live Stock Indicator)**: Một chấm nhấp nháy (Pulse-dot indicator) màu xanh lá cạnh chữ "Còn hàng" tạo phản hồi thị giác sinh động.
+   * **Thư viện ảnh thu nhỏ đối xứng (Centered Thumbnail Gallery)**: Các ảnh phụ của sản phẩm được căn giữa chính xác ở bên dưới ảnh chính, hỗ trợ hiệu ứng hover phóng to (hover-zoom) mượt mà không làm lệch bố cục.
+3. **Cổng Tin Tức / Blog Tích Hợp**:
+   * **Trang danh sách bài viết (`/blog`)**: Hiển thị lưới bài viết kết hợp với danh mục chủ đề ở cột trái. Hỗ trợ hiển thị Slider bài viết tiêu điểm nổi bật ở đầu trang.
+   * **Trang chi tiết bài viết (`/blog/:slug-hoac-id`)**: Rà soát, xử lý thẻ nội dung HTML động và nhúng các thẻ iFrame video (YouTube, Vimeo) tự động co giãn theo khung hình (Responsive Embeds).
+4. **Tìm Kiếm Tự Động Đầu Trang (Header Autocomplete Search)**:
+   * Thanh tìm kiếm tức thời gọi API song song cho cả sản phẩm và bài viết, hỗ trợ bóc tách mảng kết quả từ dữ liệu Page của Spring Boot một cách an toàn.
+5. **Bộ Lọc Nâng Cao & Tìm Kiếm Động Trang Cửa Hàng (`/products`)**:
+   * Hỗ trợ tìm kiếm từ khóa, kết hợp lọc đồng thời theo danh mục và khoảng giá (áp dụng trên giá thực tế sau khi giảm `COALESCE(discount_price, base_price)`).
+   * Sử dụng JPQL Query tùy chỉnh hỗ trợ các tham số lọc tùy chọn, giúp tối ưu hóa băng thông truyền tải và tăng tốc độ tải trang.
+
+---
+
 ## ⚙️ Cấu Hình Hệ Thống
 
 ### Cấu hình Backend (`vuhoangchinh`)

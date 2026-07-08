@@ -1,0 +1,59 @@
+--- DANH SÁCH CÁC TIÊU ĐỀ TRONG FILE DOCX ---
+Para 47 (Style: Heading 1): CHƯƠNG 1: TỔNG QUAN VỀ ĐỀ TÀI VÀ CƠ SỞ LÝ THUYẾT
+Para 48 (Style: Heading 2): Lý do chọn đề tài (Bối cảnh chuyển đổi số và thương mại điện tử)
+Para 52 (Style: Heading 2): 1.2. Mục tiêu của đồ án
+Para 59 (Style: Heading 2): 1.3. Đối tượng và phạm vi nghiên cứu
+Para 70 (Style: Heading 2): 1.4. Công nghệ áp dụng trong hệ thống
+Para 71 (Style: Heading 3): 1.4.1. Tổng quan về ngôn ngữ Java và nền tảng Spring Boot
+Para 77 (Style: Heading 3): 1.4.2. Thư viện ReactJS và kiến trúc ứng dụng một trang (SPA)
+Para 80 (Style: Heading 3): 1.4.3. Hệ quản trị cơ sở dữ liệu MySQL và thư viện Spring Data JPA (Hibernate)'
+Para 83 (Style: Heading 3): 1.4.4. Kiến trúc Web API (RESTful API) và giao thức truyền tải JSON
+Para 91 (Style: Heading 1): CHƯƠNG 2: PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG
+Para 92 (Style: Heading 2): 2.1. Phân tích yêu cầu chức năng (Luồng nghiệp vụ mua hàng và quản trị)
+Para 94 (Style: Normal): 1. Phân hệ dành cho khách hàng mua sắm (Client Storefront):
+Para 102 (Style: Normal): 2. Phân hệ dành cho quản trị viên và nhân viên (Admin Dashboard):
+Para 109 (Style: Heading 2): 2.2. Sơ đồ thực thể mối quan hệ (ERD) của hệ thống
+Para 121 (Style: Heading 2): 2.3. Chi tiết thiết kế cơ sở dữ liệu (Database Schema)
+Para 123 (Style: Heading 3): 2.3.1. Phân hệ nội dung tin tức (CategoryBlog, Blog, Banner)
+Para 130 (Style: Heading 3): 2.3.2. Phân hệ bán hàng E-Commerce (CategoryProduct, Product, ProductImage, ProductVariant)
+Para 139 (Style: Heading 3): 2.3.3. Phân hệ khách hàng và đơn hàng (Customer, Order, OrderDetail, UserAddress)
+Para 148 (Style: Heading 3): 2.3.4. Phân hệ tài khoản quản trị và phân quyền (User, Role)
+Para 153 (Style: Heading 3): 2.4. Thiết kế danh mục Web API giữa Backend và Frontend
+Para 173 (Style: Heading 1): CHƯƠNG 3: TRIỂN KHAI PHẦN BACKEND (JAVA SPRING BOOT RESTful API)
+Para 174 (Style: Heading 2): 3.1. Cấu trúc Solution và phân tách các tầng kiến trúc
+Para 180 (Style: Heading 2): 3.2. Khởi tạo Cơ sở dữ liệu và Migration dữ liệu mẫu (Seed Data)
+Para 186 (Style: Heading 2): 3.3. Xây dựng các Controllers xử lý API dữ liệu (GET/POST/PUT)
+Para 192 (Style: Heading 2): 3.4. Triển khai phân hệ bảo mật, mã hóa mật khẩu và phân quyền (Authentication & Authorization)
+Para 198 (Style: Heading 2): 3.5. Tích hợp công cụ soạn thảo Rich Text (CKEditor) và cơ chế Upload ảnh vật lý
+Para 203 (Style: Heading 2): 3.6. Cấu hình chính sách chia sẻ tài nguyên nguồn gốc chéo (CORS) cho ReactJS
+Para 208 (Style: Heading 2): 3.7. Hoàn chỉnh phần quản trị Backend đầy đủ chức năng dành cho nhân viên của cửa hàng/công ty/doanh nghiệp sử dụng.
+Para 214 (Style: Heading 2): 3.8.. Tài liệu hóa hệ thống API bằng Swagger UI
+Para 220 (Style: Heading 1): CHƯƠNG 4: TRIỂN KHAI PHẦN FRONTEND (REACTJS CLIENT SITE)
+Para 221 (Style: Heading 2): 4.1. Khởi tạo cấu trúc dự án ReactJS và tích hợp React Router DOM
+Para 227 (Style: Heading 2): 4.2. Cấu hình trục HTTP Client chung (axiosClient.js) và xử lý dữ liệu JSON
+Para 233 (Style: Heading 2): 4.3. Xây dựng giao diện các tầng bóc tách cho Trang chủ (Home.jsx)
+Para 239 (Style: Heading 2): 4.4. Triển khai Trang cửa hàng (Shop.jsx) tích hợp bộ lọc nâng cao (Bộ lọc danh mục, Bộ lọc khoảng giá) và Tìm kiếm thời gian thực
+Para 245 (Style: Heading 2): 4.5. Triển khai Trang chi tiết sản phẩm (ProductDetail.jsx) và cơ chế hiển thị nội dung dạng HTML
+Para 251 (Style: Heading 2): 4.6. Xây dựng luồng về khách hàng (đăng ký, đăng nhập, đơn hàng….)
+Para 257 (Style: Heading 2): 4.7. Xây dựng luồng xử lý Giỏ hàng (Cart.jsx) và Biểu mẫu thanh toán đặt đơn hàng (Checkout.jsx)
+Para 263 (Style: Heading 2): 4.8. Giao diện người dùng và Hướng dẫn sử dụng Admin Dashboard
+Para 265 (Style: Heading 3): 4.8.1. Phân hệ Xác thực và Đăng nhập Quản trị
+Para 272 (Style: Heading 3): 4.8.2. Phân hệ Quản lý Banner Quảng cáo
+Para 286 (Style: Heading 1): CHƯƠNG 5: KIỂM THỬ VÀ ĐÁNH GIÁ KẾ THÚC ĐỒ ÁN
+Para 287 (Style: Heading 2): 5.1. Kiểm thử chức năng phân quyền bảo mật vùng Admin (Quyền Admin và Editor)
+Para 291 (Style: Heading 2): 5.2. Kiểm thử luồng nghiệp vụ mua sắm và bắt lỗi logic tồn kho (StockQuantity)
+Para 295 (Style: Heading 2): 5.3. Kiểm thử hiệu năng đồng bộ thời gian thực ngầm (Tab Console F12 và Swagger)
+Para 300 (Style: Heading 2): 5.4. Đánh giá ưu điểm và nhược điểm của giải pháp thiết kế
+Para 304 (Style: Heading 1): CHƯƠNG 6: KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN NÂNG CẤP
+Para 305 (Style: Heading 2): 6.1. Kết quả đạt được của đồ án đối với sinh viên
+Para 309 (Style: Heading 2): 6.2. Hướng phát triển nâng cấp hệ thống trong tương lai (Tích hợp cổng thanh toán, AI gợi ý sản phẩm)
+Para 315 (Style: Heading 2): 
+Para 317 (Style: Normal): 1. Spring Boot Reference Documentation - https://docs.spring.io/spring-boot/index.html
+Para 318 (Style: Normal): 2. ReactJS Official Documentation - https://react.dev/
+Para 319 (Style: Normal): 3. Spring Security Reference Guide - https://docs.spring.io/spring-security/reference/index.html
+Para 320 (Style: Normal): 4. MySQL Reference Manual - https://dev.mysql.com/doc/refman/8.0/en/
+Para 321 (Style: Normal): 5. Axios HTTP Client Documentation - https://axios-http.com/docs/intro
+Para 327 (Style: Normal): 1. Clone mã nguồn từ GitHub về máy tính cá nhân.
+Para 329 (Style: Normal): 3. Chạy ứng dụng Spring Boot (mặc định khởi động tại cổng 8080).
+Para 332 (Style: Heading 2): Tính Năng Quản Lý Banner Nâng Cao (Smart Banner Management)
+Para 337 (Style: Heading 2): Cập nhật: Quản lý Thư viện Ảnh Sản Phẩm (Multi-image Gallery)

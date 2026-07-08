@@ -40,7 +40,7 @@ const HomeView = ({ navigate, addToCart }) => {
 
         // Tải top 5 bài viết mới nhất
         const postRes = await postService.getLatestPosts(1, 5);
-        const postsArray = postRes?.data || postRes?.Data || postRes;
+        const postsArray = Array.isArray(postRes) ? postRes : (postRes?.content || postRes?.Content || postRes?.data || postRes?.Data || []);
         if (postsArray && Array.isArray(postsArray)) {
           setLatestPosts(postsArray.slice(0, 5));
         }

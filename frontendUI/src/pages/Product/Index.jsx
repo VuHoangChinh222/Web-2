@@ -91,8 +91,9 @@ const ProductView = ({ params, navigate, addToCart }) => {
         // Gọi API getAllProducts với đầy đủ các tham số lọc nâng cao
         productService.getAllProducts(pageNumber, pageSize, keyword, minPrice, maxPrice, activeCategoryId)
             .then(result => {
-                setProducts(result.data || []);
-                setTotalPages(result.totalPages || 1);
+                const productList = Array.isArray(result) ? result : (result?.content || result?.Content || result?.data || []);
+                setProducts(productList);
+                setTotalPages(result?.totalPages || result?.TotalPages || 1);
                 setHasError(false);
                 setLoading(false);
             })

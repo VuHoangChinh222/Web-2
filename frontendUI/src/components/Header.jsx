@@ -61,8 +61,8 @@ const Header = ({ currentView, cartCount }) => {
       ])
         .then(([productsRes, postsRes]) => {
           setResults({
-            products: productsRes?.data || productsRes?.Data || [],
-            posts: postsRes?.data || postsRes?.Data || []
+            products: Array.isArray(productsRes) ? productsRes : (productsRes?.content || productsRes?.Content || productsRes?.data || []),
+            posts: Array.isArray(postsRes) ? postsRes : (postsRes?.content || postsRes?.Content || postsRes?.data || [])
           });
           setIsLoading(false);
         })

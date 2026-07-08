@@ -10,7 +10,6 @@ const PostCard = ({ post }) => {
         <Link
             to={`/blog/${post.slug || post.id}`}
             className="product-card post-card-sync"
-            style={{ textDecoration: 'none', color: 'inherit' }}
         >
             {/* Phần hình ảnh bài viết */}
             <div className="product-img">
@@ -24,24 +23,14 @@ const PostCard = ({ post }) => {
 
             {/* Phần thông tin chữ (giữ nguyên giao diện Dark Mode đồng bộ) */}
             <div className="product-info">
-                <div className="product-category">{post.categoryName || 'Xu hướng'}</div>
+                <div className="product-category">{post.categoryBlog?.name || 'Xu hướng'}</div>
 
-                <h3 className="product-name" style={{
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                    height: '44px',
-                    lineHeight: '1.4',
-                    textTransform: 'none',
-                    letterSpacing: 'normal',
-                    margin: '8px 0'
-                }}>
+                <h3 className="product-name">
                     {post.title}
                 </h3>
 
-                <div className="product-date" style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    📅 {post.createdDate ? new Date(post.createdDate).toLocaleDateString('vi-VN') : '26/05/2026'}
+                <div className="product-date">
+                    📅 {post.createdAt ? new Date(post.createdAt).toLocaleDateString('vi-VN') : '26/05/2026'}
                 </div>
             </div>
         </Link>

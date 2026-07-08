@@ -150,11 +150,11 @@ const PostDetailView = ({ params, navigate }) => {
                 {/* Chuyên mục & Ngày tháng */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '1rem' }}>
                     <span style={{ color: 'var(--accent)', fontWeight: '700', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                        {post.categoryName || 'Xu hướng'}
+                        {post.categoryBlog?.name || 'Xu hướng'}
                     </span>
                     <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: 'var(--text-muted)' }}></span>
                     <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
-                        📅 {post.createdDate ? new Date(post.createdDate).toLocaleDateString('vi-VN') : '26/05/2026'}
+                        📅 {post.createdAt ? new Date(post.createdAt).toLocaleDateString('vi-VN') : '26/05/2026'}
                     </span>
                 </div>
 

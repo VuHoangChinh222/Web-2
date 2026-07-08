@@ -20,10 +20,11 @@ const ProductCategoryList = ({ activeCategoryId, onSelectCategory, onCategoriesL
       try {
         setLoading(true);
         const data = await categoryProductService.getAllCategoryProducts();
+        const categoryList = Array.isArray(data) ? data : (data?.content || data?.Content || []);
         
         // Kiểm tra xem backend đã trả về "Tất cả sản phẩm" chưa
-        const hasAll = (data || []).some(c => c.name === 'Tất cả sản phẩm');
-        const dynamicCategories = hasAll ? (data || []) : [{ id: 'all', name: 'Tất cả sản phẩm' }, ...(data || [])];
+        const hasAll = categoryList.some(c => c.name === 'Tất cả sản phẩm');
+        const dynamicCategories = hasAll ? categoryList : [{ id: 'all', name: 'Tất cả sản phẩm' }, ...categoryList];
         
         setCategories(dynamicCategories);
         if (onCategoriesLoaded) {

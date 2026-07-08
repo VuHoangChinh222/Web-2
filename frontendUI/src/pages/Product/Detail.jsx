@@ -28,6 +28,24 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
   const [galleryImages, setGalleryImages] = useState([]);
   const [activeImage, setActiveImage] = useState('');
 
+  // Tăng số lượng mua an toàn
+  const incrementQty = () => {
+    if (qty < stockQuantity) {
+      setQty(prev => prev + 1);
+      setStockWarning(false);
+    } else {
+      setStockWarning(true);
+    }
+  };
+
+  // Giảm số lượng mua an toàn
+  const decrementQty = () => {
+    if (qty > 1) {
+      setQty(prev => prev - 1);
+      setStockWarning(false);
+    }
+  };
+
   // 1. Tải chi tiết sản phẩm từ API (ưu tiên gọi theo Slug, fallback ID)
   useEffect(() => {
     if (!productSlug && !productId) return;
@@ -263,34 +281,52 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
 
           <span className="detail-section-title">Số lượng mua:</span>
           <div className="add-cart-wrap">
-            <input
-              type="number"
-              className="form-input qty-input"
-              value={qty}
-              min="1"
-              max={stockQuantity || 1}
-              disabled={stockQuantity <= 0}
-              onChange={(e) => {
-                const val = parseInt(e.target.value);
-                if (isNaN(val)) {
-                  setQty('');
-                  setStockWarning(false);
-                  return;
-                }
-                if (val > stockQuantity) {
-                  setQty(stockQuantity);
-                  setStockWarning(true);
-                } else {
-                  setQty(Math.max(1, val));
-                  setStockWarning(false);
-                }
-              }}
-              onBlur={() => {
-                if (qty === '' || qty < 1) {
-                  setQty(1);
-                }
-              }}
-            />
+            <div className="qty-selector-wrapper">
+              <button 
+                type="button" 
+                className="qty-btn"
+                onClick={decrementQty}
+                disabled={stockQuantity <= 0 || qty <= 1}
+              >
+                <i className="fa-solid fa-minus"></i>
+              </button>
+              <input
+                type="number"
+                className="qty-input"
+                value={qty}
+                min="1"
+                max={stockQuantity || 1}
+                disabled={stockQuantity <= 0}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  if (isNaN(val)) {
+                    setQty('');
+                    setStockWarning(false);
+                    return;
+                  }
+                  if (val > stockQuantity) {
+                    setQty(stockQuantity);
+                    setStockWarning(true);
+                  } else {
+                    setQty(Math.max(1, val));
+                    setStockWarning(false);
+                  }
+                }}
+                onBlur={() => {
+                  if (qty === '' || qty < 1) {
+                    setQty(1);
+                  }
+                }}
+              />
+              <button 
+                type="button" 
+                className="qty-btn"
+                onClick={incrementQty}
+                disabled={stockQuantity <= 0 || qty >= stockQuantity}
+              >
+                <i className="fa-solid fa-plus"></i>
+              </button>
+            </div>
             {stockQuantity > 0 ? (
               <button className="btn btn-primary detail-add-cart-btn" onClick={handleAdd}>
                 <i className="fa-solid fa-cart-plus detail-cart-icon"></i> Thêm vào giỏ

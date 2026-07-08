@@ -51,7 +51,8 @@ const BlogView = ({ navigate }) => {
       try {
         const response = await postService.getLatestPosts(1, 5);
         if (response) {
-          setFeaturedPosts(response.data || response.Data || []);
+          const featuredList = Array.isArray(response) ? response : (response?.content || response?.Content || response?.data || response?.Data || []);
+          setFeaturedPosts(featuredList);
         }
       } catch (err) {
         console.error("Lỗi khi tải bài viết nổi bật:", err);
@@ -87,8 +88,9 @@ const BlogView = ({ navigate }) => {
         }
 
         if (response) {
-          setPosts(response.data || response.Data || []);
-          setTotalPages(response.totalPages || response.TotalPages || 1);
+          const postsList = Array.isArray(response) ? response : (response?.content || response?.Content || response?.data || response?.Data || []);
+          setPosts(postsList);
+          setTotalPages(response?.totalPages || response?.TotalPages || 1);
           setHasError(false);
         } else {
           setPosts([]);

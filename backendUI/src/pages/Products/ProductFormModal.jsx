@@ -157,7 +157,7 @@ const ProductFormModal = ({
         {/* Pricing Row */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Original Price ($) *</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Original Price (VND) *</label>
             <input
               type="number"
               required
@@ -170,7 +170,7 @@ const ProductFormModal = ({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Sale Price ($)</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Sale Price (VND)</label>
             <input
               type="number"
               step="0.01"

@@ -94,7 +94,7 @@ const RelatedOrdersModal = ({
                       </span>
                     </td>
                     <td className="py-3 font-semibold text-white">
-                      ${(order.totalPrice || order.totalAmount || 0).toLocaleString()}
+                      {new Intl.NumberFormat('vi-VN').format(order.totalPrice || order.totalAmount || 0)} VND
                     </td>
                     <td className="py-3">
                       {getStatusBadge(order.orderStatus || order.status)}

@@ -5,7 +5,7 @@
  */
 
 const OrderSummary = ({ cart }) => {
-  const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + ' VND';
   
   const totalProducts = cart.reduce((sum, item) => sum + (parseInt(item.qty) || 0), 0);
   const totalAmount = cart.reduce((sum, item) => sum + item.price * (parseInt(item.qty) || 0), 0);

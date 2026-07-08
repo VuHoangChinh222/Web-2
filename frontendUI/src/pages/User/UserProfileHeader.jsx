@@ -6,7 +6,7 @@
 
 import React from 'react';
 
-const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + ' VND';
 
 const UserProfileHeader = ({ customer, totalSpent, vipRank, navigate, onLogout }) => {
   return (

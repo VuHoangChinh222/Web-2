@@ -13,8 +13,14 @@ const OrderDetailModal = ({
   deleteOrderDetail,
   deleteOrder,
   formatDate,
+  resolveImageUrl,
   mode = 'view'
 }) => {
+  const formatPrice = (price) => {
+    if (price === undefined || price === null) return '0 VND';
+    return new Intl.NumberFormat('vi-VN').format(price) + ' VND';
+  };
+
   const getStatusBadgeLabel = (status) => {
     switch (status) {
       case '2':
@@ -153,7 +159,7 @@ const OrderDetailModal = ({
                       <tr key={item.id} className="hover:bg-white/[0.01] transition-colors">
                         <td className="py-2.5 pl-2 flex items-center gap-2">
                           <img
-                            src={prod?.image}
+                            src={resolveImageUrl(prod?.image)}
                             alt=""
                             className="w-9 h-7 rounded object-cover border border-white/10 animate-fade-in"
                           />
@@ -162,13 +168,13 @@ const OrderDetailModal = ({
                           </span>
                         </td>
                         <td className="py-2.5 text-center text-slate-300 font-mono">
-                          ${item.price.toFixed(2)}
+                          {formatPrice(item.price)}
                         </td>
                         <td className="py-2.5 text-center text-slate-300 font-mono">
                           {item.quantity}
                         </td>
                         <td className="py-2.5 text-right font-semibold text-white font-mono">
-                          ${item.total.toFixed(2)}
+                          {formatPrice(item.total)}
                         </td>
                         {mode === 'edit' && (
                           <td className="py-2.5 text-right pr-2">
@@ -197,19 +203,15 @@ const OrderDetailModal = ({
           <div className="border-t border-white/5 pt-4 flex flex-col items-end gap-2 text-xs">
             <div className="flex justify-between w-48 text-slate-400">
               <span>Subtotal:</span>
-              <span>${activeOrder.totalAmount.toFixed(2)}</span>
+              <span>{formatPrice(activeOrder.totalAmount)}</span>
             </div>
             <div className="flex justify-between w-48 text-slate-400">
               <span>Shipping:</span>
               <span>FREE</span>
             </div>
-            <div className="flex justify-between w-48 text-slate-400">
-              <span>Estimated Tax (8%):</span>
-              <span>${(activeOrder.totalAmount * 0.08).toFixed(2)}</span>
-            </div>
             <div className="flex justify-between w-48 text-base font-bold text-white border-t border-white/5 pt-2 mt-1">
               <span>Grand Total:</span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">${(activeOrder.totalAmount * 1.08).toFixed(2)}</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">{formatPrice(activeOrder.totalAmount)}</span>
             </div>
           </div>
 

@@ -78,7 +78,8 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
     orderDetails,
     setOrderDetails,
     customers,
-    products
+    products,
+    resolveImageUrl
   } = useAdmin();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -300,6 +301,7 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
                     handleOpenDetail={handleOpenDetail}
                     handleOpenEdit={handleOpenEdit}
                     handleDeleteOrder={handleDeleteOrder}
+                    resolveImageUrl={resolveImageUrl}
                   />
                 ))
               )}
@@ -307,7 +309,7 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
           </table>
         </div>
       </GlassCard>
-
+ 
       <OrderDetailModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
@@ -319,6 +321,7 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
         deleteOrderDetail={handleDeleteOrderDetail}
         deleteOrder={handleDeleteOrder}
         formatDate={formatDate}
+        resolveImageUrl={resolveImageUrl}
         mode={modalMode}
       />
     </div>

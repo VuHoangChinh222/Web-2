@@ -63,6 +63,11 @@ const mapCustomerFromBackend = (cust) => {
   };
 };
 
+const formatPrice = (price) => {
+  if (price === undefined || price === null) return '0 VND';
+  return new Intl.NumberFormat('vi-VN').format(price) + ' VND';
+};
+
 const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) => {
   const { products, orders, customers, categoriesProduct, resolveImageUrl } = useAdmin();
 
@@ -167,7 +172,7 @@ const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) =
             </div>
           </div>
           <div className="mt-4">
-            <h3 className="text-2xl font-bold text-white">${totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
+            <h3 className="text-2xl font-bold text-white">{formatPrice(totalRevenue)}</h3>
             <p className="text-xs text-emerald-400 flex items-center gap-1 mt-1 font-semibold">
               <TrendingUp size={12} />
               <span>+12.4% vs last week</span>
@@ -328,7 +333,7 @@ const Dashboard = ({ setActivePage, setSelectedOrderId, setIsOrderModalOpen }) =
                       <td className="py-3 pr-2 font-mono text-purple-400 font-semibold">{order.id}</td>
                       <td className="py-3 font-medium text-white">{cust ? cust.fullname : 'Unknown'}</td>
                       <td className="py-3 text-slate-400">{formatDate(order.orderDate)}</td>
-                      <td className="py-3 font-semibold text-white">${order.totalAmount.toFixed(2)}</td>
+                      <td className="py-3 font-semibold text-white">{formatPrice(order.totalAmount)}</td>
                       <td className="py-3">{getStatusBadge(order.status)}</td>
                       <td className="py-3 text-right">
                         <button

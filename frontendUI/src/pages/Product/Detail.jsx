@@ -7,12 +7,13 @@
 import { useState, useEffect } from 'react';
 import productService from '../../services/productService';
 import productImageService from '../../services/productImageService';
+import productVariantService from '../../services/productVariantService';
 import { getCookie } from '../../utils/cookieHelper';
 import IsLoading from '../../components/IsLoading';
 import '../../assets/css/productCSS/ProductDetail.css';
 import { resolveImageUrl } from '../../config';
 
-const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + ' VND';
 
 const ProductDetailView = ({ params, addToCart, navigate }) => {
   const productSlug = params.slug;
@@ -23,6 +24,14 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
   const [stockWarning, setStockWarning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Variant States
+  const [variants, setVariants] = useState([]);
+  const [availableColors, setAvailableColors] = useState([]);
+  const [availableSizes, setAvailableSizes] = useState([]);
+  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
+  const [currentVariant, setCurrentVariant] = useState(null);
 
   // Image Gallery state
   const [galleryImages, setGalleryImages] = useState([]);
@@ -68,6 +77,20 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
           })
           .catch(e => console.log(e));
 
+        // Load Variants
+        productVariantService.getVariantsByProductId(data.id)
+          .then(res => {
+            const activeVariants = res.content ? res.content.filter(v => v.status === 1) : [];
+            setVariants(activeVariants);
+            
+            if (activeVariants.length > 0) {
+              const colors = [...new Set(activeVariants.map(v => v.color).filter(Boolean))];
+              setAvailableColors(colors);
+              if (colors.length > 0) setSelectedColor(colors[0]);
+            }
+          })
+          .catch(e => console.log(e));
+
         setQty(1);
         setStockWarning(false);
         setLoading(false);
@@ -89,6 +112,34 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
         setLoading(false);
       });
   }, [productSlug, productId]);
+
+  // Handle color changes to update available sizes
+  useEffect(() => {
+    if (variants.length > 0 && selectedColor) {
+      const sizesForColor = variants
+        .filter(v => v.color === selectedColor)
+        .map(v => v.size)
+        .filter(Boolean);
+      
+      const uniqueSizes = [...new Set(sizesForColor)];
+      setAvailableSizes(uniqueSizes);
+      if (uniqueSizes.length > 0 && !uniqueSizes.includes(selectedSize)) {
+        setSelectedSize(uniqueSizes[0]);
+      }
+    }
+  }, [selectedColor, variants]);
+
+  // Handle current variant selection
+  useEffect(() => {
+    if (variants.length > 0 && selectedColor && selectedSize) {
+      const variant = variants.find(v => v.color === selectedColor && v.size === selectedSize);
+      setCurrentVariant(variant);
+      setQty(1); // Reset qty on variant change
+      setStockWarning(false);
+    } else {
+      setCurrentVariant(null);
+    }
+  }, [selectedColor, selectedSize, variants]);
 
   // Chuyển đổi thẻ oembed từ CKEditor thành iframe phát video thời gian thực
   useEffect(() => {
@@ -167,8 +218,18 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
         ? ['5', '6', '7']
         : ['S', 'M', 'L', 'XL'];
 
-  // Chuẩn hóa và bảo vệ số lượng tồn kho để tránh lỗi so sánh với undefined/null
-  const stockQuantity = product.stockQuantity !== undefined && product.stockQuantity !== null ? product.stockQuantity : 0;
+  // Chuẩn hóa và bảo vệ số lượng tồn kho và giá cả
+  const stockQuantity = currentVariant 
+    ? (currentVariant.stockQuantity !== null ? currentVariant.stockQuantity : 0)
+    : (product.stockQuantity !== undefined && product.stockQuantity !== null ? product.stockQuantity : 0);
+
+  const displayPrice = currentVariant 
+    ? (currentVariant.salePrice > 0 ? currentVariant.salePrice : currentVariant.price)
+    : product.price;
+
+  const originalPrice = currentVariant && currentVariant.salePrice > 0 
+    ? currentVariant.price 
+    : null;
 
   // Xử lý thêm vào giỏ hàng
   const handleAdd = () => {
@@ -194,13 +255,16 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
     const productForCart = {
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: displayPrice,
       image: product.image || resolveImageUrl(product.imageUrl, 'src/assets/images/shoe_product_1_1778727884422.png'),
       categoryName: product.categoryName,
-      stockQuantity: stockQuantity
+      stockQuantity: stockQuantity,
+      variantId: currentVariant ? currentVariant.id : null,
+      color: selectedColor,
+      size: availableSizes.length > 0 ? selectedSize : size
     };
 
-    const success = addToCart(productForCart, size, qty);
+    const success = addToCart(productForCart, productForCart.size, qty, selectedColor);
     if (success) {
       navigate('cart');
     }
@@ -249,9 +313,34 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
           )}
         </div>
         <div className="detail-info">
-          <div className="product-category">{product.categoryName}</div>
+          <div className="product-category-badge">
+            <i className="fa-solid fa-tag"></i> {product.categoryName}
+          </div>
+          
           <h1 className="detail-name-heading">{product.name}</h1>
-          <div className="detail-price">{formatPrice(product.price)}</div>
+          
+          <div className="detail-price-wrap">
+            {originalPrice ? (
+              <>
+                <span className="detail-price">{formatPrice(displayPrice)}</span>
+                <span className="detail-original-price">{formatPrice(originalPrice)}</span>
+                <span className="detail-sale-badge">SALE</span>
+              </>
+            ) : (
+              <span className="detail-price">{formatPrice(displayPrice)}</span>
+            )}
+            
+            {stockQuantity > 20 && (
+              <span className="detail-status-badge">
+                <i className="fa-solid fa-fire"></i> Best Seller
+              </span>
+            )}
+          </div>
+          
+          <p className="detail-short-desc">
+            Sản phẩm chính hãng với thiết kế đột phá, mang lại trải nghiệm tuyệt vời nhất. 
+            Được chế tác từ các vật liệu cao cấp, phù hợp cho cả hoạt động thể thao cường độ cao và phong cách thời trang năng động hàng ngày.
+          </p>
 
           <div className="detail-stock-row">
             {stockQuantity > 0 ? (
@@ -265,19 +354,63 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
             )}
           </div>
 
-          <span className="detail-section-title">Kích cỡ / Size:</span>
-          <div className="size-selector">
-            {sizes.map(s => (
-              <button
-                key={s}
-                className={`size-btn ${size === s ? 'active' : ''}`}
-                onClick={() => setSize(s)}
-                disabled={stockQuantity <= 0}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+          {/* Color Selector */}
+          {availableColors.length > 0 && (
+            <>
+              <span className="detail-section-title">Màu sắc / Color: <span style={{color: 'var(--accent)', fontWeight: 'bold'}}>{selectedColor}</span></span>
+              <div className="color-selector">
+                {availableColors.map(c => (
+                  <button
+                    key={c}
+                    className={`color-btn ${selectedColor === c ? 'active' : ''}`}
+                    onClick={() => setSelectedColor(c)}
+                    title={c}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Size Selector */}
+          {availableSizes.length > 0 ? (
+            <>
+              <span className="detail-section-title">Kích cỡ / Size: <span style={{color: 'var(--accent)', fontWeight: 'bold'}}>{selectedSize}</span></span>
+              <div className="size-selector">
+                {availableSizes.map(s => {
+                  const v = variants.find(vr => vr.color === selectedColor && vr.size === s);
+                  const sStock = v ? v.stockQuantity : 0;
+                  return (
+                    <button
+                      key={s}
+                      className={`size-btn ${selectedSize === s ? 'active' : ''} ${sStock <= 0 ? 'out-of-stock' : ''}`}
+                      onClick={() => setSelectedSize(s)}
+                      disabled={sStock <= 0}
+                    >
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <>
+              <span className="detail-section-title">Kích cỡ / Size:</span>
+              <div className="size-selector">
+                {sizes.map(s => (
+                  <button
+                    key={s}
+                    className={`size-btn ${size === s ? 'active' : ''}`}
+                    onClick={() => setSize(s)}
+                    disabled={stockQuantity <= 0}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
           <span className="detail-section-title">Số lượng mua:</span>
           <div className="add-cart-wrap">
@@ -337,11 +470,27 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
               </button>
             )}
           </div>
+          
           {stockWarning && (
             <div className="stock-warning-text" style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: '500' }}>
               <i className="fa-solid fa-circle-exclamation"></i> Số lượng đặt mua đã được tự động giới hạn ở mức tối đa tồn kho ({stockQuantity} sản phẩm).
             </div>
           )}
+
+          <div className="product-features">
+            <div className="feature-tag">
+              <i className="fa-solid fa-shield-halved"></i>
+              <span>Chính Hãng 100%</span>
+            </div>
+            <div className="feature-tag">
+              <i className="fa-solid fa-truck-fast"></i>
+              <span>Giao Hàng Hỏa Tốc</span>
+            </div>
+            <div className="feature-tag">
+              <i className="fa-solid fa-rotate-left"></i>
+              <span>Đổi Trả 7 Ngày</span>
+            </div>
+          </div>
         </div>
       </div>
 

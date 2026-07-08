@@ -14,7 +14,7 @@ import UserProfileHeader from './UserProfileHeader';
 import OrderHistoryTable from './OrderHistoryTable';
 import OrderDetailModal from './OrderDetailModal';
 
-export const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+export const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + ' VND';
 
 const UserInfoView = ({ navigate }) => {
   const [customer, setCustomer] = useState(null);
@@ -36,11 +36,26 @@ const UserInfoView = ({ navigate }) => {
 
     orderService.getOrdersByCustomerId(loggedCustomer.id)
       .then(data => {
-        if (data && Array.isArray(data)) {
-          setOrders(data);
-          const sum = data.reduce((acc, order) => acc + (order.status === 2 ? order.totalAmount : 0), 0);
-          setTotalSpent(sum);
-        }
+        // Hỗ trợ cả Page object từ Spring Boot lẫn danh sách mảng trực tiếp
+        const ordersList = (data && data.content) ? data.content : (Array.isArray(data) ? data : []);
+        
+        const mappedOrders = ordersList.map(order => {
+          const statusVal = parseInt(order.orderStatus) || 0;
+          return {
+            id: order.id,
+            orderDate: order.createdAt || new Date(),
+            totalAmount: order.grandTotal || 0,
+            totalItems: (order.orderDetails && order.orderDetails.length > 0)
+              ? order.orderDetails.reduce((sum, d) => sum + d.quantity, 0)
+              : 1,
+            status: statusVal,
+            notes: order.note
+          };
+        });
+
+        setOrders(mappedOrders);
+        const sum = mappedOrders.reduce((acc, order) => acc + (order.status === 2 ? order.totalAmount : 0), 0);
+        setTotalSpent(sum);
         setHasError(false);
       })
       .catch(err => {

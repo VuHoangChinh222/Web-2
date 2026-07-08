@@ -9,7 +9,7 @@ import orderService from '../../services/orderService';
 import { resolveImageUrl } from '../../config';
 import '../../assets/css/OrderDetail.css';
 
-const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + ' VND';
 
 const OrderDetailModal = ({ orderId, onClose }) => {
   const [detail, setDetail] = useState(null);
@@ -21,8 +21,41 @@ const OrderDetailModal = ({ orderId, onClose }) => {
     setLoading(true);
     orderService.getOrderDetailById(orderId)
       .then(data => {
-        setDetail(data);
-        setError(null);
+        if (data && data.length > 0) {
+          const parentOrder = data[0].order;
+          const statusVal = parseInt(parentOrder.orderStatus) || 0;
+          const statusTexts = {
+            0: "Chờ duyệt",
+            1: "Đang giao",
+            2: "Đã xong",
+            3: "Đã hủy"
+          };
+
+          const mappedDetail = {
+            orderDate: parentOrder.createdAt || new Date(),
+            status: statusVal,
+            statusText: statusTexts[statusVal] || "Chờ duyệt",
+            customer: {
+              fullName: parentOrder.recipientName || parentOrder.customer?.fullName,
+              phone: parentOrder.recipientPhone || parentOrder.customer?.phone,
+              address: parentOrder.shippingAddress || parentOrder.customer?.address,
+            },
+            notes: parentOrder.note,
+            totalAmount: parentOrder.grandTotal || 0,
+            items: data.map(item => ({
+              id: item.id,
+              productName: `${item.productVariant?.product?.name || 'Sản phẩm'} (Size: ${item.productVariant?.size || 'N/A'}, Màu: ${item.productVariant?.color || 'N/A'})`,
+              productImageUrl: item.productVariant?.product?.thumbnail || item.productVariant?.product?.imageUrl || '',
+              unitPrice: item.price || 0,
+              quantity: item.quantity || 1,
+              subTotal: (item.price || 0) * (item.quantity || 1)
+            }))
+          };
+          setDetail(mappedDetail);
+          setError(null);
+        } else {
+          setError("Không tìm thấy dữ liệu chi tiết của đơn hàng này.");
+        }
       })
       .catch(err => {
         console.error("Lỗi khi tải chi tiết đơn hàng:", err);
@@ -95,9 +128,9 @@ const OrderDetailModal = ({ orderId, onClose }) => {
                       {detail.items?.map(item => (
                         <tr key={item.id}>
                           <td>
-                            <img 
-                              src={resolveImageUrl(item.productImageUrl)} 
-                              alt={item.productName} 
+                            <img
+                              src={resolveImageUrl(item.productImageUrl)}
+                              alt={item.productName}
                               className="order-modal-item-img"
                               onError={(e) => {
                                 e.target.onerror = null;

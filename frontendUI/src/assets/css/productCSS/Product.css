@@ -46,18 +46,18 @@
 .section-header-custom .section-title {
     font-size: 2.25rem;
     font-weight: 800;
-    color: #1e293b;
+    color: var(--text-main);
     margin-bottom: 0.5rem;
     text-transform: uppercase;
     letter-spacing: -0.025em;
-    background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+    background: linear-gradient(135deg, #ffffff 0%, var(--text-muted) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .section-header-custom .section-subtitle {
     font-size: 1rem;
-    color: #64748b;
+    color: var(--text-muted);
     font-weight: 400;
 }
 
@@ -92,28 +92,28 @@
 
 /* === BỘ LỌC GIÁ SẢN PHẨM Ở SIDEBAR === */
 .product-price-filter-card {
-    background: #fff;
+    background: var(--bg-card);
     border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    border: 1px solid #f1f5f9;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
     margin-top: 1.5rem;
 }
 
 .product-price-filter-title {
     font-size: 1rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-main);
     margin-bottom: 1.25rem;
     display: flex;
     align-items: center;
     gap: 8px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 0.75rem;
 }
 
 .product-price-filter-title i {
-    color: #4f46e5;
+    color: var(--accent);
 }
 
 .price-inputs {
@@ -132,24 +132,25 @@
 .price-input-group label {
     font-size: 0.8rem;
     font-weight: 600;
-    color: #64748b;
+    color: var(--text-muted);
     text-align: left;
 }
 
 .price-input-group input {
     width: 100%;
     padding: 8px 12px;
-    border: 1.5px solid #cbd5e1;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
+    background: rgba(15, 23, 42, 0.6);
     font-size: 0.875rem;
     outline: none;
     transition: all 0.2s;
-    color: #1e293b;
+    color: var(--text-main);
 }
 
 .price-input-group input:focus {
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-neon);
 }
 
 .price-filter-error {
@@ -170,7 +171,7 @@
 
 .btn-apply-filter {
     flex: 1;
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
     color: #fff;
     border: none;
     padding: 10px;
@@ -186,14 +187,15 @@
 }
 
 .btn-apply-filter:disabled {
-    background: #cbd5e1;
+    background: #334155;
+    color: #64748b;
     cursor: not-allowed;
 }
 
 .btn-clear-filter {
-    background: #f1f5f9;
-    color: #475569;
-    border: 1px solid #cbd5e1;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
     padding: 10px 12px;
     border-radius: 6px;
     font-size: 0.875rem;
@@ -203,8 +205,8 @@
 }
 
 .btn-clear-filter:hover {
-    background: #e2e8f0;
-    color: #0f172a;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
 }
 
 /* === THANH TÌM KIẾM SẢN PHẨM TRÊN ĐẦU LƯỚI === */
@@ -214,26 +216,26 @@
     align-items: center;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-color);
     gap: 15px;
     flex-wrap: wrap;
 }
 
 .product-count-summary {
-    color: #475569;
+    color: var(--text-muted);
     font-size: 0.95rem;
 }
 
 .product-count-summary strong {
-    color: #4f46e5;
+    color: var(--accent);
     font-weight: 600;
 }
 
 .product-search-box {
     display: flex;
     align-items: center;
-    background: #fff;
-    border: 1.5px solid #cbd5e1;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
     border-radius: 9999px;
     padding: 4px 6px 4px 16px;
     width: 320px;
@@ -242,12 +244,12 @@
 }
 
 .product-search-box:focus-within {
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-neon);
 }
 
 .product-search-box .search-icon {
-    color: #94a3b8;
+    color: var(--text-muted);
     margin-right: 8px;
     font-size: 0.9rem;
 }
@@ -256,7 +258,7 @@
     border: none;
     outline: none;
     font-size: 0.9rem;
-    color: #1e293b;
+    color: var(--text-main);
     width: 100%;
     background: transparent;
 }
@@ -264,7 +266,7 @@
 .product-search-box .search-clear-btn {
     background: none;
     border: none;
-    color: #94a3b8;
+    color: var(--text-muted);
     cursor: pointer;
     padding: 4px;
     margin-right: 4px;
@@ -275,11 +277,11 @@
 }
 
 .product-search-box .search-clear-btn:hover {
-    color: #64748b;
+    color: white;
 }
 
 .product-search-box .search-btn {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
     border: none;
     color: #fff;
     font-size: 0.85rem;

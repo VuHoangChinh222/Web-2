@@ -404,8 +404,8 @@
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #6366f1, #a855f7);
-        /* Màu chuyển sắc từ xanh tím sang hồng tím */
+        background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+        /* Màu chuyển sắc từ cam sáng sang cam đậm */
         color: #ffffff;
         display: flex;
         align-items: center;
@@ -491,15 +491,15 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #6366f1, #a855f7);
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
     color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.9rem;
     font-weight: 800;
-    box-shadow: 0 3px 8px rgba(99, 102, 241, 0.3);
-    /* Bóng đổ chuyển sắc tím nhẹ */
+    box-shadow: 0 3px 8px var(--accent-neon);
+    /* Bóng đổ chuyển sắc cam nhẹ */
     border: 1px solid rgba(255, 255, 255, 0.15);
     /* Viền mờ bao quanh */
 }

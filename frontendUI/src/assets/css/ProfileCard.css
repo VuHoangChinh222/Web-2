@@ -5,14 +5,14 @@
  */
 
 :root {
-  --profile-card-primary: #6366f1;
-  --profile-card-secondary: #a855f7;
+  --profile-card-primary: var(--accent);
+  --profile-card-secondary: var(--accent-hover);
   --profile-card-success: #10b981;
-  --profile-card-bg: rgba(255, 255, 255, 0.7);
-  --profile-card-border: rgba(255, 255, 255, 0.4);
-  --profile-card-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.1);
-  --profile-card-text: #1f2937;
-  --profile-card-text-muted: #6b7280;
+  --profile-card-bg: rgba(30, 41, 59, 0.4);
+  --profile-card-border: rgba(255, 255, 255, 0.08);
+  --profile-card-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  --profile-card-text: #f8fafc;
+  --profile-card-text-muted: #94a3b8;
 }
 
 /* Base Card Container */
@@ -33,9 +33,9 @@
 /* Subtle Interactive Hover Lift & Glow */
 .profile-card-container:hover {
   transform: translateY(-8px);
-  box-shadow: 0 30px 60px -20px rgba(99, 102, 241, 0.15),
-              0 0 50px -10px rgba(168, 85, 247, 0.1);
-  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5),
+              0 0 50px rgba(249, 115, 22, 0.15);
+  border-color: rgba(249, 115, 22, 0.3);
 }
 
 /* Glowing Top Header */
@@ -54,7 +54,7 @@
   left: -20px;
   right: -20px;
   height: 80px;
-  background: var(--profile-card-bg);
+  background: var(--bg-card);
   backdrop-filter: blur(16px);
   border-radius: 50%;
   transform: rotate(-3deg);
@@ -70,7 +70,7 @@
   position: absolute;
   width: 120px;
   height: 120px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   filter: blur(10px);
   top: -20px;
@@ -91,16 +91,16 @@
   height: 120px;
   border-radius: 50%;
   object-fit: cover;
-  border: 5px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  border: 5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  background-color: #f3f4f6;
+  background-color: #1e293b;
 }
 
 .profile-card-container:hover .profile-card-avatar {
   transform: scale(1.08) rotate(3deg);
-  border-color: #ffffff;
-  box-shadow: 0 15px 35px rgba(99, 102, 241, 0.25);
+  border-color: var(--accent);
+  box-shadow: 0 15px 35px rgba(249, 115, 22, 0.35);
 }
 
 /* Status Dot Indicator */
@@ -111,9 +111,9 @@
   width: 16px;
   height: 16px;
   background-color: var(--profile-card-success);
-  border: 3px solid #ffffff;
+  border: 3px solid var(--bg-card);
   border-radius: 50%;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
   animation: pulse-green 2s infinite;
 }
 
@@ -143,7 +143,7 @@
   color: var(--profile-card-text);
   margin: 0;
   letter-spacing: -0.5px;
-  background: linear-gradient(120deg, #1f2937 30%, var(--profile-card-primary) 90%);
+  background: linear-gradient(120deg, #ffffff 30%, var(--profile-card-primary) 90%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -163,11 +163,11 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: rgba(243, 244, 246, 0.5);
+  background: rgba(15, 23, 42, 0.4);
   border-radius: 16px;
   padding: 14px 18px;
   margin-bottom: 24px;
-  border: 1px solid rgba(229, 231, 235, 0.4);
+  border: 1px solid var(--profile-card-border);
 }
 
 .profile-card-badge-row {
@@ -186,7 +186,7 @@
 .profile-card-stats {
   display: flex;
   justify-content: space-around;
-  border-top: 1px dashed rgba(209, 213, 219, 0.5);
+  border-top: 1px dashed var(--profile-card-border);
   padding-top: 20px;
   margin-bottom: 24px;
 }
@@ -234,26 +234,26 @@
 }
 
 .profile-card-btn-primary {
-  background: linear-gradient(135deg, var(--profile-card-primary) 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, var(--profile-card-primary) 0%, var(--profile-card-secondary) 100%);
   color: #ffffff;
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.25);
 }
 
 .profile-card-btn-primary:hover {
-  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+  background: linear-gradient(135deg, var(--profile-card-secondary) 0%, #ea580c 100%);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.35);
   transform: translateY(-2px);
 }
 
 .profile-card-btn-secondary {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
   color: var(--profile-card-text);
-  border: 1px solid rgba(209, 213, 219, 0.6);
+  border: 1px solid var(--profile-card-border);
 }
 
 .profile-card-btn-secondary:hover {
-  background: #f9fafb;
-  border-color: rgba(99, 102, 241, 0.4);
-  color: var(--profile-card-primary);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(249, 115, 22, 0.4);
+  color: var(--accent);
   transform: translateY(-2px);
 }

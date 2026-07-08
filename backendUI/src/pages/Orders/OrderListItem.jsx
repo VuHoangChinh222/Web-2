@@ -1,7 +1,12 @@
 import React from 'react';
 import { Eye, Edit2, Trash2 } from 'lucide-react';
 
-const OrderListItem = ({ order, mappedCustomers, formatDate, getStatusBadge, handleOpenDetail, handleOpenEdit, handleDeleteOrder }) => {
+const formatPrice = (price) => {
+  if (price === undefined || price === null) return '0 VND';
+  return new Intl.NumberFormat('vi-VN').format(price) + ' VND';
+};
+
+const OrderListItem = ({ order, mappedCustomers, formatDate, getStatusBadge, handleOpenDetail, handleOpenEdit, handleDeleteOrder, resolveImageUrl }) => {
   const cust = mappedCustomers.find(c => c.id === order.customerId);
   return (
     <tr className="hover:bg-white/[0.01] transition-colors">
@@ -10,7 +15,7 @@ const OrderListItem = ({ order, mappedCustomers, formatDate, getStatusBadge, han
       </td>
       <td className="py-3.5">
         <div className="flex items-center gap-2">
-          <img src={cust?.avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
+          <img src={resolveImageUrl(cust?.avatar)} alt="" className="w-6 h-6 rounded-full object-cover" />
           <div>
             <p className="font-semibold text-white">{cust ? cust.fullname : 'Unknown'}</p>
             <p className="text-[10px] text-slate-500">{cust?.phone}</p>
@@ -21,7 +26,7 @@ const OrderListItem = ({ order, mappedCustomers, formatDate, getStatusBadge, han
         {formatDate(order.orderDate)}
       </td>
       <td className="py-3.5 font-bold text-white">
-        ${order.totalAmount.toFixed(2)}
+        {formatPrice(order.totalAmount)}
       </td>
       <td className="py-3.5 text-slate-400 font-medium text-[11px]">
         {order.paymentMethod}

@@ -2,7 +2,7 @@ import { getCookie } from '../../utils/cookieHelper';
 import '../../assets/css/cartCSS/Cart.css';
 
 
-export const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+export const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + ' VND';
 
 
 const CartView = ({ cart, updateQty, removeFromCart, navigate }) => {

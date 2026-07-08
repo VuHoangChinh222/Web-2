@@ -45,20 +45,33 @@ const PaymentView = ({ navigate, clearCart, cart }) => {
 
     setLoading(true);
 
+    // Tính toán tổng tiền hàng
+    const totalPrice = cart.reduce((sum, item) => sum + item.price * (parseInt(item.qty) || 0), 0);
+
     // 4. Chuẩn bị dữ liệu gửi lên Backend
     const orderPayload = {
       customerId: customer.id,
-      notes: shippingData.notes || null,
+      recipientName: shippingData.fullName,
+      recipientPhone: shippingData.phone,
+      shippingAddress: shippingData.address,
+      totalPrice: totalPrice,
+      shippingFee: 0,
+      paymentMethod: method.toUpperCase(),
+      paymentStatus: method === 'cod' ? 'PENDING' : 'PAID',
+      orderStatus: '0',
+      note: shippingData.notes || null,
       items: cart.map(item => ({
         productId: item.id,
-        quantity: item.qty
+        quantity: item.qty,
+        size: item.size || null,
+        price: item.price
       }))
     };
 
     try {
       // Thực hiện gọi API lưu đơn hàng vào CSDL
       const response = await orderService.checkout(orderPayload);
-      if (response && response.orderId) {
+      if (response && (response.id || response.orderId)) {
         // Chỉ khi lưu Database thành công mới xác nhận thanh toán hoàn tất
         alert("Thanh toán & Đặt hàng thành công! Cảm ơn bạn đã mua hàng tại Chinh Hoops.");
         
@@ -74,7 +87,7 @@ const PaymentView = ({ navigate, clearCart, cart }) => {
     } catch (err) {
       console.error("Lỗi thanh toán & tạo đơn hàng:", err);
       // Hiển thị trực quan lỗi (ví dụ: hết hàng)
-      const msg = err.response?.data?.message || "Đã xảy ra lỗi hệ thống khi xử lý đơn hàng.";
+      const msg = err.response?.data?.message || err.response?.data || "Đã xảy ra lỗi hệ thống khi xử lý đơn hàng.";
       setErrorMessage(msg);
       alert("Lỗi đặt hàng: " + msg);
     } finally {

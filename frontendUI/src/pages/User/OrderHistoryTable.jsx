@@ -7,7 +7,7 @@
 import React from 'react';
 import IsLoading from '../../components/IsLoading';
 
-const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + ' VND';
 
 const OrderHistoryTable = ({ orders, loading, hasError, onViewDetail }) => {
   return (

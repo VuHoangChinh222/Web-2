@@ -12,7 +12,7 @@ export const productsData = [
 
 export const categories = ['Tất cả', 'Giày bóng rổ', 'Áo', 'Quần', 'Vớ'];
 
-export const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+export const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + ' VND';
 
 const ProductCard = ({ product, addToCart, navigate }) => {
   const imageSrc = product.image || resolveImageUrl(product.imageUrl, 'src/assets/images/shoe_product_1_1778727884422.png');

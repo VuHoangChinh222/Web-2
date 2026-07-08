@@ -162,7 +162,7 @@ const Header = ({ currentView, cartCount }) => {
                               <img src={processImage(product.imageUrl)} alt={product.name} className="search-item-img" />
                               <div className="search-item-info">
                                 <span className="search-item-name">{product.name}</span>
-                                <span className="search-item-price">{product.price?.toLocaleString('vi-VN')} đ</span>
+                                <span className="search-item-price">{product.price?.toLocaleString('vi-VN')} VND</span>
                               </div>
                             </Link>
                           </li>
@@ -293,7 +293,7 @@ const Header = ({ currentView, cartCount }) => {
                                 <img src={processImage(product.imageUrl)} alt={product.name} className="search-item-img" />
                                 <div className="search-item-info">
                                   <span className="search-item-name">{product.name}</span>
-                                  <span className="search-item-price">{product.price?.toLocaleString('vi-VN')} đ</span>
+                                  <span className="search-item-price">{product.price?.toLocaleString('vi-VN')} VND</span>
                                 </div>
                               </Link>
                             </li>

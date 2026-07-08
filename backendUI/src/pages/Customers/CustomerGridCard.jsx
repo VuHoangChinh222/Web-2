@@ -54,7 +54,7 @@ const CustomerGridCard = ({ cust, resolveImageUrl, handleOpenEdit, handleDelete 
           </div>
           <div>
             <p className="text-[9px] uppercase font-bold tracking-wider text-slate-500">Total Spent</p>
-            <p className="text-sm font-bold text-emerald-400">${cust.totalSpending.toFixed(2)}</p>
+            <p className="text-sm font-bold text-emerald-400">{new Intl.NumberFormat('vi-VN').format(cust.totalSpending)} VND</p>
           </div>
         </div>
 

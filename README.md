@@ -259,6 +259,8 @@ erDiagram
   * Tích hợp cơ chế kiểm tra mối quan hệ liên kết dữ liệu trước khi xóa. Ví dụ:
     * Sản phẩm có chứa khóa ngoại trong bảng đơn hàng (`order_details`) sẽ bị chặn không cho phép xóa khỏi hệ thống để tránh lỗi mất lịch sử mua hàng.
     * Xóa Danh mục sẽ bị chặn nếu đang có Sản phẩm hoặc Bài viết tham chiếu trực thuộc.
+    * **Kiểm tra ràng buộc Khách hàng (Customer Delete Constraint)**: Khách hàng có đơn hàng liên kết sẽ bị chặn xóa ở cả tầng Frontend và Backend. Giao diện quản trị sẽ tự động mở Modal cảnh báo liệt kê các đơn hàng liên quan kèm nút **Xóa đơn hàng** riêng biệt. Sau khi dọn dẹp hết đơn hàng liên kết, tài khoản khách hàng mới có thể được xóa. Khi xóa thành công, hệ thống tự động xóa sạch toàn bộ Sổ địa chỉ (`UserAddress`) liên kết trong CSDL để tránh lưu trữ rác.
+    * **Kiểm tra ràng buộc Nhân sự (User Delete Constraint)**: Nhân viên hệ thống đã biên tập bài viết Blog sẽ bị chặn xóa để bảo toàn dữ liệu tác giả. Giao diện quản trị sẽ tự động mở Modal cảnh báo các bài viết Blog liên kết kèm nút **Xóa bài viết** tương ứng. Tài khoản nhân viên chỉ có thể được xóa khi không còn bài viết nào do họ biên tập trên hệ thống.
 * **Global Exception Handling (Bộ xử lý ngoại lệ toàn cục)**:
   * Định nghĩa lớp `@RestControllerAdvice` để "bẫy" toàn bộ các ngoại lệ ném ra trong quá trình chạy chương trình. 
   * Thay vì để lộ mã lỗi dài dòng hoặc sập dịch vụ (gây lỗi `500 Internal Server Error`), hệ thống sẽ phân tích lỗi (ví dụ lỗi nhập liệu từ `@Valid`, lỗi khóa chính trùng lặp `SQLIntegrityConstraintViolationException`) và định dạng lại thành chuỗi JSON phản hồi có mã HTTP 400 hoặc 409 chi tiết, chỉ rõ trường nào bị lỗi và lỗi gì để lập trình viên frontend hiển thị lên giao diện người dùng.

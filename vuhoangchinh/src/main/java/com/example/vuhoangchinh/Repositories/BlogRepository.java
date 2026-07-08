@@ -44,4 +44,9 @@ public interface BlogRepository extends JpaRepository<Blog, Long> {
      * @return Một Optional chứa thực thể bài viết nếu tồn tại, hoặc rỗng nếu không tìm thấy
      */
     Optional<Blog> findBySlug(String slug);
+
+    /**
+     * Tìm kiếm danh sách tất cả bài viết của một tác giả cụ thể.
+     */
+    List<Blog> findByAuthorId(Long authorId);
 }

@@ -2,8 +2,11 @@ package com.example.vuhoangchinh.Controllers;
 
 // Import thực thể và repository phục vụ truy xuất người dùng hệ thống
 import com.example.vuhoangchinh.Entities.User; // Thực thể chứa thông tin tài khoản nhân viên/admin
+import com.example.vuhoangchinh.Entities.Blog; // Thực thể bài viết
 import com.example.vuhoangchinh.Repositories.UserRepository; // Repository tương tác CSDL bảng users
 import com.example.vuhoangchinh.Repositories.RoleRepository; // Repository tương tác CSDL bảng roles để liên kết vai trò
+import com.example.vuhoangchinh.Repositories.BlogRepository; // Repository tương tác CSDL bảng blogs
+import org.springframework.http.ResponseEntity; // Phản hồi HTTP
 
 // Import các annotation của Spring Framework
 import org.springframework.beans.factory.annotation.Autowired; // Tự động inject bean phụ thuộc
@@ -42,6 +45,10 @@ public class UserController {
     // Tiêm bean PasswordEncoder của Spring Security để mã hóa mật khẩu
     @Autowired
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    // Tiêm bean BlogRepository để truy xuất bài viết
+    @Autowired
+    private BlogRepository blogRepository;
 
     /**
      * API Lấy danh sách người dùng hệ thống hỗ trợ phân trang và sắp xếp.
@@ -145,13 +152,19 @@ public class UserController {
      * DELETE /api/users/{id}
      */
     @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable Long id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         // Tìm kiếm tài khoản cần xóa trong CSDL, báo lỗi nếu không tìm thấy
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id " + id));
         
+        // Kiểm tra xem người dùng có bài viết nào liên kết không
+        List<Blog> blogs = blogRepository.findByAuthorId(id);
+        if (!blogs.isEmpty()) {
+            return ResponseEntity.badRequest().body("Cannot delete user because they have written blog posts. Please delete their blog posts first.");
+        }
+
         // Tiến hành xóa tài khoản người dùng
         userRepository.delete(user);
-        return "User with id " + id + " has been deleted.";
+        return ResponseEntity.ok("User with id " + id + " has been deleted.");
     }
 }

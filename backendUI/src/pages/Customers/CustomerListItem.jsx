@@ -41,7 +41,7 @@ const CustomerListItem = ({ cust, resolveImageUrl, handleOpenEdit, handleOpenVie
           <div className="flex items-center gap-2"><Phone size={12} className="text-purple-400 flex-shrink-0" /> <span>{cust.phone}</span></div>
         </div>
       </td>
-      <td className="p-3 text-xs text-slate-400 max-w-[200px] truncate" title={cust.address}>
+      <td className="p-3 text-xs text-slate-400" title={cust.address}>
         <div className="flex items-start gap-2">
           <MapPin size={12} className="text-purple-400 flex-shrink-0 mt-0.5" />
           <span className="line-clamp-2">{cust.address}</span>

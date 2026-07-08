@@ -2,8 +2,13 @@ package com.example.vuhoangchinh.Controllers;
 
 // Import các thực thể và repository từ nội bộ dự án
 import com.example.vuhoangchinh.Entities.Customer; // Thực thể lưu thông tin khách hàng trong DB
+import com.example.vuhoangchinh.Entities.Order; // Thực thể đơn hàng
+import com.example.vuhoangchinh.Entities.UserAddress; // Thực thể sổ địa chỉ
 import com.example.vuhoangchinh.Repositories.CustomerRepository; // Repository thực hiện CRUD với bảng customers
+import com.example.vuhoangchinh.Repositories.OrderRepository; // Repository tương tác bảng orders
+import com.example.vuhoangchinh.Repositories.UserAddressRepository; // Repository tương tác bảng user_addresses
 import com.example.vuhoangchinh.Security.JwtTokenProvider; // Helper class dùng để tạo và giải mã JWT token
+import org.springframework.transaction.annotation.Transactional; // Annotation hỗ trợ giao dịch CSDL
 
 // Import các thư viện Lombok để tự động sinh Code (Getter, Setter, Constructor, v.v.)
 import lombok.*; // Lombok annotations như @Data, @NoArgsConstructor, @AllArgsConstructor
@@ -51,6 +56,14 @@ public class CustomerController {
     // Tiêm Bean JwtTokenProvider để xử lý sinh token khi khách hàng đăng nhập thành công
     @Autowired
     private JwtTokenProvider tokenProvider;
+
+    // Tiêm Bean OrderRepository để kiểm tra ràng buộc đơn hàng
+    @Autowired
+    private OrderRepository orderRepository;
+
+    // Tiêm Bean UserAddressRepository để dọn dẹp địa chỉ
+    @Autowired
+    private UserAddressRepository userAddressRepository;
 
     /**
      * DTO (Data Transfer Object) dùng để hứng dữ liệu đăng nhập từ Client gửi lên.
@@ -220,12 +233,23 @@ public class CustomerController {
      * DELETE /api/customers/{id}
      */
     @DeleteMapping("/{id}")
-    public String deleteCustomer(@PathVariable Long id) {
+    @Transactional
+    public ResponseEntity<?> deleteCustomer(@PathVariable Long id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer not found with id " + id));
         
+        // Kiểm tra xem khách hàng có đơn hàng nào hay không
+        List<Order> orders = orderRepository.findByCustomerId(id);
+        if (!orders.isEmpty()) {
+            return ResponseEntity.badRequest().body("Cannot delete customer because they have existing orders. Please delete their orders first.");
+        }
+
+        // Thực hiện xóa toàn bộ địa chỉ liên quan trước để tránh lỗi khóa ngoại
+        List<UserAddress> addresses = userAddressRepository.findByCustomerId(id);
+        userAddressRepository.deleteAll(addresses);
+
         // Thực hiện xóa khách hàng
         customerRepository.delete(customer);
-        return "Customer with id " + id + " has been deleted.";
+        return ResponseEntity.ok("Customer with id " + id + " has been deleted.");
     }
 }

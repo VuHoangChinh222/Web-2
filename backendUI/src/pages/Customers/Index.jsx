@@ -12,13 +12,13 @@ import userAddressService from '../../services/userAddressService';
 import orderService from '../../services/orderService';
 
 const Customers = () => {
-  const { 
-    customers, 
+  const {
+    customers,
     setCustomers,
-    orders, 
+    orders,
     setOrders,
-    uploadImage, 
-    resolveImageUrl, 
+    uploadImage,
+    resolveImageUrl,
     userAddresses,
     setUserAddresses
   } = useAdmin();
@@ -46,16 +46,16 @@ const Customers = () => {
     const active = cust.status === 1;
 
     // Find default address from userAddresses state
-    const defaultAddr = (userAddresses || []).find(addr => 
+    const defaultAddr = (userAddresses || []).find(addr =>
       (addr.customerId === cust.id || addr.customer?.id === cust.id) && addr.isDefault
-    ) || (userAddresses || []).find(addr => 
+    ) || (userAddresses || []).find(addr =>
       (addr.customerId === cust.id || addr.customer?.id === cust.id)
     );
 
-    const addressText = defaultAddr ? 
+    const addressText = defaultAddr ?
       [defaultAddr.addressLine, defaultAddr.ward, defaultAddr.district, defaultAddr.city]
         .filter(part => part && part !== 'N/A')
-        .join(', ') 
+        .join(', ')
       : '';
 
     return {
@@ -175,9 +175,9 @@ const Customers = () => {
       // Save or update address
       if (customerId) {
         const addressText = (formData.address || '').trim();
-        const existingAddr = (userAddresses || []).find(addr => 
+        const existingAddr = (userAddresses || []).find(addr =>
           (addr.customerId === customerId || addr.customer?.id === customerId) && addr.isDefault
-        ) || (userAddresses || []).find(addr => 
+        ) || (userAddresses || []).find(addr =>
           (addr.customerId === customerId || addr.customer?.id === customerId)
         );
 
@@ -310,12 +310,12 @@ const Customers = () => {
             <thead>
               <tr className="bg-white/5 border-b border-white/10 text-[10px] uppercase tracking-wider text-slate-400">
                 <th className="p-3 font-semibold w-14">Avatar</th>
-                <th className="p-3 font-semibold">Name & ID</th>
-                <th className="p-3 font-semibold w-40">Contact</th>
-                <th className="p-3 font-semibold w-48">Address</th>
+                <th className="p-3 font-semibold w-44">Name & ID</th>
+                <th className="p-3 font-semibold w-60">Contact</th>
+                <th className="p-3 font-semibold">Address</th>
                 <th className="p-3 font-semibold w-32">Orders & Spent</th>
                 <th className="p-3 font-semibold w-24">Status</th>
-                <th className="p-3 font-semibold text-right w-20">Actions</th>
+                <th className="p-3 font-semibold text-right w-36">Actions</th>
               </tr>
             </thead>
             <tbody>

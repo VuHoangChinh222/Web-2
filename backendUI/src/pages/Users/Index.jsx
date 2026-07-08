@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Search, Edit2, Trash2, Mail } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Mail, Eye } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import UserFormModal from './UserFormModal';
@@ -72,6 +72,39 @@ const Users = () => {
     setCurrentUserForm(usr);
     setModalType('edit');
     setIsModalOpen(true);
+  };
+
+  const handleOpenView = (usr) => {
+    setCurrentUserForm(usr);
+    setModalType('view');
+    setIsModalOpen(true);
+  };
+
+  const handleToggleStatus = async (usr) => {
+    if (usr.id === currentUser?.id) {
+      alert("Self Demolition Blocked: You cannot suspend your own account.");
+      return;
+    }
+
+    const nextStatus = usr.active ? 0 : 1;
+    const body = {
+      username: usr.username,
+      fullName: usr.fullname,
+      email: usr.email,
+      phone: usr.phone || '0912345678',
+      imageUrl: usr.avatar === 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80' ? '' : usr.avatar,
+      status: nextStatus,
+      role: {
+        id: usr.roleId
+      }
+    };
+
+    try {
+      const updatedUser = await userService.update(usr.id, body);
+      setUsers(prev => prev.map(u => u.id === usr.id ? updatedUser : u));
+    } catch (err) {
+      alert("Lỗi khi đổi trạng thái: " + err.message);
+    }
   };
 
   // Submit Operations
@@ -238,13 +271,34 @@ const Users = () => {
                     </td>
                     <td className="py-3.5">
                       {usr.active ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Active</span>
+                        <button
+                          onClick={() => handleToggleStatus(usr)}
+                          disabled={isSelf}
+                          className={`px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition-all ${isSelf ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          title={isSelf ? "Cannot change your own status" : "Click to suspend user"}
+                        >
+                          Active
+                        </button>
                       ) : (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-500/20 text-slate-400 border border-slate-500/30">Suspended</span>
+                        <button
+                          onClick={() => handleToggleStatus(usr)}
+                          disabled={isSelf}
+                          className={`px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-500/20 text-slate-400 border border-slate-500/30 hover:bg-slate-500/30 transition-all ${isSelf ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          title={isSelf ? "Cannot change your own status" : "Click to activate user"}
+                        >
+                          Suspended
+                        </button>
                       )}
                     </td>
                     <td className="py-3.5 text-right">
                       <div className="flex justify-end gap-1.5">
+                        <button
+                          onClick={() => handleOpenView(usr)}
+                          className="p-1.5 rounded glass-btn text-emerald-400 hover:border-emerald-500/40"
+                          title="View user details"
+                        >
+                          <Eye size={12} />
+                        </button>
                         <button
                           onClick={() => handleOpenEdit(usr)}
                           className="p-1.5 rounded glass-btn text-blue-400 hover:border-blue-500/40"

@@ -5,6 +5,7 @@ import com.example.vuhoangchinh.Entities.CategoryProduct; // Thực thể danh m
 import com.example.vuhoangchinh.Entities.Product; // Thực thể sản phẩm
 import com.example.vuhoangchinh.Repositories.CategoryProductRepository; // Nơi truy xuất danh mục trong CSDL
 import com.example.vuhoangchinh.Repositories.ProductRepository; // Nơi truy xuất sản phẩm trong CSDL
+import com.example.vuhoangchinh.Services.AiSyncService; // Service đồng bộ AI
 
 // Import Lombok hỗ trợ tự động sinh code (Getter/Setter/Constructors)
 import lombok.*;
@@ -44,6 +45,10 @@ public class ProductController {
     // Inject kho truy xuất CSDL Danh mục (để kiểm tra xem danh mục có tồn tại không khi thêm sản phẩm)
     @Autowired
     private CategoryProductRepository categoryRepository;
+
+    // Inject service gọi đồng bộ sang Server AI
+    @Autowired
+    private AiSyncService aiSyncService;
 
     /**
      * DTO (Data Transfer Object) dùng để chứa thông tin người dùng gửi lên khi thêm/sửa sản phẩm.
@@ -224,6 +229,10 @@ public class ProductController {
 
         // Lưu bản ghi vào CSDL
         Product savedProduct = productRepository.save(product);
+        
+        // KÍCH HOẠT: Đồng bộ sản phẩm vừa Thêm sang Bot AI
+        aiSyncService.syncProductToAi(savedProduct);
+        
         return ResponseEntity.ok(savedProduct);
     }
 
@@ -283,6 +292,10 @@ public class ProductController {
 
         // Cập nhật thực thể vào CSDL
         Product updatedProduct = productRepository.save(product);
+        
+        // KÍCH HOẠT: Đồng bộ thông tin sản phẩm vừa Sửa sang Bot AI
+        aiSyncService.syncProductToAi(updatedProduct);
+        
         return ResponseEntity.ok(updatedProduct);
     }
 
@@ -295,6 +308,10 @@ public class ProductController {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id " + id));
         productRepository.delete(product);
+        
+        // KÍCH HOẠT: Xóa thông tin khỏi trí nhớ của Bot AI
+        aiSyncService.deleteProductFromAi(id);
+        
         return ResponseEntity.ok("Product deleted successfully");
     }
 

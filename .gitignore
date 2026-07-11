@@ -1,0 +1,7 @@
+.env
+*/.env
+*.env
+ai_chatbot/.env
+ai_chatbot/chroma_data/
+__pycache__/
+*.pyc

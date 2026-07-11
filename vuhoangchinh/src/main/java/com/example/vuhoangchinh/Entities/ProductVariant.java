@@ -40,9 +40,9 @@ public class ProductVariant {
     @NotNull(message = "Sản phẩm trực thuộc là bắt buộc")
     private Product product;
 
-    // Kích cỡ của biến thể sản phẩm (Ví dụ: 39, 40, S, M, L), tối đa 20 ký tự
-    @Column(length = 20)
-    @Size(max = 20, message = "Kích cỡ tối đa 20 ký tự")
+    // Kích cỡ của biến thể sản phẩm (Ví dụ: 39, 40, S, M, L), tối đa 255 ký tự
+    @Column(length = 255)
+    @Size(max = 255, message = "Kích cỡ tối đa 255 ký tự")
     private String size;
 
     // Màu sắc của biến thể sản phẩm (Ví dụ: Đen, Trắng, Xanh), tối đa 50 ký tự
@@ -74,4 +74,8 @@ public class ProductVariant {
     // Trạng thái của biến thể (1: Đang kinh doanh/Hiển thị, 0: Ngừng kinh doanh/Ẩn)
     @Column(nullable = false)
     private Integer status = 1;
+
+    // Đường dẫn hình ảnh riêng cho biến thể này (ví dụ: ảnh tương ứng với màu sắc)
+    @Column(name = "image_url", columnDefinition = "LONGTEXT")
+    private String imageUrl;
 }

@@ -136,10 +136,17 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
       setCurrentVariant(variant);
       setQty(1); // Reset qty on variant change
       setStockWarning(false);
+      
+      // Tự động chuyển đổi hình ảnh hiển thị dựa trên biến thể được chọn
+      if (variant && variant.imageUrl) {
+        setActiveImage(variant.imageUrl);
+      } else if (product) {
+        setActiveImage(product.image || product.imageUrl || '');
+      }
     } else {
       setCurrentVariant(null);
     }
-  }, [selectedColor, selectedSize, variants]);
+  }, [selectedColor, selectedSize, variants, product]);
 
   // Chuyển đổi thẻ oembed từ CKEditor thành iframe phát video thời gian thực
   useEffect(() => {
@@ -256,7 +263,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
       id: product.id,
       name: product.name,
       price: displayPrice,
-      image: product.image || resolveImageUrl(product.imageUrl, 'src/assets/images/shoe_product_1_1778727884422.png'),
+      image: (currentVariant && currentVariant.imageUrl) || product.image || resolveImageUrl(product.imageUrl, 'src/assets/images/shoe_product_1_1778727884422.png'),
       categoryName: product.categoryName,
       stockQuantity: stockQuantity,
       variantId: currentVariant ? currentVariant.id : null,

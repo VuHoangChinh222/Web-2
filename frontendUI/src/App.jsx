@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import ChatWidget from './components/ChatWidget';
 import { getCookie } from './utils/cookieHelper';
 import HomeView from './pages/Home/Index';
 import ProductView from './pages/Product/Index';
@@ -282,6 +283,8 @@ const App = () => {
         removeFromCart={removeFromCart}
         clearCart={clearCart}
       />
+      {/* Trợ lý AI Chatbot tư vấn bán hàng - Đặt ở đây để tránh bị bẫy bởi CSS transform của phần tử con */}
+      <ChatWidget />
     </Router>
   );
 };

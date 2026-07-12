@@ -6,6 +6,7 @@
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 export const IMAGE_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+export const AI_CHATBOT_URL = import.meta.env.VITE_AI_CHATBOT_URL || 'http://localhost:8000/api/ai';
 
 // Universal Helper to resolve Image URLs (handles Base64, absolute URLs, relative URLs)
 export const resolveImageUrl = (url, defaultImage = '') => {

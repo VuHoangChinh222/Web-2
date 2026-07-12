@@ -16,7 +16,18 @@ if not api_key or api_key == "dien_api_key_cua_ban_vao_day":
 
 client = genai.Client(api_key=api_key)
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(title="AI Sales Assistant API")
+
+# Cấu hình CORS để cho phép React Frontend kết nối
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Cho phép tất cả các nguồn hoặc bạn có thể chỉ định ["http://localhost:5173"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Khởi tạo ChromaDB - Lưu trữ dữ liệu cục bộ trong thư mục 'chroma_data'
 chroma_client = chromadb.PersistentClient(path="./chroma_data")
@@ -104,8 +115,9 @@ async def delete_product(product_id: str):
 async def chat_bot(chat: ChatMessage):
     """API để Frontend gọi vào khi Khách nhắn tin"""
     try:
-        # 1. Tìm 3 sản phẩm liên quan nhất trong ChromaDB (Tự động chuyển câu hỏi thành Vector cục bộ)
-        results = collection.query(
+        import asyncio
+        results = await asyncio.to_thread(
+            collection.query,
             query_texts=[chat.message],
             n_results=3
         )

@@ -28,7 +28,7 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
 - Khách hàng nhắn tin vào Chat widget trên `frontendUI`.
 - `frontendUI` gọi trực tiếp API `POST /api/ai/chat` của Server `ai_chatbot` (Python).
 - Server Python lấy câu hỏi, tự động biến thành Vector và rà soát trong `ChromaDB` (Vector DB cục bộ lấy tốc độ 0.02s).
-- Nó nhặt ra 3 sản phẩm phù hợp nhất, ghép vào System Prompt và ném cho mô hình `gemini-3.5-flash` của Google qua SDK `google-genai` (Sử dụng Async/Await để tăng tốc độ I/O).
+- Nó nhặt ra 3 sản phẩm phù hợp nhất, ghép vào System Prompt và ném cho mô hình `gemini-3.5-flash` của Google qua SDK `google-genai` (Sử dụng Async/Await kết hợp với `asyncio.to_thread` cho ChromaDB để xử lý hoàn toàn phi chặn và tăng tốc độ I/O).
 - AI Google trả về chữ, Python dùng `StreamingResponse` nhả từng chữ cái một (Streaming) về lại cho `frontendUI` để hiển thị mượt mà như ChatGPT.
 
 ---
@@ -51,7 +51,7 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
     - API `POST /api/ai/sync-all-from-source`: Kéo toàn bộ danh sách sản phẩm từ Java Backend (`http://localhost:8080/api/products?size=10000`) về để học.
     - API `POST /api/ai/sync`: Lắng nghe yêu cầu cập nhật (Upsert) một sản phẩm đơn lẻ từ Java.
     - API `POST /api/ai/sync/delete`: Lắng nghe yêu cầu xóa sản phẩm khỏi bộ nhớ từ Java.
-    - API `POST /api/ai/chat`: Nhận tin nhắn từ Frontend, thực hiện RAG query lấy 3 sản phẩm liên quan và trả về câu trả lời dưới dạng **StreamingResponse**.
+    - API `POST /api/ai/chat`: Nhận tin nhắn từ Frontend, thực hiện RAG query lấy 3 sản phẩm liên quan (tối ưu hóa phi chặn qua `asyncio.to_thread` giải phóng Event Loop) và trả về câu trả lời dưới dạng **StreamingResponse**.
   - `test.py`: File script độc lập dùng để test độ trễ (TTFT) và test kết nối API Gemini trực tiếp trên CMD/PowerShell.
   - `.env`: Chứa biến môi trường `GEMINI_API_KEY`.
   - `requirements.txt`: Danh sách thư viện Python.
@@ -70,7 +70,7 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
 - **Công nghệ**: Node.js, Vite.
 - **Chức năng chính**:
   - Hiển thị danh sách sản phẩm, danh mục cho khách hàng mua sắm (Gọi sang Java cổng 8080).
-  - Tích hợp một **Chatbot UI** ở góc màn hình. Widget này gọi trực tiếp sang Server Python cổng 8000 (`/api/ai/chat`) để giao tiếp với AI.
+  - Tích hợp một **Chatbot UI** ở góc màn hình (`ChatWidget.jsx`). Widget này gọi trực tiếp sang Server Python cổng 8000 (`/api/ai/chat`) để giao tiếp với AI. Khung chat thiết kế dạng Glassmorphic màu cam thương hiệu Chinh Hoops, định vị sát góc dưới bên phải (`bottom: 24px` khi mở rộng) và có hiệu ứng ba dấu chấm nhảy lên xuống nhịp nhàng (bouncing dots animation).
 
 ---
 
@@ -120,5 +120,17 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
 - Đã chạy script `E:\asp\test\web2\update_docx_product_images.py` để chèn thông tin cấu trúc cột `color` và `sort_order` vào **Bảng 2.6 (Thực thể ProductImage)** trong tài liệu `VuHoangChinh-2122110380.docx`.
 - Đồng thời cập nhật mô tả thực thể tại **Mục 2.2 (Sơ đồ ERD)** trong file báo cáo Word để phản ánh chính xác cấu trúc thực thể `ProductImage` hiện tại.
 - Đồng bộ hóa toàn bộ nội dung báo cáo từ Chương 3 đến Chương 6 bằng cách cập nhật và chạy thành công script `update_report_v3.py`.
+
+### D. Tích hợp AI Sales Assistant & Tối ưu hóa UI/UX Chatbot
+- **Backend AI (FastAPI)**:
+  - Thiết lập thành công AI Sales Assistant sử dụng kiến trúc RAG kết nối ChromaDB (Vector DB cục bộ) và Google Gemini API (model `gemini-3.5-flash`).
+  - Hỗ trợ CORS cho phép frontend ReactJS giao tiếp ổn định từ các origin khác nhau.
+  - Tối ưu hóa tốc độ phản hồi bằng cách bọc truy vấn ChromaDB trong `asyncio.to_thread`, giúp chạy song song phi chặn (non-blocking) trên Event Loop của FastAPI.
+- **Frontend Storefront (frontendUI)**:
+  - Tích hợp thành công `ChatWidget.jsx` ở mức Router toàn cục trong `App.jsx`, khắc phục hoàn toàn lỗi bị che khuất hoặc đè bởi layout transform của các trang con.
+  - Tinh chỉnh vị trí hiển thị: Đặt sát góc dưới bên phải (`bottom: 24px`) khi mở rộng giúp giao diện không bị lệch hay tạo khoảng trống lớn.
+  - Thiết kế đồng bộ màu sắc cam thương hiệu Chinh Hoops (`#f97316`, `#ea580c`) từ bong bóng tin nhắn, nút bấm, avatar bot cho đến viền khung chat.
+  - Tạo hiệu ứng ba dấu chấm nhảy lên xuống (bouncing animation) sinh động khi chờ phản hồi, mang lại trải nghiệm chuyên nghiệp giống như Facebook Messenger hay iMessage.
+
 
 

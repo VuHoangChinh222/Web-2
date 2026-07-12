@@ -26,6 +26,8 @@ graph TD
             A -->|3. Update State via Setters| AC
         end
         B["Client Store (frontendUI)<br/>React, Vite, Axios"]
+        ChatWidget["ChatWidget.jsx<br/>(AI Chat Interface)"]
+        B -->|Contains| ChatWidget
     end
 
     subgraph Service ["Phân Hệ Máy Chủ (Server Side - vuhoangchinh)"]
@@ -33,9 +35,20 @@ graph TD
         D["Spring Security & JWT Filter"]
         C["API Controllers<br/>(REST API & Business Logic)"]
         F["Repository Layer<br/>(Spring Data JPA)"]
+        SyncService["AiSyncService.java<br/>(Async Sync)"]
         
         D --> C
         C --> F
+        C -->|Trigger Async Sync| SyncService
+    end
+
+    subgraph AIServer ["Phân Hệ Trợ Lý AI (ai_chatbot)"]
+        FastAPI["FastAPI App<br/>(main.py)"]
+        ChromaDB[("ChromaDB<br/>(Vector Store)")]
+        Gemini["Google Gemini API<br/>(gemini-3.5-flash)"]
+        
+        FastAPI -->|Query/Insert| ChromaDB
+        FastAPI -->|Send Prompt| Gemini
     end
 
     subgraph Database ["Cơ Sở Dữ Liệu"]
@@ -45,6 +58,8 @@ graph TD
     AS -- "2. HTTP Request & JWT" --> D
     B -- "HTTP Requests" --> D
     F --> G
+    SyncService -- "Async POST (Product Sync)" --> FastAPI
+    ChatWidget -- "REST POST (Chat Stream)" --> FastAPI
 ```
 
 ---
@@ -504,6 +519,28 @@ springdoc.api-docs.path=/api-docs
 
 ---
 
+### Bước 4: Khởi động Server AI Chatbot (`ai_chatbot`)
+
+1. Di chuyển vào thư mục dự án chatbot:
+   ```bash
+   cd ai_chatbot
+   ```
+2. Tạo tệp `.env` dựa theo mẫu cấu hình và khai báo mã khóa API Google Gemini:
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key_here
+   ```
+3. Cài đặt các thư viện Python cần thiết:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Khởi động máy chủ phát triển FastAPI:
+   ```bash
+   uvicorn main:app --reload --port 8000
+   ```
+5. Khi khởi động thành công, Server AI sẽ lắng nghe tại cổng `8000`. Bạn có thể kiểm tra kết nối API qua Swagger UI tại: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
 ### 🔑 Tài Khoản Đăng Nhập Mẫu (Được seed tự động)
 
 Hệ thống tự động đồng bộ danh sách nhân viên vận hành và thiết lập quyền mẫu xuống MySQL khi khởi động lần đầu:
@@ -520,6 +557,12 @@ Hệ thống tự động đồng bộ danh sách nhân viên vận hành và th
 
 ```
 web2/
+├── ai_chatbot/                # Phân hệ Server AI Trợ lý bán hàng (Python FastAPI + ChromaDB + Gemini)
+│   ├── chroma_data/           # Thư mục lưu trữ dữ liệu Vector DB cục bộ
+│   ├── main.py                # Điểm khởi chạy API RAG, sync sản phẩm và chat streaming
+│   ├── requirements.txt       # Danh sách thư viện Python cần thiết
+│   └── .env                   # Khóa API Google Gemini
+│
 ├── backendUI/                 # Phân hệ Frontend Admin Dashboard (React + Vite + Tailwind CSS)
 │   ├── src/
 │   │   ├── components/        # Thành phần UI tái sử dụng (Navbar, Sidebar, GlassCard...)
@@ -532,7 +575,7 @@ web2/
 │
 ├── frontendUI/                # Phân hệ Frontend Client Store (React + Vite + Axios)
 │   ├── src/
-│   │   ├── components/        # Các thành phần giao diện bán hàng (Header, Footer, ProductCard...)
+│   │   ├── components/        # Các thành phần giao diện bán hàng (Header, Footer, ProductCard, ChatWidget...)
 │   │   ├── pages/             # Các trang (Home, ProductDetail, Cart, Checkout...)
 │   │   ├── App.jsx            # Định tuyến trang bán hàng
 │   │   └── main.jsx           # Điểm khởi tạo React

@@ -538,6 +538,16 @@ springdoc.api-docs.path=/api-docs
    uvicorn main:app --reload --port 8000
    ```
 5. Khi khởi động thành công, Server AI sẽ lắng nghe tại cổng `8000`. Bạn có thể kiểm tra kết nối API qua Swagger UI tại: [http://localhost:8000/docs](http://localhost:8000/docs)
+6. **Đồng bộ hóa dữ liệu ban đầu (RẤT QUAN TRỌNG)**: Chạy lệnh sau để kéo toàn bộ thông tin sản phẩm, biến thể (kích cỡ, màu sắc, tồn kho), giá khuyến mãi và nhãn sản phẩm bán chạy từ Java Backend sang Vector DB (ChromaDB) của AI:
+   * **PowerShell**:
+     ```powershell
+     Invoke-RestMethod -Uri "http://localhost:8000/api/ai/sync-all-from-source" -Method Post
+     ```
+   * **cURL (Linux/Git Bash)**:
+     ```bash
+     curl -X POST http://localhost:8000/api/ai/sync-all-from-source
+     ```
+
 
 ---
 

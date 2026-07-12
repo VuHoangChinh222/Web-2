@@ -19,6 +19,26 @@ const ProductCard = ({ product, addToCart, navigate }) => {
   const categoryName = product.categoryName || product.category || '';
   const stock = product.stockQuantity !== undefined && product.stockQuantity !== null ? product.stockQuantity : 0;
 
+  // Lấy giá hiển thị (ưu tiên giá biến thể nhỏ nhất nếu có biến thể)
+  let displayPrice = product.price || product.basePrice || 0;
+  if (product.variants && product.variants.length > 0) {
+    const validPrices = product.variants.map(v => {
+      const p = parseFloat(v.salePrice);
+      if (!isNaN(p) && p > 0) return p;
+      const bp = parseFloat(v.price);
+      if (!isNaN(bp) && bp > 0) return bp;
+      return NaN;
+    }).filter(p => !isNaN(p) && p > 0);
+
+    if (validPrices.length > 0) {
+      displayPrice = Math.min(...validPrices);
+    }
+  } else {
+    // Không có biến thể
+    if (product.discountPrice && product.discountPrice > 0) displayPrice = product.discountPrice;
+    else if (product.basePrice && product.basePrice > 0) displayPrice = product.basePrice;
+  }
+
   const handleCardClick = () => {
     navigate('detail', { slug: product.slug || product.id });
   };
@@ -41,7 +61,7 @@ const ProductCard = ({ product, addToCart, navigate }) => {
     const productForCart = {
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: displayPrice,
       image: imageSrc,
       categoryName: categoryName,
       stockQuantity: stock
@@ -79,7 +99,7 @@ const ProductCard = ({ product, addToCart, navigate }) => {
     const productForCart = {
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: displayPrice,
       image: imageSrc,
       categoryName: categoryName,
       stockQuantity: stock
@@ -170,7 +190,7 @@ const ProductCard = ({ product, addToCart, navigate }) => {
       <div className="product-info">
         <div className="product-category">{categoryName}</div>
         <h3 className="product-name">{product.name}</h3>
-        <div className="product-price">{formatPrice(product.price)}</div>
+        <div className="product-price">{formatPrice(displayPrice)}</div>
       </div>
     </div>
   );

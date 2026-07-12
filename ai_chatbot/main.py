@@ -34,13 +34,24 @@ chroma_client = chromadb.PersistentClient(path="./chroma_data")
 # Tạo hoặc lấy bảng (collection) lưu sản phẩm
 collection = chroma_client.get_or_create_collection(name="products")
 
+# Cấu trúc dữ liệu Biến thể của Sản phẩm
+class VariantData(BaseModel):
+    size: str | None = None
+    color: str | None = None
+    price: float | None = None
+    salePrice: float | None = None
+    stockQuantity: int = 0
+
 # Cấu trúc dữ liệu Sản phẩm nhận từ Java
 class ProductData(BaseModel):
     id: str
     name: str
     price: float
+    basePrice: float | None = None
+    discountPrice: float | None = None
     description: str
     category: str
+    variants: list[VariantData] | None = None
 
 # Cấu trúc dữ liệu Tin nhắn nhận từ Frontend
 class ChatMessage(BaseModel):
@@ -48,40 +59,130 @@ class ChatMessage(BaseModel):
 
 import requests
 
-# BỎ hàm get_embedding gọi API Google. 
-# ChromaDB sẽ tự động sử dụng mô hình AI nhúng Vector cục bộ (all-MiniLM-L6-v2) 
-# chạy trực tiếp trên RAM máy tính của bạn (mất ~0.02s thay vì 1-2s gọi API).
+# Hàm kiểm tra sản phẩm có phải bán chạy nhất không
+def check_is_best_seller(p_id: str) -> bool:
+    try:
+        bs_response = requests.get("http://localhost:8080/api/products/best-sellers")
+        if bs_response.status_code == 200:
+            bs_data = bs_response.json()
+            for item in bs_data:
+                if str(item.get("id")) == p_id:
+                    return True
+    except Exception as e:
+        print("Lỗi kiểm tra best seller:", e)
+    return False
+
+# Hàm dựng tài liệu mô tả chi tiết sản phẩm cho RAG
+def build_product_document(
+    name: str, 
+    p_id: str, 
+    category: str, 
+    base_price: float | None, 
+    discount_price: float | None, 
+    description: str, 
+    variants: list | None, 
+    is_best_seller: bool = False
+) -> str:
+    # 1. Khuyến mãi và giá cả
+    price_info = ""
+    if discount_price and base_price and discount_price < base_price:
+        saved = base_price - discount_price
+        price_info = f"Giá gốc: {base_price:,.0f} VNĐ, Giá khuyến mãi hiện tại: {discount_price:,.0f} VNĐ (Đang GIẢM GIÁ ưu đãi giảm {saved:,.0f} VNĐ!)."
+    elif base_price:
+        price_info = f"Giá bán: {base_price:,.0f} VNĐ."
+    else:
+        price_info = f"Giá bán: {discount_price:,.0f} VNĐ." if discount_price else "Liên hệ cửa hàng để biết giá cụ thể."
+
+    # 2. Nhãn bán chạy
+    best_seller_label = ""
+    if is_best_seller:
+        best_seller_label = "\nĐặc điểm nổi bật: Sản phẩm bán chạy nhất (Best Seller) của cửa hàng Chinh Hoops!"
+
+    # 3. Thông tin biến thể (size, màu, tồn kho)
+    variants_info = []
+    if variants:
+        for v in variants:
+            if hasattr(v, "model_dump"):  # Pydantic model
+                v_dict = v.model_dump()
+            else:
+                v_dict = v
+            
+            size = v_dict.get("size")
+            color = v_dict.get("color")
+            v_price = v_dict.get("salePrice") if v_dict.get("salePrice") else v_dict.get("price")
+            stock = v_dict.get("stockQuantity", 0)
+            
+            v_price_str = ""
+            if v_price:
+                v_price_str = f" với giá riêng {v_price:,.0f} VNĐ"
+            
+            stock_str = f"còn {stock} đôi" if stock > 0 else "đã HẾT HÀNG"
+            variants_info.append(f"- Màu {color}, Kích cỡ {size}: {stock_str}{v_price_str}.")
+    
+    variants_text = "\n".join(variants_info) if variants_info else "Sản phẩm không có phân loại size/màu cụ thể."
+
+    doc_text = f"""Tên sản phẩm: {name}
+Mã sản phẩm (ID): {p_id}
+Danh mục sản phẩm: {category}
+Thông tin giá bán: {price_info}{best_seller_label}
+Mô tả sản phẩm: {description}
+Thông tin chi tiết các biến thể (Màu sắc, Kích cỡ & Tồn kho):
+{variants_text}
+"""
+    return doc_text
 
 @app.post("/api/ai/sync-all-from-source")
 async def sync_all_from_source():
     """API đặc biệt: Gọi 1 lần để kéo toàn bộ dữ liệu từ Java sang AI (Pull)"""
     try:
-        # Gọi API của Java để lấy danh sách sản phẩm (size=10000 để lấy tối đa)
+        # Gọi API của Java để lấy danh sách sản phẩm
         java_api_url = "http://localhost:8080/api/products?size=10000"
         response = requests.get(java_api_url)
         if response.status_code != 200:
             return {"status": "error", "message": "Không thể kết nối đến Java Server"}
         
-        # Spring Boot trả về Page, danh sách sản phẩm nằm trong trường 'content'
         data = response.json()
         products = data.get("content", [])
         
+        # Lấy danh sách sản phẩm bán chạy để đánh nhãn
+        best_sellers_ids = []
+        try:
+            bs_response = requests.get("http://localhost:8080/api/products/best-sellers")
+            if bs_response.status_code == 200:
+                bs_data = bs_response.json()
+                best_sellers_ids = [str(item.get("id")) for item in bs_data]
+        except Exception as e:
+            print("Lỗi lấy danh sách best sellers:", e)
+        
         count = 0
         for p in products:
+            p_id = str(p.get("id"))
             desc = p.get("shortDescription", "")
             if p.get("description"):
                 desc += " - " + p.get("description")
                 
-            document_text = f"Tên sản phẩm: {p.get('name')}\nGiá: {p.get('price')} VNĐ\nDanh mục: {p.get('categoryName', '')}\nMô tả: {desc}"
+            is_best_seller = p_id in best_sellers_ids
+            
+            # Xây dựng document văn bản chi tiết
+            document_text = build_product_document(
+                name=p.get("name", ""),
+                p_id=p_id,
+                category=p.get("categoryName", ""),
+                base_price=p.get("basePrice"),
+                discount_price=p.get("discountPrice"),
+                description=desc,
+                variants=p.get("variants"),
+                is_best_seller=is_best_seller
+            )
             
             collection.upsert(
                 documents=[document_text],
-                metadatas=[{"id": str(p.get("id")), "name": p.get("name"), "price": float(p.get("price", 0))}],
-                ids=[str(p.get("id"))]
+                metadatas=[{"id": p_id, "name": p.get("name", ""), "price": float(p.get("price", 0))}],
+                ids=[p_id]
             )
             count += 1
             
-        return {"status": "success", "message": f"Đã học (Sync) thành công {count} sản phẩm từ Java."}
+        return {"status": "success", "message": f"Đã học (Sync) thành công {count} sản phẩm từ Java (kèm các biến thể chi tiết và khuyến mãi)."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -89,16 +190,27 @@ async def sync_all_from_source():
 async def sync_product(product: ProductData):
     """API để Java gọi sang mỗi khi Thêm/Sửa sản phẩm"""
     try:
-        # 1. Tạo đoạn văn bản chứa thông tin sản phẩm
-        document_text = f"Tên sản phẩm: {product.name}\nGiá: {product.price} VNĐ\nDanh mục: {product.category}\nMô tả: {product.description}"
+        # Kiểm tra trạng thái bán chạy
+        is_best_seller = check_is_best_seller(product.id)
         
-        # 2. Lưu/Cập nhật vào ChromaDB (Nó sẽ TỰ ĐỘNG nhúng Vector cục bộ cực nhanh)
+        # Xây dựng document văn bản chi tiết
+        document_text = build_product_document(
+            name=product.name,
+            p_id=product.id,
+            category=product.category,
+            base_price=product.basePrice,
+            discount_price=product.discountPrice,
+            description=product.description,
+            variants=product.variants,
+            is_best_seller=is_best_seller
+        )
+        
         collection.upsert(
             documents=[document_text],
             metadatas=[{"id": product.id, "name": product.name, "price": product.price}],
             ids=[str(product.id)]
         )
-        return {"status": "success", "message": f"Đã đồng bộ sản phẩm: {product.name}"}
+        return {"status": "success", "message": f"Đã đồng bộ sản phẩm kèm biến thể: {product.name}"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

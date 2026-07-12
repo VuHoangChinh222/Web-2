@@ -122,15 +122,19 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
 - Đồng bộ hóa toàn bộ nội dung báo cáo từ Chương 3 đến Chương 6 bằng cách cập nhật và chạy thành công script `update_report_v3.py`.
 
 ### D. Tích hợp AI Sales Assistant & Tối ưu hóa UI/UX Chatbot
-- **Backend AI (FastAPI)**:
+- **Backend AI (FastAPI) & Truy xuất RAG nâng cao**:
   - Thiết lập thành công AI Sales Assistant sử dụng kiến trúc RAG kết nối ChromaDB (Vector DB cục bộ) và Google Gemini API (model `gemini-3.5-flash`).
   - Hỗ trợ CORS cho phép frontend ReactJS giao tiếp ổn định từ các origin khác nhau.
   - Tối ưu hóa tốc độ phản hồi bằng cách bọc truy vấn ChromaDB trong `asyncio.to_thread`, giúp chạy song song phi chặn (non-blocking) trên Event Loop của FastAPI.
+  - **Nâng cấp RAG đa chiều (Multi-Dimensional RAG)**: Tích hợp đồng bộ chi tiết thuộc tính sản phẩm gồm giá gốc (`basePrice`), giá khuyến mãi (`discountPrice`), trạng thái sale (tính toán số tiền giảm giá kích cầu) và danh sách biến thể cụ thể (kích cỡ, màu sắc, số lượng tồn kho riêng biệt của từng size/màu).
+  - **Tự động gắn nhãn Bán chạy**: Tự động truy xuất danh sách từ API `/best-sellers` của Java Backend để đánh dấu các sản phẩm bán chạy nhất (Best Seller) trong cơ sở dữ liệu tri thức của AI, giúp AI đưa ra đề xuất chính xác các mẫu hot nhất của shop.
 - **Frontend Storefront (frontendUI)**:
   - Tích hợp thành công `ChatWidget.jsx` ở mức Router toàn cục trong `App.jsx`, khắc phục hoàn toàn lỗi bị che khuất hoặc đè bởi layout transform của các trang con.
   - Tinh chỉnh vị trí hiển thị: Đặt sát góc dưới bên phải (`bottom: 24px`) khi mở rộng giúp giao diện không bị lệch hay tạo khoảng trống lớn.
-  - Thiết kế đồng bộ màu sắc cam thương hiệu Chinh Hoops (`#f97316`, `#ea580c`) từ bong bóng tin nhắn, nút bấm, avatar bot cho đến viền khung chat.
+  - Thiết kế đồng bộ màu sắc cam thương hiệu Chinh Hoops (`#f97316`, `#ea580c`) từ bong bóng tin nhắn, nút bấm, avatar bot cho đến viền khung chat (đã tách rời hoàn toàn mã CSS sang tệp [ChatWidget.css](file:///e:/web2/frontendUI/src/assets/css/ChatWidget.css) kèm chú thích tiếng Việt).
   - Tạo hiệu ứng ba dấu chấm nhảy lên xuống (bouncing animation) sinh động khi chờ phản hồi, mang lại trải nghiệm chuyên nghiệp giống như Facebook Messenger hay iMessage.
+  - **Tối ưu trải nghiệm cuộn (Auto-scroll UX)**: Khắc phục triệt để lỗi cuộn trang khi thu nhỏ và mở lại chatbot bằng cách đưa trạng thái `isOpen` vào danh sách phụ thuộc của React Effect và trì hoãn 60ms để DOM render xong trước khi cuộn, bảo đảm tự động cuộn mượt mà xuống tin nhắn gần nhất mỗi khi mở lại khung chat.
+
 
 
 

@@ -11,6 +11,7 @@ import com.example.vuhoangchinh.Repositories.OrderRepository; // Repository đơ
 import com.example.vuhoangchinh.Repositories.OrderDetailRepository;
 import com.example.vuhoangchinh.Repositories.ProductRepository;
 import com.example.vuhoangchinh.Repositories.ProductVariantRepository;
+import com.example.vuhoangchinh.Services.EmailService;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
@@ -65,6 +66,9 @@ public class OrderController {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     @Data
     @NoArgsConstructor
@@ -235,6 +239,7 @@ public class OrderController {
         order.setNote(request.getNote());
 
         Order savedOrder = orderRepository.save(order);
+        List<OrderDetail> savedDetails = new java.util.ArrayList<>();
 
         // Lưu các chi tiết đơn hàng (items) nếu có gửi lên
         if (request.getItems() != null && !request.getItems().isEmpty()) {
@@ -329,8 +334,16 @@ public class OrderController {
                 }
                 detail.setPrice(itemPrice);
 
-                orderDetailRepository.save(detail);
+                OrderDetail savedDetail = orderDetailRepository.save(detail);
+                savedDetails.add(savedDetail);
             }
+        }
+
+        // Gửi email xác nhận đơn hàng bất đồng bộ
+        try {
+            emailService.sendOrderConfirmationEmail(customer, savedOrder, savedDetails);
+        } catch (Exception e) {
+            System.err.println("Không thể kích hoạt gửi mail: " + e.getMessage());
         }
 
         return ResponseEntity.ok(savedOrder);

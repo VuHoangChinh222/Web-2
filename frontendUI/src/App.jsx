@@ -19,6 +19,7 @@ import PaymentView from './pages/Checkout/PaymentView';
 import LoginView from './pages/Login/Index';
 import RegisterView from './pages/Register/Index';
 import ForgotPasswordView from './pages/ForgotPassword/ForgotPassword';
+import ResetPasswordView from './pages/ResetPassword/ResetPassword';
 import UserInfoView from './pages/User/Index';
 import UserInfo from './pages/User/UserInfo';
 import AddressManagement from './pages/User/AddressManagement';
@@ -155,6 +156,7 @@ const AppContent = ({ cart, addToCart, updateQty, removeFromCart, clearCart }) =
           <Route path="/login" element={<LoginView />} />
           <Route path="/register" element={<RegisterView />} />
           <Route path="/forgot-password" element={<ForgotPasswordView />} />
+          <Route path="/reset-password" element={<ResetPasswordView />} />
           <Route path="/user" element={<UserInfoView navigate={navigate} />} />
           <Route path="/user-info" element={<UserInfo navigate={navigate} />} />
           <Route path="/addresses" element={<AddressManagement navigate={navigate} />} />

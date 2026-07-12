@@ -50,6 +50,10 @@ public class ProductController {
     @Autowired
     private AiSyncService aiSyncService;
 
+    // Inject kho truy xuất CSDL Đơn hàng để kiểm tra trước khi xóa
+    @Autowired
+    private com.example.vuhoangchinh.Repositories.OrderRepository orderRepository;
+
     /**
      * DTO (Data Transfer Object) dùng để chứa thông tin người dùng gửi lên khi thêm/sửa sản phẩm.
      */
@@ -307,6 +311,26 @@ public class ProductController {
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id " + id));
+        
+        // Kiểm tra xem sản phẩm có nằm trong đơn hàng nào không
+        java.util.List<com.example.vuhoangchinh.Entities.Order> containingOrders = orderRepository.findOrdersByProductId(id);
+        if (!containingOrders.isEmpty()) {
+            java.util.List<java.util.Map<String, Object>> orderInfoList = new java.util.ArrayList<>();
+            for (com.example.vuhoangchinh.Entities.Order o : containingOrders) {
+                java.util.Map<String, Object> map = new java.util.HashMap<>();
+                map.put("id", o.getId());
+                map.put("orderCode", o.getOrderCode());
+                map.put("recipientName", o.getRecipientName());
+                map.put("createdAt", o.getCreatedAt() != null ? o.getCreatedAt().toString() : "");
+                orderInfoList.add(map);
+            }
+            java.util.Map<String, Object> errorResponse = new java.util.HashMap<>();
+            errorResponse.put("error", "REFERENCED");
+            errorResponse.put("message", "Sản phẩm đang nằm trong các đơn hàng");
+            errorResponse.put("orders", orderInfoList);
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+
         productRepository.delete(product);
         
         // KÍCH HOẠT: Xóa thông tin khỏi trí nhớ của Bot AI

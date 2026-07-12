@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, SlidersHorizontal, LayoutGrid, List, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Search, SlidersHorizontal, LayoutGrid, List, ChevronLeft, ChevronRight, AlertTriangle, Eye } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
+import GlassModal from '../../components/GlassModal';
 import ProductForm from './ProductForm';
 import ProductViewModal from './ProductViewModal';
 import ProductGridCard from './ProductGridCard';
@@ -77,7 +78,7 @@ const formatApiError = (errorMsg) => {
   return msg;
 };
 
-const Products = () => {
+const Products = ({ setSelectedOrderId, setIsOrderModalOpen, setActivePage }) => {
   const { products, setProducts, categoriesProduct, orderDetails, uploadImage, resolveImageUrl } = useAdmin();
 
   // States
@@ -93,6 +94,10 @@ const Products = () => {
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
 
+  // Referenced Orders Modal States
+  const [referencedOrders, setReferencedOrders] = useState([]);
+  const [isReferencedModalOpen, setIsReferencedModalOpen] = useState(false);
+
   // Map products locally
   const mappedProducts = (products || []).map(mapProductFromBackend).filter(Boolean);
 
@@ -100,7 +105,7 @@ const Products = () => {
   const filteredProducts = mappedProducts.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || p.categoryId === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || String(p.categoryId) === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -288,16 +293,21 @@ const Products = () => {
   };
 
   const handleDelete = async (id) => {
-    const hasOrders = orderDetails.some(det => det.productId === id);
-    if (hasOrders) {
-      alert("Cannot delete product: It is already linked to existing orders.");
-      return;
-    }
     if (confirm("Are you sure you want to delete this product?")) {
       try {
         await productService.delete(id);
         setProducts(prev => prev.filter(p => p.id !== id));
       } catch (err) {
+        try {
+          const parsed = JSON.parse(err.message);
+          if (parsed.error === 'REFERENCED') {
+            setReferencedOrders(parsed.orders || []);
+            setIsReferencedModalOpen(true);
+            return;
+          }
+        } catch (e) {
+          // Not a JSON or error format is different
+        }
         alert("Error deleting product: " + formatApiError(err.message));
       }
     }
@@ -360,8 +370,7 @@ const Products = () => {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="pl-3 pr-8 py-1.5 rounded-lg text-xs glass-input appearance-none bg-no-repeat bg-right bg-[#0F1224] text-white"
-              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394A3B8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`, backgroundSize: '16px', backgroundPosition: 'calc(100% - 8px) center' }}
+              className="pl-3 pr-4 py-1.5 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
             >
               <option value="all" className="bg-[#0F1224] text-white">All Categories</option>
               {categoriesProduct.map(cat => (
@@ -508,6 +517,81 @@ const Products = () => {
           product={currentProduct}
         />
       )}
+
+      <GlassModal
+        isOpen={isReferencedModalOpen}
+        onClose={() => setIsReferencedModalOpen(false)}
+        title="Không thể xóa sản phẩm"
+        maxWidth="max-w-lg"
+      >
+        <div className="space-y-4 text-slate-200 text-xs">
+          <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+            <AlertTriangle className="flex-shrink-0 mt-0.5" size={16} />
+            <div>
+              <p className="font-semibold text-[13px]">Sản phẩm này đang ở trong đơn hàng!</p>
+              <p className="text-[11px] mt-1 text-slate-300">
+                Hệ thống không thể xóa sản phẩm do sản phẩm đã được liên kết với các giao dịch đơn hàng dưới đây. Vui lòng xử lý hoặc hủy các đơn hàng này trước.
+              </p>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <h4 className="font-bold text-white text-[11px] uppercase tracking-wider text-purple-400">Danh sách đơn hàng liên quan</h4>
+            <div className="border border-white/5 rounded-xl overflow-hidden bg-white/[0.01]">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-white/5 border-b border-white/10 text-[10px] uppercase tracking-wider text-slate-400">
+                    <th className="p-3 font-semibold">Mã đơn hàng</th>
+                    <th className="p-3 font-semibold">Khách hàng</th>
+                    <th className="p-3 font-semibold text-right">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 text-slate-300">
+                  {referencedOrders.map((ord) => (
+                    <tr key={ord.id} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="p-3 font-medium text-white font-mono text-purple-400">
+                        {ord.orderCode || `ORD-${ord.id}`}
+                      </td>
+                      <td className="p-3">
+                        {ord.recipientName || 'N/A'}
+                      </td>
+                      <td className="p-3 text-right">
+                        <button
+                          onClick={() => {
+                            setIsReferencedModalOpen(false);
+                            setSelectedOrderId(ord.id);
+                            setIsOrderModalOpen(true);
+                            setActivePage('orders');
+                          }}
+                          className="glass-btn-primary px-2.5 py-1 rounded-lg text-[10px] font-semibold inline-flex items-center gap-1"
+                        >
+                          <Eye size={10} /> Xem chi tiết
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {referencedOrders.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="p-4 text-center text-slate-500">
+                        Không tìm thấy đơn hàng nào.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={() => setIsReferencedModalOpen(false)}
+              className="px-4 py-2 border border-white/10 hover:bg-white/5 text-white rounded-xl text-xs font-semibold transition-colors"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      </GlassModal>
     </div>
   );
 };

@@ -262,6 +262,9 @@ erDiagram
 * **Dynamic Role-Based Access Control (RBAC) - Phân Quyền Động Theo Database**:
   * Các quyền hạn chi tiết (ví dụ `manage_product`, `manage_order`) không bị hardcode trong mã nguồn Java mà được lưu trữ và tùy biến động tại bảng cơ sở dữ liệu `role_permissions` (được liên kết bằng `@ElementCollection(fetch = FetchType.EAGER)` trong thực thể `Role`). 
   * Quản trị viên có thể trực tiếp bật/tắt các quyền này trên giao diện quản lý vai trò. Khi lưu, client gửi yêu cầu `PUT /api/roles/{id}` để cập nhật trực tiếp vào cơ sở dữ liệu, ngay lập tức áp dụng cho toàn bộ nhân viên thuộc vai trò đó.
+* **Tự Động Làm Sạch Phiên Đăng Nhập Lỗi (Automatic Session Token Eviction)**:
+  * Nhằm giải quyết triệt để lỗi vòng lặp gọi API vô tận khi token xác thực JWT lưu ở Client hết hạn hoặc không hợp lệ (gây ra hàng loạt lỗi `403 Forbidden` liên tiếp trên Console trình duyệt), hệ thống triển khai cơ chế làm sạch phiên động tại `Header.jsx`.
+  * Khi hàm kiểm tra thông tin khách hàng `getCustomerById` bắt được ngoại lệ lỗi 403 từ Axios Client, hệ thống tự động kích hoạt hàm xóa cookie (`eraseCookie('customer')` và `eraseCookie('token')`), dọn dẹp sạch vùng lưu trữ cookie/localStorage và reset giao diện Header về trạng thái khách vãng lai (Guest Mode). Chặn đứng việc trình duyệt lặp lại các yêu cầu mạng không hợp lệ và tối ưu tài nguyên mạng của Client.
 
 ---
 
@@ -305,6 +308,10 @@ erDiagram
   * Để đơn giản hóa kiến trúc lưu trữ mà không cần cấu hình thêm các dịch vụ lưu trữ ngoài (như AWS S3) hay lưu trữ thư mục tĩnh cục bộ phức tạp, dự án mã hóa mọi tệp tin hình ảnh tải lên từ phía Client thành các chuỗi **Base64 Data URLs**.
   * Nhằm tránh lỗi tràn dung lượng bộ nhớ cột của MySQL (`Data truncation: Data too long for column`), toàn bộ các trường hình ảnh ở phía Backend (`User.java`, `Customer.java`, `Product.java`, `Blog.java`, `CategoryProduct.java`, `CategoryBlog.java`, `Banner.java`, `ProductImage.java`) đều được cấu hình bằng kiểu dữ liệu `@Column(columnDefinition = "LONGTEXT")`, hỗ trợ lưu trữ chuỗi dữ liệu lớn lên đến 4GB mỗi bản ghi.
   * **Cơ chế tự động dọn dẹp ảnh rác**: Do chuỗi ảnh được lưu trữ trực tiếp trong các hàng (rows) của bảng cơ sở dữ liệu (chứ không lưu dạng file tĩnh độc lập trên máy chủ), nên khi xóa bản ghi (như Xóa sản phẩm, Khách hàng, Bài viết) hoặc cập nhật ảnh mới, dữ liệu ảnh cũ sẽ **tự động bị xóa sạch/ghi đè hoàn toàn** cùng với bản ghi đó mà không bao giờ để lại các file ảnh mồ côi (orphaned files) gây lãng phí bộ nhớ lưu trữ vật lý của server.
+* **Hệ Thống Gửi Email Hóa Đơn SMTP Đính Kèm Chi Tiết Biến Thể & Đính Kèm Ảnh Inline CID**:
+  * Khi khách hàng hoàn tất quy trình checkout trực tuyến, Backend tự động kích hoạt tiến trình gửi email qua `EmailService.java` cấu hình SMTP Gmail.
+  * Thư xác nhận đơn hàng hiển thị dưới dạng bảng HTML chuyên nghiệp chứa đầy đủ danh sách giày đã mua, phân loại Kích cỡ (Size), Màu sắc (Color) rõ ràng của từng biến thể sản phẩm.
+  * Để bảo đảm hình ảnh sản phẩm luôn hiển thị ổn định trên mọi ứng dụng mail (Gmail, Outlook) mà không bị lỗi hoặc bị chặn bảo mật, hệ thống sử dụng cơ chế Content-ID (CID) đính kèm ảnh inline (`helper.addInline`). Hệ thống tự động phân loại: nếu là ảnh Base64 hoặc đường dẫn file cục bộ (`/image/...`), nó sẽ giải mã/đọc file thành byte array rồi đính kèm trực tiếp vào MIME email, tham chiếu qua thẻ `<img src="cid:img_x" />`. Đối với các ảnh từ link CDN bên ngoài, hệ thống tự động giữ nguyên đường dẫn tuyệt đối.
 
 ---
 
@@ -331,6 +338,9 @@ erDiagram
   * Cho phép người quản trị upload 1 ảnh đại diện và tối đa 4 ảnh phụ trợ (gallery) cho mỗi sản phẩm.
   * Tích hợp cơ chế lấy ảnh qua API bất đồng bộ và tự động hiển thị dải Thumbnail trên giao diện khách hàng.
   * Ứng dụng CSS nâng cao: tự động Scale, Hover, Fade-in mượt mà khi khách hàng chuyển đổi ảnh, cùng thanh cuộn Custom Scrollbar chuyên nghiệp mô phỏng các nền tảng thương mại điện tử lớn.
+* **Bắt Buộc Lựa Chọn Biến Thể Tại Trang Chi Tiết (Forced Product Variant Selection Flow)**:
+  * Để cải thiện trải nghiệm khách hàng (UX) và tránh lỗi mua nhầm kích thước hoặc thuộc tính mặc định, hệ thống gỡ bỏ các nút hành động nhanh "Thêm vào giỏ" và "Mua ngay" tại màn hình danh sách sản phẩm (`ProductCard.jsx`).
+  * Các nút bấm này được thay thế bằng nút **"Xem chi tiết"** duy nhất. Nút bấm này điều hướng khách hàng trực tiếp đến trang chi tiết sản phẩm (`ProductDetail.jsx`), buộc khách hàng phải chủ động lựa chọn các thuộc tính Kích cỡ (Size), Màu sắc (Color) và kiểm tra lượng hàng tồn kho thực tế của biến thể trước khi tiến hành thanh toán, giảm thiểu 100% các đơn hàng sai lệch dữ liệu.
 
 ---
 
@@ -388,7 +398,7 @@ Giao diện quản trị Admin được thiết kế theo phong cách Dark Mode 
 
 ### 📊 Các trang tính năng chính trong Dashboard
 1. **Dashboard (Bảng điều khiển)**: Thống kê tổng quan doanh thu, đơn hàng, khách hàng, biểu đồ tăng trưởng.
-2. **Products (Sản phẩm)**: Thêm/Sửa/Xóa sản phẩm, tải ảnh lên server. Nổi bật với hệ thống **Quản lý biến thể thông minh (Intelligent Variant Management)** hỗ trợ tạo hàng loạt (Bulk Generate) bằng tổ hợp chéo Size x Color siêu tốc, và thiết lập giá Base Price / Sale Price độc lập cho từng biến thể để tối ưu chiến lược xả kho. Hình ảnh biến thể được quản lý trực quan theo Nhóm màu sắc (Color Groups) ở Form sản phẩm chính giúp đơn giản hóa và lược bỏ cột "Image" trong bảng quản trị biến thể. Tích hợp bộ lọc phân trang động linh hoạt (6 sản phẩm/trang ở Grid view, 10 sản phẩm/trang ở List view) kèm theo bộ chuyển đổi dịch thuật thông báo lỗi API sang Tiếng Anh (`formatApiError`) chuẩn xác cho quản trị viên.
+2. **Products (Sản phẩm)**: Thêm/Sửa/Xóa sản phẩm, tải ảnh lên server. Nổi bật với hệ thống **Quản lý biến thể thông minh (Intelligent Variant Management)** hỗ trợ tạo hàng loạt (Bulk Generate) bằng tổ hợp chéo Size x Color siêu tốc, và thiết lập giá Base Price / Sale Price độc lập cho từng biến thể để tối ưu chiến lược xả kho. Hình ảnh biến thể được quản lý trực quan theo Nhóm màu sắc (Color Groups) ở Form sản phẩm chính giúp đơn giản hóa và lược bỏ cột "Image" trong bảng quản trị biến thể. Tích hợp bộ lọc phân trang động linh hoạt (6 sản phẩm/trang ở Grid view, 10 sản phẩm/trang ở List view) kèm theo bộ chuyển đổi dịch thuật thông báo lỗi API sang Tiếng Anh (`formatApiError`) chuẩn xác cho quản trị viên. Đặc biệt hỗ trợ **kiểm tra ràng buộc khóa ngoại trước khi xóa**, nếu sản phẩm nằm trong đơn hàng, hệ thống sẽ trả về danh sách đơn hàng liên quan hiển thị dạng GlassModal trực quan cùng nút Xem chi tiết.
 3. **Categories (Danh mục)**: Quản lý phân loại sản phẩm và tin tức.
 4. **Orders (Đơn hàng)**: Theo dõi đơn hàng, cập nhật trạng thái (`Pending` -> `Processing` -> `Shipped` -> `Completed` -> `Cancelled`).
 5. **Customers (Khách hàng)**: Quản lý danh sách khách hàng và trạng thái khóa/mở khóa tài khoản. Tích hợp nút **Quick Toggle Status** thay đổi trạng thái nhanh với hiệu ứng chuyển màu trực quan khi không ở trạng thái Active. Modal **"View Details"** nâng cấp hiển thị trực quan thông tin liên hệ, tổng đơn hàng, tổng chi tiêu (VND), danh sách Sổ địa chỉ (Shipping Addresses) và lịch sử Đơn hàng đã đặt (Associated Orders) kèm trạng thái đơn hàng cụ thể. Hỗ trợ **Quản lý Sổ Địa Chỉ Khách Hàng (Customer Address Management)** bằng tiếng Anh hóa 100%, chọn phân cấp hành chính (Province, District, Ward) chuẩn xác và cấu hình đặt làm địa chỉ mặc định, khắc phục hoàn toàn lỗi hiển thị chữ trắng nền trắng trên các thẻ dropdown trong môi trường Dark Mode.
@@ -607,7 +617,4 @@ web2/
 
 ---
 
-## 🛠️ Quy Tắc Lưu Trữ Script Bổ Trợ
-* **Thư mục chỉ định**: Tất cả các tệp kịch bản (scripts) bổ trợ dùng để cập nhật tài liệu, kiểm thử, seeding dữ liệu, hay chạy các tác vụ nền liên quan đều **bắt buộc** phải được đặt trong thư mục `E:\asp\test\web2`.
-* **Mục đích**: Nhằm tách biệt mã nguồn chạy chính của sản phẩm với các công cụ/tiện ích phát triển cá nhân, giữ cho kho lưu trữ dự án chính luôn sạch sẽ và tinh gọn.
 

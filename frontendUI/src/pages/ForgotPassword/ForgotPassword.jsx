@@ -18,7 +18,8 @@ const ForgotPassword = () => {
 
     try {
       const response = await customerService.forgotPassword(email);
-      setSuccessMessage(response.message || "Mật khẩu tạm thời đã được gửi!");
+      // response là chuỗi thông báo từ backend: "Chúng tôi đã gửi link đặt lại mật khẩu vào email của bạn..."
+      setSuccessMessage(typeof response === 'string' ? response : (response?.message || "Yêu cầu khôi phục mật khẩu đã được gửi!"));
       setEmail('');
     } catch (err) {
       console.error("Lỗi quên mật khẩu:", err);
@@ -48,7 +49,7 @@ const ForgotPassword = () => {
 
         <form onSubmit={handleSubmit}>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-            Vui lòng nhập địa chỉ email đã đăng ký. Chúng tôi sẽ tạo mật khẩu tạm thời mới và gửi thông tin chi tiết qua email cho bạn.
+            Vui lòng nhập địa chỉ email đã đăng ký. Chúng tôi sẽ gửi liên kết khôi phục mật khẩu qua email cho bạn.
           </p>
           <div className="form-group">
             <label>Địa chỉ Email <span style={{ color: 'red' }}>*</span></label>

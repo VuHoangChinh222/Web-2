@@ -149,6 +149,21 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
 - **Dọn dẹp cổng mạng phát triển (Process & Port Stability)**:
   - Thiết lập quy trình kiểm tra cổng `8080` trước khi chạy Server Java Backend, giải phóng các tiến trình Java/Spring Boot cũ bị treo ngầm giúp tránh lỗi xung đột cổng kết nối khi redeploy nhanh.
 
+### F. Cải tiến Trải nghiệm mua sắm (UX), Email thông báo nâng cao và Bảo mật phiên đăng nhập
+- **Nâng cấp Luồng mua hàng Storefront (Forced Variant Selection Flow)**:
+  - Gỡ bỏ hoàn toàn các nút hành động nhanh "Thêm vào giỏ" và "Mua ngay" tại trang danh sách sản phẩm (`ProductCard.jsx`) do sản phẩm giày thể thao có nhiều tổ hợp thuộc tính biến thể phức tạp (Size x Màu sắc) và số lượng tồn kho khác nhau.
+  - Thay thế bằng nút bấm duy nhất **"Xem chi tiết"** để định hướng người dùng vào trang chi tiết sản phẩm (`ProductDetail.jsx`), buộc khách hàng phải chủ động lựa chọn kích cỡ và màu sắc chính xác trước khi thanh toán, loại bỏ lỗi đặt nhầm sản phẩm với "Màu: Mặc định" hoặc size không phù hợp.
+- **Tối ưu hóa Email xác nhận đơn hàng (Enhanced HTML Email Notifications)**:
+  - Nâng cấp dịch vụ `EmailService.java` ở Backend Spring Boot để gửi thư xác nhận đặt hàng HTML có cấu trúc rõ ràng, chuyên nghiệp.
+  - Tích hợp thêm các cột hiển thị: hình ảnh thu nhỏ của đôi giày, kích cỡ (Size) và màu sắc (Color) của biến thể được chọn.
+  - Triển khai cơ chế đính kèm ảnh inline bằng Content-ID (CID): Đối với ảnh nội bộ dưới dạng chuỗi Base64 hoặc đường dẫn file cục bộ (như `/image/...`), hệ thống tự động giải mã và nạp byte dữ liệu vào luồng email dưới dạng tài nguyên inline `helper.addInline(...)` thay vì dùng đường dẫn URL tương đối hoặc localhost. Giải pháp này giúp hiển thị hình ảnh sản phẩm trực quan hoàn hảo trên mọi ứng dụng đọc thư (Gmail, Outlook) mà không bị trình duyệt chặn bảo mật.
+- **Khắc phục lỗi xác thực và làm sạch session (Auth Failure & Token Cleanup)**:
+  - Fix lỗi liên tục gửi API request gây lỗi `403 Forbidden` liên hoàn tại component `Header.jsx` when người dùng sở hữu token JWT đã hết hạn hoặc không hợp lệ.
+  - Xây dựng cơ chế bắt lỗi xác thực trong Catch block của API `getCustomerById(customerId)`. Khi xảy ra lỗi 403 Forbidden hoặc 401 Unauthorized, hệ thống lập tức gọi hàm `eraseCookie('customer')` và `eraseCookie('token')` để dọn dẹp sạch sẽ các cookie phiên lỗi, đồng thời reset trạng thái Header trở về chế độ khách vãng lai, chấm dứt hoàn toàn tình trạng spam request lặp lại vô hạn gây nghẽn trình duyệt.
+- **Xử lý ràng buộc khi xóa sản phẩm (Referenced Product Deletion Protection)**:
+  - Nâng cấp API xóa sản phẩm (`deleteProduct`) trong `ProductController.java` để kiểm tra sự tồn tại của sản phẩm trong các đơn hàng trước khi thực hiện xóa cứng. Nếu phát hiện sản phẩm đang nằm trong bất kỳ đơn hàng nào, API sẽ trả về mã `400 Bad Request` kèm theo danh sách chi tiết các đơn hàng chứa sản phẩm đó (mã đơn hàng, tên người nhận, ngày đặt).
+  - Tích hợp giao diện hiển thị danh sách đơn hàng liên quan dưới dạng `GlassModal` trong trang quản lý sản phẩm (`Products/Index.jsx`) ở Admin Dashboard. Khi người quản trị click xóa sản phẩm bị lỗi ràng buộc khóa ngoại, thay vì báo lỗi hệ thống thô kệch, ứng dụng sẽ hiển thị hộp thoại cảnh báo trực quan liệt kê tất cả các đơn hàng liên quan kèm nút **"Xem chi tiết"** để chuyển hướng nhanh đến hóa đơn đó, nâng cao trải nghiệm quản trị.
+
 
 
 

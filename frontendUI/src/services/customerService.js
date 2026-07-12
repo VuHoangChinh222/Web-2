@@ -29,6 +29,18 @@ const customerService = {
     forgotPassword: (email) => {
         const url = '/customers/forgot-password';
         return axiosClient.post(url, { email });
+    },
+
+    // API Đặt lại mật khẩu khách hàng bằng token
+    resetPassword: (token, password) => {
+        const url = '/customers/reset-password';
+        return axiosClient.post(url, { token, password });
+    },
+
+    // API Đăng nhập bằng tài khoản Google
+    googleLogin: (idToken) => {
+        const url = '/customers/google-login';
+        return axiosClient.post(url, { idToken });
     }
 };
 

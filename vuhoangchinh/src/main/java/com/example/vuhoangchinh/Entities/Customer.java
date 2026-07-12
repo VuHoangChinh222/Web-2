@@ -82,6 +82,12 @@ public class Customer {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "reset_token", length = 100)
+    private String resetToken;
+
+    @Column(name = "reset_token_expiry")
+    private LocalDateTime resetTokenExpiry;
+
     public String getImageUrl() {
         if (imageUrl != null && imageUrl.startsWith("data:image/")) {
             if (imageUrl.length() > 2000) {

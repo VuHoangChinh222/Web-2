@@ -22,6 +22,64 @@ const LoginView = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Tải thư viện Google Sign-In và khởi tạo nút bấm
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          callback: handleGoogleLoginResponse
+        });
+
+        window.google.accounts.id.renderButton(
+          document.getElementById("google-signin-btn"),
+          { 
+            theme: "outline", 
+            size: "large", 
+            width: "100%",
+            text: "signin_with",
+            shape: "rectangular"
+          }
+        );
+      }
+    };
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const handleGoogleLoginResponse = async (response) => {
+    setErrorMessage('');
+    setLoading(true);
+    try {
+      const res = await customerService.googleLogin(response.credential);
+      if (res && res.customer) {
+        setCookie('customer', res.customer, 2);
+        if (res.token) {
+          setCookie('token', res.token, 2);
+        }
+        alert("Đăng nhập bằng tài khoản Google thành công!");
+        navigate('/products');
+        window.location.reload();
+      } else {
+        setErrorMessage("Đăng nhập bằng Google thất bại, vui lòng thử lại.");
+      }
+    } catch (err) {
+      console.error("Lỗi đăng nhập Google:", err);
+      const msg = err.response?.data?.message || err.response?.data || "Đã xảy ra lỗi khi đăng nhập bằng Google.";
+      setErrorMessage(typeof msg === 'string' ? msg : "Đăng nhập bằng Google thất bại.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
@@ -132,6 +190,14 @@ const LoginView = () => {
               'Đăng Nhập'
             )}
           </button>
+
+          <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
+            <div style={{ flex: 1, height: '1px', background: '#eee' }}></div>
+            <span style={{ padding: '0 10px', color: '#888', fontSize: '0.85rem' }}>HOẶC</span>
+            <div style={{ flex: 1, height: '1px', background: '#eee' }}></div>
+          </div>
+
+          <div id="google-signin-btn" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}></div>
 
           <div style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-muted)' }}>
             Chưa có tài khoản khách hàng?{' '}

@@ -43,4 +43,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * @return Một Optional chứa thông tin đơn hàng nếu tồn tại, hoặc rỗng nếu không tìm thấy
      */
     Optional<Order> findByOrderCode(String orderCode);
+
+    /**
+     * Tìm tất cả các đơn hàng có chứa sản phẩm cụ thể.
+     */
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT o FROM Order o JOIN o.orderDetails od JOIN od.productVariant pv JOIN pv.product p WHERE p.id = :productId")
+    List<Order> findOrdersByProductId(@org.springframework.data.repository.query.Param("productId") Long productId);
 }

@@ -82,7 +82,13 @@ const DashboardContent = () => {
           />
         );
       case 'products':
-        return <Products />;
+        return (
+          <Products
+            setSelectedOrderId={setSelectedOrderId}
+            setIsOrderModalOpen={setIsOrderModalOpen}
+            setActivePage={setActivePage}
+          />
+        );
       case 'categories':
         return <Categories />;
       case 'orders':

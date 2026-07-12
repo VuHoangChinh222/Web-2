@@ -1,4 +1,3 @@
-import { getCookie } from '../utils/cookieHelper';
 import '../assets/css/productCSS/ProductCard.css';
 import { resolveImageUrl } from '../config';
 
@@ -43,82 +42,6 @@ const ProductCard = ({ product, addToCart, navigate }) => {
     navigate('detail', { slug: product.slug || product.id });
   };
 
-  const handleAddToCart = (e) => {
-    e.stopPropagation();
-
-    if (stock <= 0) {
-      alert("Sản phẩm đã hết hàng!");
-      return;
-    }
-
-    let defaultSize = 'M';
-    if (categoryName.toLowerCase().includes('giày') || categoryName.toLowerCase().includes('shoe')) {
-      defaultSize = 'US 8';
-    } else if (categoryName.toLowerCase().includes('vớ') || categoryName.toLowerCase().includes('tất')) {
-      defaultSize = 'Free';
-    }
-
-    const productForCart = {
-      id: product.id,
-      name: product.name,
-      price: displayPrice,
-      image: imageSrc,
-      categoryName: categoryName,
-      stockQuantity: stock
-    };
-
-    const customer = getCookie('customer');
-    if (!customer) {
-      alert("Hệ thống bảo mật: Bạn chưa đăng nhập. Hệ thống sẽ tự động thêm sản phẩm này vào giỏ sau khi bạn đăng nhập thành công!");
-      localStorage.setItem('pending_cart_item', JSON.stringify({ product: productForCart, size: defaultSize, qty: 1 }));
-      navigate('login');
-      return;
-    }
-
-    const success = addToCart(productForCart, defaultSize, 1);
-    if (success) {
-      alert(`Đã thêm sản phẩm "${product.name}" vào giỏ hàng thành công!`);
-    }
-  };
-
-  const handleBuyNow = (e) => {
-    e.stopPropagation();
-
-    if (stock <= 0) {
-      alert("Sản phẩm đã hết hàng!");
-      return;
-    }
-
-    let defaultSize = 'M';
-    if (categoryName.toLowerCase().includes('giày') || categoryName.toLowerCase().includes('shoe')) {
-      defaultSize = 'US 8';
-    } else if (categoryName.toLowerCase().includes('vớ') || categoryName.toLowerCase().includes('tất')) {
-      defaultSize = 'Free';
-    }
-
-    const productForCart = {
-      id: product.id,
-      name: product.name,
-      price: displayPrice,
-      image: imageSrc,
-      categoryName: categoryName,
-      stockQuantity: stock
-    };
-
-    const customer = getCookie('customer');
-    if (!customer) {
-      alert("Hệ thống bảo mật: Bạn chưa đăng nhập. Hệ thống sẽ tự động đưa bạn đến trang Đặt hàng sau khi bạn đăng nhập thành công!");
-      localStorage.setItem('pending_buy_now', JSON.stringify({ product: productForCart, size: defaultSize, qty: 1 }));
-      navigate('login');
-      return;
-    }
-
-    // Suppress alert to prevent user frustration. 
-    // If it fails (stock limit reached), it simply won't add the extra unit, but STILL proceeds to checkout.
-    addToCart(productForCart, defaultSize, 1, true);
-    navigate('checkout');
-  };
-
   return (
     <div
       onClick={handleCardClick}
@@ -128,46 +51,21 @@ const ProductCard = ({ product, addToCart, navigate }) => {
       {product.badge && <div className="product-badge">{product.badge}</div>}
       <div className="product-img">
         <img src={imageSrc} alt={product.name} />
-        <div className="product-action" style={{ gap: '8px', padding: '10px' }}>
+        <div className="product-action" style={{ padding: '10px' }}>
           <button
             type="button"
-            onClick={handleAddToCart}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCardClick();
+            }}
             style={{
-              flex: 1,
-              padding: '8px 4px',
-              fontSize: '0.75rem',
+              width: '100%',
+              padding: '10px 12px',
+              fontSize: '0.8rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '4px',
-              backgroundColor: '#1e293b',
-              border: '1px solid #475569',
-              color: '#f8fafc',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: '600',
-              transition: 'all 0.2s'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#334155';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#1e293b';
-            }}
-          >
-            <i className="fa-solid fa-cart-plus"></i> Giỏ hàng
-          </button>
-          <button
-            type="button"
-            onClick={handleBuyNow}
-            style={{
-              flex: 1,
-              padding: '8px 4px',
-              fontSize: '0.75rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '4px',
+              gap: '6px',
               backgroundColor: 'var(--accent)',
               border: 'none',
               color: 'white',
@@ -183,7 +81,7 @@ const ProductCard = ({ product, addToCart, navigate }) => {
               e.currentTarget.style.backgroundColor = 'var(--accent)';
             }}
           >
-            <i className="fa-solid fa-bolt"></i> Mua ngay
+            <i className="fa-solid fa-eye"></i> Xem chi tiết
           </button>
         </div>
       </div>

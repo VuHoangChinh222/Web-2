@@ -49,6 +49,12 @@ public class CustomerController {
     @Autowired
     private CustomerRepository customerRepository;
 
+    @Autowired
+    private com.example.vuhoangchinh.Services.EmailService emailService;
+
+    @org.springframework.beans.factory.annotation.Value("${google.client.id}")
+    private String googleClientId;
+
     // Tiêm Bean PasswordEncoder để xử lý mã hóa mật khẩu khách hàng
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -251,5 +257,157 @@ public class CustomerController {
         // Thực hiện xóa khách hàng
         customerRepository.delete(customer);
         return ResponseEntity.ok("Customer with id " + id + " has been deleted.");
+    }
+
+    /**
+     * DTO hứng yêu cầu Quên mật khẩu
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ForgotPasswordRequest {
+        @NotBlank(message = "Email không được để trống")
+        @Email(message = "Email không đúng định dạng")
+        private String email;
+    }
+
+    /**
+     * DTO hứng yêu cầu Khôi phục mật khẩu
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ResetPasswordRequest {
+        @NotBlank(message = "Token không được để trống")
+        private String token;
+
+        @NotBlank(message = "Mật khẩu mới không được để trống")
+        private String password;
+    }
+
+    /**
+     * DTO hứng yêu cầu Đăng nhập bằng Google
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GoogleLoginRequest {
+        @NotBlank(message = "IdToken không được để trống")
+        private String idToken;
+    }
+
+    /**
+     * API Yêu cầu khôi phục mật khẩu qua Email.
+     * POST /api/customers/forgot-password
+     */
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        Customer customer = customerRepository.findByEmail(request.getEmail()).orElse(null);
+        if (customer == null) {
+            return ResponseEntity.badRequest().body("Email address is not registered");
+        }
+
+        // Tạo token ngẫu nhiên và lưu thời hạn 15 phút
+        String token = java.util.UUID.randomUUID().toString();
+        customer.setResetToken(token);
+        customer.setResetTokenExpiry(java.time.LocalDateTime.now().plusMinutes(15));
+        customerRepository.save(customer);
+
+        // Tạo link reset gửi về cho khách hàng
+        String resetLink = "http://localhost:5173/reset-password?token=" + token;
+        emailService.sendPasswordResetEmail(customer, resetLink);
+
+        return ResponseEntity.ok("Chúng tôi đã gửi link đặt lại mật khẩu vào email của bạn. Vui lòng kiểm tra hộp thư!");
+    }
+
+    /**
+     * API Khôi phục mật khẩu từ resetToken.
+     * POST /api/customers/reset-password
+     */
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        Customer customer = customerRepository.findByResetToken(request.getToken()).orElse(null);
+        if (customer == null) {
+            return ResponseEntity.badRequest().body("Mã token khôi phục mật khẩu không hợp lệ");
+        }
+
+        if (customer.getResetTokenExpiry() == null || customer.getResetTokenExpiry().isBefore(java.time.LocalDateTime.now())) {
+            return ResponseEntity.badRequest().body("Mã token khôi phục mật khẩu đã hết hạn");
+        }
+
+        // Đổi mật khẩu mới và xóa token
+        customer.setPassword(passwordEncoder.encode(request.getPassword()));
+        customer.setResetToken(null);
+        customer.setResetTokenExpiry(null);
+        customerRepository.save(customer);
+
+        return ResponseEntity.ok("Đặt lại mật khẩu thành công! Bạn có thể dùng mật khẩu mới để đăng nhập.");
+    }
+
+    /**
+     * API Đăng nhập bằng Google ID Token.
+     * POST /api/customers/google-login
+     */
+    @PostMapping("/google-login")
+    public ResponseEntity<?> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
+        try {
+            com.google.api.client.http.javanet.NetHttpTransport transport = new com.google.api.client.http.javanet.NetHttpTransport();
+            com.google.api.client.json.gson.GsonFactory jsonFactory = com.google.api.client.json.gson.GsonFactory.getDefaultInstance();
+
+            com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier verifier = 
+                    new com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier.Builder(transport, jsonFactory)
+                            .setAudience(java.util.Collections.singletonList(googleClientId))
+                            .build();
+
+            com.google.api.client.googleapis.auth.oauth2.GoogleIdToken idToken = verifier.verify(request.getIdToken());
+            if (idToken == null) {
+                return ResponseEntity.status(401).body("Xác thực Google ID Token thất bại");
+            }
+
+            com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload payload = idToken.getPayload();
+            String email = payload.getEmail();
+            String name = (String) payload.get("name");
+            String pictureUrl = (String) payload.get("picture");
+
+            if (email == null) {
+                return ResponseEntity.badRequest().body("Không tìm thấy email từ tài khoản Google");
+            }
+
+            // Tìm hoặc tự động đăng ký khách hàng mới
+            Customer customer = customerRepository.findByEmail(email).orElse(null);
+            if (customer == null) {
+                customer = new Customer();
+                customer.setEmail(email);
+                customer.setFullName(name != null ? name : "Google User");
+                customer.setImageUrl(pictureUrl);
+                customer.setPhone("0900000000"); // SĐT mặc định thỏa mãn regex số điện thoại
+                customer.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+                customer.setStatus(1); // Hoạt động
+                customer = customerRepository.save(customer);
+            }
+
+            // Tạo token JWT
+            String token = tokenProvider.generateToken(email);
+
+            // Copy sang DTO an toàn không trả về password
+            Customer responseCustomer = new Customer();
+            responseCustomer.setId(customer.getId());
+            responseCustomer.setEmail(customer.getEmail());
+            responseCustomer.setFullName(customer.getFullName());
+            responseCustomer.setPhone(customer.getPhone());
+            responseCustomer.setImageUrl(customer.getImageUrl());
+            responseCustomer.setStatus(customer.getStatus());
+            responseCustomer.setCreatedAt(customer.getCreatedAt());
+            responseCustomer.setUpdatedAt(customer.getUpdatedAt());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("customer", responseCustomer);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Lỗi xác thực Google: " + e.getMessage());
+        }
     }
 }

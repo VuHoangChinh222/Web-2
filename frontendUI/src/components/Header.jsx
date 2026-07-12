@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import productService from '../services/productService';
 import postService from '../services/postService';
 import customerService from '../services/customerService';
-import { getCookie, setCookie } from '../utils/cookieHelper';
+import { getCookie, setCookie, eraseCookie } from '../utils/cookieHelper';
 import '../assets/css/headerCSS/Header.css';
 
 import { resolveImageUrl } from '../config';
@@ -60,6 +60,12 @@ const Header = ({ currentView, cartCount }) => {
         })
         .catch(err => {
           console.error("Lỗi khi tải thông tin khách hàng mới nhất:", err);
+          // Nếu bị lỗi 403 hoặc 401, tức là token đã hết hạn hoặc không hợp lệ -> xoá session để tránh spam request liên tục
+          if (err.response && (err.response.status === 403 || err.response.status === 401)) {
+            eraseCookie('customer');
+            eraseCookie('token');
+            setCustomer(null);
+          }
         });
     } else {
       setCustomer(null);

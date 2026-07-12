@@ -38,7 +38,7 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
 ### 3.1. Repository: `E:\web2\vuhoangchinh` (Java Backend)
 - **Công nghệ**: Java 17, Spring Boot 3.5.15, Spring Data JPA, Spring Security, MySQL, JJWT, Springdoc OpenAPI (Swagger).
 - **Cấu trúc Thư mục Chính**:
-  - `src/main/java/com/example/vuhoangchinh/Entities/`: Chứa các thực thể Database. Trọng tâm là `Product.java` (Sản phẩm), `CategoryProduct.java` (Danh mục), `ProductVariant.java` (Biến thể tồn kho).
+  - `src/main/java/com/example/vuhoangchinh/Entities/`: Chứa các thực thể Database. Trọng tâm là `Product.java` (Sản phẩm), `CategoryProduct.java` (Danh mục), `ProductVariant.java` (Biến thể tồn kho), `ProductImage.java` (Hình ảnh mô tả sản phẩm tích hợp liên kết màu sắc và sắp xếp thứ tự).
   - `.../Controllers/ProductController.java`: Nơi nhận request CRUD sản phẩm. Tích hợp phân trang (Pagination), SEO Slug generator. Gọi `AiSyncService` tại các method POST, PUT, DELETE.
   - `.../Services/AiSyncService.java`: Service sử dụng `CompletableFuture.runAsync` và `RestTemplate` để bắn HTTP (POST) gọi API đồng bộ sang Server Python (`/api/ai/sync` và `/api/ai/sync/delete`) mà không làm block luồng chính.
   - `.../Config/` & `.../Security/`: Xử lý bảo mật, xác thực Token JWT.

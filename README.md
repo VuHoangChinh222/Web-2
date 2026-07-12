@@ -141,6 +141,8 @@ erDiagram
         Long id PK
         Long product_id FK
         String imageUrl "LONGTEXT"
+        String color "VARCHAR(50)"
+        Integer sortOrder "INT"
     }
 
     ProductVariant {

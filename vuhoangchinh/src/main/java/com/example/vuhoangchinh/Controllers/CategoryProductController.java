@@ -35,6 +35,10 @@ public class CategoryProductController {
     @Autowired
     private CategoryProductRepository categoryProductRepository;
 
+    // Tiêm repository sản phẩm để kiểm tra sản phẩm trực thuộc trước khi xóa
+    @Autowired
+    private com.example.vuhoangchinh.Repositories.ProductRepository productRepository;
+
     /**
      * API Lấy danh sách danh mục sản phẩm hỗ trợ phân trang và sắp xếp.
      * GET /api/category-products?page=0&size=10&sortBy=id&sortDir=asc
@@ -155,6 +159,11 @@ public class CategoryProductController {
         CategoryProduct category = categoryProductRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found with id " + id));
         
+        // Kiểm tra ràng buộc sản phẩm trực thuộc
+        if (productRepository.existsByCategoryId(id)) {
+            return ResponseEntity.badRequest().body("Cannot delete category: There are products in this category.");
+        }
+
         categoryProductRepository.delete(category);
         return ResponseEntity.ok("Category with id " + id + " has been deleted successfully");
     }

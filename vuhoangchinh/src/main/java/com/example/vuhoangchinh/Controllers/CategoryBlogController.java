@@ -35,6 +35,10 @@ public class CategoryBlogController {
     @Autowired
     private CategoryBlogRepository categoryBlogRepository;
 
+    // Tiêm repository bài viết để kiểm tra bài viết trực thuộc trước khi xóa
+    @Autowired
+    private com.example.vuhoangchinh.Repositories.BlogRepository blogRepository;
+
     /**
      * API Lấy danh sách danh mục bài viết hỗ trợ phân trang và sắp xếp.
      * GET /api/category-blogs?page=0&size=10&sortBy=id&sortDir=asc
@@ -115,6 +119,7 @@ public class CategoryBlogController {
         // Cập nhật các trường cơ bản
         category.setName(categoryDetails.getName());
         category.setImageUrl(categoryDetails.getImageUrl());
+        category.setDescription(categoryDetails.getDescription());
 
         // Kiểm tra và cập nhật slug
         String targetSlug = categoryDetails.getSlug();
@@ -144,6 +149,12 @@ public class CategoryBlogController {
     public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
         CategoryBlog category = categoryBlogRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category blog not found with id " + id));
+        
+        // Kiểm tra ràng buộc bài viết trực thuộc
+        if (blogRepository.existsByCategoryBlogId(id)) {
+            return ResponseEntity.badRequest().body("Cannot delete category: There are posts in this category.");
+        }
+
         categoryBlogRepository.delete(category);
         return ResponseEntity.ok("Xóa danh mục bài viết thành công");
     }

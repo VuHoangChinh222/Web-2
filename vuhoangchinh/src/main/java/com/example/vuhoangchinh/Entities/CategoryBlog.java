@@ -44,4 +44,8 @@ public class CategoryBlog {
     @Column(name = "image_url", nullable = false, columnDefinition = "LONGTEXT")
     @NotBlank(message = "Đường dẫn hình ảnh đại diện không được để trống")
     private String imageUrl;
+
+    // Mô tả chi tiết danh mục bài viết, kiểu TEXT trong CSDL
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 }

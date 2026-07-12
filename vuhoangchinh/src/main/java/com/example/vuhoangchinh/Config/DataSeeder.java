@@ -271,8 +271,8 @@ public class DataSeeder implements CommandLineRunner {
         // 5. Seed Category Blogs
         CategoryBlog cb = null;
         if (categoryBlogRepository.count() == 0) {
-            cb = categoryBlogRepository.save(new CategoryBlog(null, "Xu hướng bóng rổ", "xu-huong-bong-ro", "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=400&q=80"));
-            categoryBlogRepository.save(new CategoryBlog(null, "Kinh nghiệm tập luyện", "kinh-nghiem-tap-luyen", "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=400&q=80"));
+            cb = categoryBlogRepository.save(new CategoryBlog(null, "Xu hướng bóng rổ", "xu-huong-bong-ro", "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=400&q=80", "Các bài viết chia sẻ về xu hướng thời trang bóng rổ và các mẫu giày hot nhất hiện nay."));
+            categoryBlogRepository.save(new CategoryBlog(null, "Kinh nghiệm tập luyện", "kinh-nghiem-tap-luyen", "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=400&q=80", "Kinh nghiệm tập luyện bóng rổ thực tế, các bài rèn kỹ năng và thể lực hiệu quả."));
         } else {
             List<CategoryBlog> cbs = categoryBlogRepository.findAll();
             if (!cbs.isEmpty()) {

@@ -104,9 +104,9 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
 
   const filteredOrders = mappedOrders.filter(o => {
     const cust = mappedCustomers.find(c => c.id === o.customerId);
-    const customerName = cust ? cust.fullname.toLowerCase() : '';
+    const customerName = cust ? String(cust.fullname || '').toLowerCase() : '';
     const matchesSearch = String(o.id).toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (o.orderCode && o.orderCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (o.orderCode && String(o.orderCode).toLowerCase().includes(searchTerm.toLowerCase())) ||
       customerName.includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' ||
       o.status === statusFilter ||
@@ -159,6 +159,14 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
     try {
       await orderService.delete(orderId);
       setOrders(prev => prev.filter(o => o.id !== orderId));
+      setOrderDetails(prev => prev.filter(d => {
+        const dOrderId = d.order ? d.order.id : d.orderId;
+        return dOrderId !== orderId;
+      }));
+      if (String(selectedOrderId) === String(orderId)) {
+        setSelectedOrderId(null);
+        setIsOpen(false);
+      }
       return true;
     } catch (err) {
       alert("Lỗi khi xóa đơn hàng: " + err.message);
@@ -178,10 +186,10 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
       return;
     }
 
-    const activeOrderObj = mappedOrders.find(o => o.id === selectedOrderId);
+    const activeOrderObj = mappedOrders.find(o => String(o.id) === String(selectedOrderId));
     if (!activeOrderObj) return;
 
-    const remainingDetails = mappedOrderDetails.filter(d => d.orderId === activeOrderObj.id && d.id !== detailId);
+    const remainingDetails = mappedOrderDetails.filter(d => String(d.orderId) === String(activeOrderObj.id) && d.id !== detailId);
     const newTotalAmt = remainingDetails.reduce((sum, item) => sum + item.total, 0);
 
     const body = {
@@ -225,9 +233,9 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
     }
   };
 
-  const activeOrder = mappedOrders.find(o => o.id === selectedOrderId);
+  const activeOrder = selectedOrderId ? mappedOrders.find(o => String(o.id) === String(selectedOrderId)) : null;
   const activeCustomer = activeOrder ? mappedCustomers.find(c => c.id === activeOrder.customerId) : null;
-  const activeItems = activeOrder ? mappedOrderDetails.filter(d => d.orderId === activeOrder.id) : [];
+  const activeItems = activeOrder ? mappedOrderDetails.filter(d => String(d.orderId) === String(activeOrder.id)) : [];
 
   return (
     <div className="space-y-6">

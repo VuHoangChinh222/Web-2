@@ -49,4 +49,9 @@ public interface BlogRepository extends JpaRepository<Blog, Long> {
      * Tìm kiếm danh sách tất cả bài viết của một tác giả cụ thể.
      */
     List<Blog> findByAuthorId(Long authorId);
+
+    /**
+     * Kiểm tra xem có bài viết nào thuộc danh mục này hay không.
+     */
+    boolean existsByCategoryBlogId(Long categoryBlogId);
 }

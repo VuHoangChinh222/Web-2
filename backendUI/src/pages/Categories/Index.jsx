@@ -8,7 +8,7 @@ import categoryProductService from '../../services/categoryProductService';
 import categoryBlogService from '../../services/categoryBlogService';
 
 const Categories = () => {
-  const { 
+  const {
     categoriesProduct, setCategoriesProduct,
     categoriesBlog, setCategoriesBlog,
     products, blogs,
@@ -42,15 +42,15 @@ const Categories = () => {
     description: cat.description || '',
     imageUrl: cat.imageUrl || '',
     status: cat.status,
-    postCount: (blogs || []).filter(b => b.category?.id === cat.id || b.categoryId === cat.id).length
+    postCount: (blogs || []).filter(b => b.categoryBlog?.id === cat.id || b.category?.id === cat.id || b.categoryId === cat.id).length
   }));
 
   const activeList = activeTab === 'product' ? mappedCategoriesProduct : mappedCategoriesBlog;
 
   // Filter list
-  const filteredList = activeList.filter(c => 
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    c.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredList = activeList.filter(c =>
+    (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (c.description || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleOpenAdd = () => {
@@ -102,7 +102,7 @@ const Categories = () => {
     if (activeTab === 'product') {
       const hasProducts = products.some(p => p.category?.id === id || p.categoryId === id);
       if (hasProducts) {
-        alert("Không thể xóa danh mục: Có sản phẩm đang thuộc danh mục này.");
+        alert("Cannot delete category: There are products in this category.");
         return;
       }
       if (confirm("Are you sure you want to delete this category?")) {
@@ -114,9 +114,9 @@ const Categories = () => {
         }
       }
     } else {
-      const hasBlogs = blogs.some(b => b.category?.id === id || b.categoryId === id);
+      const hasBlogs = blogs.some(b => b.categoryBlog?.id === id || b.category?.id === id || b.categoryId === id);
       if (hasBlogs) {
-        alert("Không thể xóa danh mục: Có bài viết đang thuộc danh mục này.");
+        alert("Cannot delete category: There are posts in this category.");
         return;
       }
       if (confirm("Are you sure you want to delete this category?")) {
@@ -151,8 +151,8 @@ const Categories = () => {
         <button
           onClick={() => setActiveTab('product')}
           className={`toggle-tab px-5 py-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all
-            ${activeTab === 'product' 
-              ? 'border-purple-500 text-purple-300 bg-gradient-to-t from-purple-500/5 to-transparent' 
+            ${activeTab === 'product'
+              ? 'border-purple-500 text-purple-300 bg-gradient-to-t from-purple-500/5 to-transparent'
               : 'border-transparent text-slate-400 hover:text-slate-200'}`}
         >
           <FolderKanban size={14} /> Product Categories
@@ -160,8 +160,8 @@ const Categories = () => {
         <button
           onClick={() => setActiveTab('blog')}
           className={`toggle-tab px-5 py-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all
-            ${activeTab === 'blog' 
-              ? 'border-purple-500 text-purple-300 bg-gradient-to-t from-purple-500/5 to-transparent' 
+            ${activeTab === 'blog'
+              ? 'border-purple-500 text-purple-300 bg-gradient-to-t from-purple-500/5 to-transparent'
               : 'border-transparent text-slate-400 hover:text-slate-200'}`}
         >
           <Tags size={14} /> Blog Categories
@@ -185,9 +185,9 @@ const Categories = () => {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {filteredList.map((cat) => (
-                  <CategoryListItem 
-                    key={cat.id} 
-                    cat={cat} 
+                  <CategoryListItem
+                    key={cat.id}
+                    cat={cat}
                     activeTab={activeTab}
                     resolveImageUrl={resolveImageUrl}
                     handleOpenEdit={handleOpenEdit}

@@ -31,7 +31,6 @@ const mapBannerFromBackend = (banner) => {
     title: banner.title || '',
     subtitle: banner.subtitle || '',
     image: banner.imageUrl || '',
-    link: banner.linkUrl || '',
     active: banner.status === 1,
     position: banner.position || 0
   };
@@ -73,7 +72,6 @@ const Banners = () => {
       title: formData.title,
       subtitle: formData.subtitle,
       imageUrl: formData.image || formData.imageUrl || '',
-      linkUrl: formData.link || formData.linkUrl || '',
       status: formData.active ? 1 : 0,
       position: targetPosition
     };
@@ -99,7 +97,6 @@ const Banners = () => {
         title: banner.title,
         subtitle: banner.subtitle,
         imageUrl: banner.image,
-        linkUrl: banner.link,
         position: banner.position,
         status: newStatus
       };
@@ -245,7 +242,6 @@ const Banners = () => {
                         <th className="py-3 pl-2 w-10 text-center">Move</th>
                         <th className="py-3">Cover</th>
                         <th className="py-3">Title</th>
-                        <th className="py-3 hidden md:table-cell">Link URL</th>
                         <th className="py-3 text-center">Pos</th>
                         <th className="py-3">Status</th>
                         <th className="py-3 text-right pr-2">Actions</th>

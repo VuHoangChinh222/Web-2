@@ -55,7 +55,7 @@ const Blogs = () => {
   const filteredBlogs = mappedBlogs.filter(b => {
     const matchesSearch = b.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
       b.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || b.categoryId === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || String(b.categoryId) === String(selectedCategory);
     return matchesSearch && matchesCategory;
   });
 
@@ -183,8 +183,7 @@ const Blogs = () => {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="pl-3 pr-8 py-1.5 rounded-lg text-xs glass-input appearance-none bg-no-repeat bg-right bg-[#0F1224] text-white"
-              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394A3B8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`, backgroundSize: '16px', backgroundPosition: 'calc(100% - 8px) center' }}
+              className="pl-3 pr-8 py-1.5 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
             >
               <option value="all" className="bg-[#0F1224] text-white">All Blog Categories</option>
               {categoriesBlog.map(cat => (

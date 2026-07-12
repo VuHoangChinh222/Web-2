@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Eye, EyeOff, Edit2, Trash2, Link as LinkIcon } from 'lucide-react';
+import { GripVertical, Eye, EyeOff, Edit2, Trash2 } from 'lucide-react';
 import GlassCard from '../../components/GlassCard';
 
 const BannerGridCard = ({ banner, handleToggleStatus, handleOpenEdit, handleDelete, resolveImageUrl }) => {
@@ -58,11 +58,6 @@ const BannerGridCard = ({ banner, handleToggleStatus, handleOpenEdit, handleDele
               </h4>
               <p className="text-[10px] text-slate-300 font-medium mt-0.5">{banner.subtitle}</p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 text-xs text-purple-400 font-medium px-1">
-            <LinkIcon size={12} className="text-slate-500" />
-            <span className="truncate max-w-[280px]" title={banner.link}>{banner.link || 'No hyperlink attached'}</span>
           </div>
         </div>
 

@@ -33,9 +33,6 @@ const BannerListItem = ({ banner, handleToggleStatus, handleOpenEdit, handleDele
       <td className="py-2.5 font-semibold text-white max-w-[200px] sm:max-w-[300px] truncate" title={banner.title}>
         {banner.title}
       </td>
-      <td className="py-2.5 text-slate-400 text-[10px] max-w-[150px] truncate hidden md:table-cell">
-        {banner.link || 'No hyperlink'}
-      </td>
       <td className="py-2.5 font-mono text-center text-xs">
         <span className="bg-white/5 px-2 py-0.5 rounded-full border border-white/10">#{banner.position}</span>
       </td>

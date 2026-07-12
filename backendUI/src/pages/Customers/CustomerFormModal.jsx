@@ -15,6 +15,7 @@ const CustomerFormModal = ({
     fullname: '',
     email: '',
     phone: '',
+    password: '',
     address: '',
     active: true,
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
@@ -28,12 +29,22 @@ const CustomerFormModal = ({
           fullname: '',
           email: '',
           phone: '',
+          password: '',
           address: '',
           active: true,
           avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
         });
       } else if (customerData) {
-        setForm(customerData);
+        setForm({
+          id: customerData.id || '',
+          fullname: customerData.fullname || '',
+          email: customerData.email || '',
+          phone: customerData.phone || '',
+          password: '',
+          address: customerData.address || '',
+          active: customerData.active,
+          avatar: customerData.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80'
+        });
       }
     }
   }, [isOpen, modalType, customerData]);
@@ -54,6 +65,10 @@ const CustomerFormModal = ({
     e.preventDefault();
     if (!form.fullname || !form.email || !form.phone) {
       alert("Name, Email, and Phone number are required.");
+      return;
+    }
+    if (modalType === 'add' && (!form.password || form.password.trim() === '')) {
+      alert("Password is required when adding a new customer.");
       return;
     }
     onSubmit(form);
@@ -126,19 +141,44 @@ const CustomerFormModal = ({
           </div>
         </div>
 
-        {/* Status & Address */}
-        <div className="grid grid-cols-1 gap-4">
+        {/* Password & Address */}
+        <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Customer Status</label>
-            <select
-              value={form.active}
-              onChange={(e) => setForm({ ...form, active: e.target.value === 'true' })}
-              className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
-            >
-              <option value="true" className="bg-[#0F1224] text-white">Active (Access Allowed)</option>
-              <option value="false" className="bg-[#0F1224] text-white">Suspended (Access Revoked)</option>
-            </select>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              {modalType === 'add' ? 'Password *' : 'Password (leave blank to keep unchanged)'}
+            </label>
+            <input
+              type="password"
+              required={modalType === 'add'}
+              placeholder={modalType === 'add' ? "••••••••" : "Leave blank to keep unchanged"}
+              value={form.password || ''}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg text-xs glass-input"
+            />
           </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Address</label>
+            <input
+              type="text"
+              placeholder="e.g. 123 Nguyễn Trãi, Quận 5"
+              value={form.address || ''}
+              onChange={(e) => setForm({ ...form, address: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg text-xs glass-input"
+            />
+          </div>
+        </div>
+
+        {/* Status */}
+        <div className="space-y-1">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Customer Status</label>
+          <select
+            value={form.active}
+            onChange={(e) => setForm({ ...form, active: e.target.value === 'true' })}
+            className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
+          >
+            <option value="true" className="bg-[#0F1224] text-white">Active (Access Allowed)</option>
+            <option value="false" className="bg-[#0F1224] text-white">Suspended (Access Revoked)</option>
+          </select>
         </div>
 
         {/* Modal Actions */}

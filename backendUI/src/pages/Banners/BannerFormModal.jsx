@@ -15,7 +15,6 @@ const BannerFormModal = ({
     title: '',
     subtitle: '',
     image: '',
-    link: '',
     active: true
   });
 
@@ -27,7 +26,6 @@ const BannerFormModal = ({
           title: '',
           subtitle: '',
           image: '',
-          link: '',
           active: true
         });
       } else if (bannerData) {
@@ -88,18 +86,6 @@ const BannerFormModal = ({
               className="w-full px-3 py-2 rounded-lg text-xs glass-input"
             />
           </div>
-        </div>
-
-        {/* Hyperlink Destination */}
-        <div className="space-y-1">
-          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Redirect Link (URL)</label>
-          <input
-            type="text"
-            placeholder="e.g. /product-category/summer-sales or https://..."
-            value={form.link}
-            onChange={(e) => setForm({ ...form, link: e.target.value })}
-            className="w-full px-3 py-2 rounded-lg text-xs glass-input"
-          />
         </div>
 
         {/* Status Selection */}

@@ -37,6 +37,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
 
     /**
+     * Kiểm tra xem có sản phẩm nào thuộc danh mục này hay không.
+     */
+    boolean existsByCategoryId(Long categoryId);
+
+    /**
      * Lọc sản phẩm theo danh mục, từ khóa tìm kiếm và khoảng giá.
      */
     @org.springframework.data.jpa.repository.Query("SELECT p FROM Product p WHERE " +

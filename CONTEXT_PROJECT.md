@@ -93,7 +93,7 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
 
 ---
 
-## 5. QUY TẮC LƯU TRỮ SCRIPT VÀ TÀI LIỆU
+## 5. QUY TẮC LƯU TRỮ SCRIPT VÀ TÀI LIỆU "Đặc biệt quan trọng cấm làm sai"
 1. **Thư mục lưu trữ Script**: Khi cần tạo bất kỳ script bổ trợ nào phục vụ cho việc tạo tài liệu, kiểm thử hoặc các tiến trình phụ, tất cả phải được lưu trữ trực tiếp tại thư mục `E:\asp\test\web2`.
 2. **Quy trình viết Tài liệu**: Bất kỳ script nào được sử dụng để cập nhật hay sinh tài liệu `.docx` phải được lưu trữ tại `E:\asp\test\web2` để phục vụ chạy lại khi cần thiết.
 
@@ -159,10 +159,32 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
   - Triển khai cơ chế đính kèm ảnh inline bằng Content-ID (CID): Đối với ảnh nội bộ dưới dạng chuỗi Base64 hoặc đường dẫn file cục bộ (như `/image/...`), hệ thống tự động giải mã và nạp byte dữ liệu vào luồng email dưới dạng tài nguyên inline `helper.addInline(...)` thay vì dùng đường dẫn URL tương đối hoặc localhost. Giải pháp này giúp hiển thị hình ảnh sản phẩm trực quan hoàn hảo trên mọi ứng dụng đọc thư (Gmail, Outlook) mà không bị trình duyệt chặn bảo mật.
 - **Khắc phục lỗi xác thực và làm sạch session (Auth Failure & Token Cleanup)**:
   - Fix lỗi liên tục gửi API request gây lỗi `403 Forbidden` liên hoàn tại component `Header.jsx` when người dùng sở hữu token JWT đã hết hạn hoặc không hợp lệ.
-  - Xây dựng cơ chế bắt lỗi xác thực trong Catch block của API `getCustomerById(customerId)`. Khi xảy ra lỗi 403 Forbidden hoặc 401 Unauthorized, hệ thống lập tức gọi hàm `eraseCookie('customer')` và `eraseCookie('token')` để dọn dẹp sạch sẽ các cookie phiên lỗi, đồng thời reset trạng thái Header trở về chế độ khách vãng lai, chấm dứt hoàn toàn tình trạng spam request lặp lại vô hạn gây nghẽn trình duyệt.
-- **Xử lý ràng buộc khi xóa sản phẩm (Referenced Product Deletion Protection)**:
+  - Xây dựng cơ chế bắt lỗi xác thực trong Catch block của API `getCustomerById(customerId)`. Khi xảy ra lỗi 403 Forbidden hoặc 401 Unauthorized, hệ thống lập tức gọi hàm `eraseCookie('customer')` và `eraseCookie('token')` để dọn dẹp sạch sẽ các cookie phiên lỗi, đồng thời reset trạng thái Header trở về chế độ khách vãng lai, chấm dứt hoàn toàn tình trạng spam request lặp lại vô hạn gây nghẽn trình duyệt.- **Xử lý ràng buộc khi xóa sản phẩm (Referenced Product Deletion Protection)**:
   - Nâng cấp API xóa sản phẩm (`deleteProduct`) trong `ProductController.java` để kiểm tra sự tồn tại của sản phẩm trong các đơn hàng trước khi thực hiện xóa cứng. Nếu phát hiện sản phẩm đang nằm trong bất kỳ đơn hàng nào, API sẽ trả về mã `400 Bad Request` kèm theo danh sách chi tiết các đơn hàng chứa sản phẩm đó (mã đơn hàng, tên người nhận, ngày đặt).
   - Tích hợp giao diện hiển thị danh sách đơn hàng liên quan dưới dạng `GlassModal` trong trang quản lý sản phẩm (`Products/Index.jsx`) ở Admin Dashboard. Khi người quản trị click xóa sản phẩm bị lỗi ràng buộc khóa ngoại, thay vì báo lỗi hệ thống thô kệch, ứng dụng sẽ hiển thị hộp thoại cảnh báo trực quan liệt kê tất cả các đơn hàng liên quan kèm nút **"Xem chi tiết"** để chuyển hướng nhanh đến hóa đơn đó, nâng cao trải nghiệm quản trị.
+- **Khắc phục lỗi hiển thị thông tin Danh mục bài viết (Blog Category Description & Assigned Items Count)**:
+  - Thêm trường `description` (kiểu `TEXT` trên CSDL MySQL) vào thực thể Java `CategoryBlog` và cập nhật API `updateCategory` trong `CategoryBlogController.java` để hỗ trợ lưu trữ và hiển thị nội dung mô tả của danh mục bài viết.
+  - Cải tiến logic đếm bài viết thuộc danh mục trong `Categories/Index.jsx` bằng cách so sánh chính xác thuộc tính `categoryBlog.id` trong phản hồi JSON của bài viết thô (được cấu hình bằng mối quan hệ `@ManyToOne` của JPA trên Backend). Khắc phục triệt để lỗi cột Assigned Items luôn hiển thị "0 items" dù có bài viết trực thuộc.
+  - Đồng thời tích hợp cơ chế bảo vệ xóa danh mục bài viết (và danh mục sản phẩm) ở cả Frontend (Index.jsx) và Backend (CategoryBlogController/CategoryProductController). Nếu danh mục chứa bài viết hoặc sản phẩm liên quan, hệ thống sẽ chặn và trả về cảnh báo an toàn "Không thể xóa danh mục: Có bài viết/sản phẩm đang thuộc danh mục này", ngăn ngừa triệt để lỗi khóa ngoại database.
+- **Khắc phục lỗi logic khi xóa đơn hàng trong CMS (CMS Order Deletion & State Sync Fix)**:
+  - Fix lỗi khi thực hiện xóa đơn hàng trên giao diện `/orders` của Admin Dashboard làm mất toàn bộ danh sách đơn hàng đang hiển thị (phải tải lại trang).
+  - Nguyên nhân: Việc cập nhật trạng thái `orders` không đồng bộ với danh sách `orderDetails` còn sót lại và `selectedOrderId` không được reset, dẫn đến việc modal chi tiết cố gắng render dữ liệu của đơn hàng đã xóa hoặc so sánh kiểu dữ liệu strict (string vs number) bị sai lệch.
+  - Giải pháp: Cập nhật hàm `handleDeleteOrder` để đồng thời dọn dẹp các chi tiết đơn hàng tương ứng (`orderDetails`) khỏi state React, reset `selectedOrderId` về `null` và đóng modal. Thêm so sánh an toàn bằng cách chuyển đổi kiểu dữ liệu ID sang chuỗi (`String(...)`) trong logic lọc tìm kiếm (`filteredOrders`) và xác định đơn hàng đang mở (`activeOrder`), ngăn chặn triệt để tình trạng render bị crash.
+- **Bổ sung trường Mật khẩu và Địa chỉ khi thêm mới Khách hàng (Customer Creation Password & Address Fields)**:
+  - Fix lỗi thiếu trường nhập mật khẩu trong biểu mẫu thêm mới khách hàng ("Add New Customer Profile") tại trang quản lý khách hàng (`/customers`) của Admin Dashboard, làm cho các yêu cầu tạo mới khách hàng gửi lên Backend bị chặn bởi ràng buộc `nullable = false` (không được để trống mật khẩu) của CSDL.
+  - Tích hợp thêm trường nhập Mật khẩu (chỉ bắt buộc nhập khi thêm mới khách hàng, để trống khi chỉnh sửa để giữ nguyên mật khẩu cũ) và trường nhập Địa chỉ vật lý chi tiết vào modal biểu mẫu `CustomerFormModal.jsx`, đảm bảo tài khoản khách hàng được khởi tạo thành công với mật khẩu mã hóa an toàn trên hệ thống.
+- **Khắc phục lỗi lọc danh mục bài viết và lỗi hiển thị Dropdown menu (Blog Category Filtering & Dropdown UI Fix)**:
+  - Fix lỗi so khớp kiểu dữ liệu strict (`===` giữa số nguyên ID của danh mục bài viết và chuỗi string lấy từ thẻ `<select>`) làm cho tính năng lọc danh mục bài viết tại giao diện `/blogs` không hiển thị bất kỳ bài viết nào khi chọn danh mục cụ thể (ví dụ: "Cách vệ sinh giày"). Khắc phục bằng cách chuyển đổi cả hai ID về dạng chuỗi (`String(...)`) trước khi so sánh.
+  - Đồng thời dọn dẹp các thuộc tính CSS inline (`style={{ backgroundImage: ... }}`) và class (`appearance-none bg-no-repeat`) trên thẻ select của dropdown lọc danh mục. Sự xung đột này khiến trình duyệt render song song cả icon mũi tên tùy chỉnh lẫn icon mặc định tạo thành một chuỗi nhiều mũi tên xếp chồng chéo gây lỗi giao diện. Sau khi làm sạch, menu dropdown hoạt động mượt mà và hiển thị chính xác.
+- **Tích hợp tính năng Tự động sinh Slug cho bài viết (Automatic Blog Slug Generation)**:
+  - Khắc phục sự bất tiện khi viết bài mới khi người dùng bắt buộc phải nhập Slug thủ công.
+  - Xây dựng tiện ích tự động chuyển đổi từ Tiêu đề bài viết (`Post Title`) thành chuỗi liên kết Slug thân thiện (loại bỏ tiếng Việt có dấu, ký tự đặc biệt, chuẩn hóa khoảng trắng thành gạch ngang và viết thường). Slug tự động điền vào ô nhập khi người dùng nhập Tiêu đề, đồng thời vẫn cho phép người dùng tùy ý ghi đè hoặc chỉnh sửa thủ công. Nếu người dùng xóa sạch trường Slug, hệ thống sẽ tự động tạo lại dựa trên Tiêu đề khi gửi biểu mẫu.
+- **Tăng giới hạn Kích thước Tải lên Tập tin của Server (Multipart Upload Size Limit Increase)**:
+  - Khắc phục triệt để lỗi khi người dùng tải hình ảnh sản phẩm hoặc hình nền bài viết có dung lượng lớn lên hệ thống bị server trả về lỗi `"Maximum upload size exceeded"` (do giới hạn upload mặc định của Spring Boot rất nhỏ, khoảng 1MB).
+  - Cấu hình mở rộng giới hạn tải lên tối đa trong `application.properties` của server Spring Boot lên mức `50MB` bằng cách cấu hình hai thuộc tính `spring.servlet.multipart.max-file-size=50MB` và `spring.servlet.multipart.max-request-size=50MB`. Đảm bảo hệ thống tiếp nhận hình ảnh chất lượng cao một cách mượt mà và ổn định mà không bị crash hay từ chối tải lên.
+- **Loại bỏ trường Liên kết Điều hướng Banner (Remove Banner Redirect Link URL)**:
+  - Tiến hành rà soát thực thể Java `Banner.java` trong gói Entities và xác nhận CSDL MySQL không chứa cột redirect link (và cũng không cần thiết theo yêu cầu thiết kế mới).
+  - Để đồng bộ dữ liệu chuẩn xác và dọn dẹp giao diện quản trị, đã loại bỏ hoàn toàn trường dữ liệu `link` / `linkUrl`, ô nhập liệu "Redirect Link (URL)" tại `BannerFormModal.jsx`, và các phần hiển thị cột liên kết điều hướng tại `BannerGridCard.jsx` và `BannerListItem.jsx` trên giao diện quản trị Admin Dashboard.
 
 
 

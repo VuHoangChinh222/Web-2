@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import ProductCard from '../../components/ProductCard';
 import HeroBanner from '../../components/HeroBanner';
 import productService from '../../services/productService';
+import productVariantService from '../../services/productVariantService';
 import ProductCategoryList from './ProductCategoryList';
 import IsLoading from '../../components/IsLoading';
 import '../../assets/css/productCSS/Product.css';
@@ -49,6 +50,12 @@ const ProductView = ({ params, navigate, addToCart }) => {
     const [tempMaxPrice, setTempMaxPrice] = useState('');
     const [priceError, setPriceError] = useState('');
 
+    // State quản lý bộ lọc màu sắc và kích cỡ
+    const [colorOptions, setColorOptions] = useState([]);  // Danh sách các màu có sẵn từ API
+    const [sizeOptions, setSizeOptions] = useState([]);    // Danh sách các size có sẵn từ API
+    const [selectedColor, setSelectedColor] = useState(''); // Màu sắc đang lọc
+    const [selectedSize, setSelectedSize] = useState('');   // Size đang lọc
+
     // State quản lý phân trang
     const [pageNumber, setPageNumber] = useState(1);       // Trang hiện tại
     const [totalPages, setTotalPages] = useState(1);       // Tổng số trang do API tính toán trả về
@@ -56,6 +63,30 @@ const ProductView = ({ params, navigate, addToCart }) => {
     const [hasError, setHasError] = useState(false);       // Trạng thái lỗi kết nối API
 
     const pageSize = 8; // Yêu cầu: Hiển thị tối đa 8 sản phẩm trên 1 trang
+
+    // Lấy danh sách màu sắc và kích cỡ có sẵn khi component mount
+    useEffect(() => {
+        productVariantService.getDistinctColors()
+            .then(res => setColorOptions(res || []))
+            .catch(err => console.error("Lỗi lấy danh sách màu sắc:", err));
+        
+        productVariantService.getDistinctSizes()
+            .then(res => {
+                // Sắp xếp size hợp lý: số trước, chữ sau
+                const sortedSizes = (res || []).sort((a, b) => {
+                    const numA = parseFloat(a);
+                    const numB = parseFloat(b);
+                    if (!isNaN(numA) && !isNaN(numB)) {
+                        return numA - numB;
+                    }
+                    if (!isNaN(numA)) return -1;
+                    if (!isNaN(numB)) return 1;
+                    return a.localeCompare(b);
+                });
+                setSizeOptions(sortedSizes);
+            })
+            .catch(err => console.error("Lỗi lấy danh sách kích cỡ:", err));
+    }, []);
 
     // Kiểm tra tính hợp lệ của khoảng giá nhập vào
     useEffect(() => {
@@ -89,7 +120,7 @@ const ProductView = ({ params, navigate, addToCart }) => {
         setLoading(true);
 
         // Gọi API getAllProducts với đầy đủ các tham số lọc nâng cao
-        productService.getAllProducts(pageNumber, pageSize, keyword, minPrice, maxPrice, activeCategoryId)
+        productService.getAllProducts(pageNumber, pageSize, keyword, minPrice, maxPrice, activeCategoryId, selectedColor, selectedSize)
             .then(result => {
                 const productList = Array.isArray(result) ? result : (result?.content || result?.Content || result?.data || []);
                 setProducts(productList);
@@ -104,7 +135,7 @@ const ProductView = ({ params, navigate, addToCart }) => {
                 setHasError(true);
                 setLoading(false);
             });
-    }, [pageNumber, activeCategoryId, keyword, minPrice, maxPrice]);
+    }, [pageNumber, activeCategoryId, keyword, minPrice, maxPrice, selectedColor, selectedSize]);
 
     // ==========================================
     // CÁC HÀM XỬ LÝ SỰ KIỆN (EVENT HANDLERS)
@@ -141,6 +172,8 @@ const ProductView = ({ params, navigate, addToCart }) => {
         setTempKeyword('');
         setKeyword('');
         setActiveCategoryId('all');
+        setSelectedColor('');
+        setSelectedSize('');
         setPageNumber(1);
     };
 
@@ -230,13 +263,66 @@ const ProductView = ({ params, navigate, addToCart }) => {
                                 >
                                     Áp dụng
                                 </button>
-                                {(minPrice || maxPrice || keyword || activeCategoryId !== 'all') && (
+                                {(minPrice || maxPrice || keyword || activeCategoryId !== 'all' || selectedColor || selectedSize) && (
                                     <button className="btn-clear-filter" onClick={handleClearAllFilters}>
                                         Xóa lọc
                                     </button>
                                 )}
                             </div>
                         </div>
+
+                        {/* BỘ LỌC MÀU SẮC */}
+                        {colorOptions && colorOptions.length > 0 && (
+                            <div className="product-filter-card">
+                                <h5 className="product-filter-title">
+                                    <i className="fa-solid fa-palette"></i> Màu sắc
+                                </h5>
+                                <div className="filter-color-list">
+                                    <div 
+                                        className={`filter-color-item ${selectedColor === '' ? 'active' : ''}`}
+                                        onClick={() => { setSelectedColor(''); setPageNumber(1); }}
+                                    >
+                                        Tất cả
+                                    </div>
+                                    {colorOptions.map(color => (
+                                        <div 
+                                            key={color}
+                                            className={`filter-color-item ${selectedColor === color ? 'active' : ''}`}
+                                            onClick={() => { setSelectedColor(color); setPageNumber(1); }}
+                                        >
+                                            {color}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* BỘ LỌC KÍCH CỠ */}
+                        {sizeOptions && sizeOptions.length > 0 && (
+                            <div className="product-filter-card">
+                                <h5 className="product-filter-title">
+                                    <i className="fa-solid fa-ruler-horizontal"></i> Kích cỡ (Size)
+                                </h5>
+                                <div className="filter-size-list">
+                                    <div 
+                                        className={`filter-size-item ${selectedSize === '' ? 'active' : ''}`}
+                                        onClick={() => { setSelectedSize(''); setPageNumber(1); }}
+                                        style={{ gridColumn: 'span 4' }}
+                                    >
+                                        Tất cả
+                                    </div>
+                                    {sizeOptions.map(size => (
+                                        <div 
+                                            key={size}
+                                            className={`filter-size-item ${selectedSize === size ? 'active' : ''}`}
+                                            onClick={() => { setSelectedSize(size); setPageNumber(1); }}
+                                        >
+                                            {size}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </aside>
 
                     {/* CỘT PHẢI: LƯỚI SẢN PHẨM VÀ PHÂN TRANG */}

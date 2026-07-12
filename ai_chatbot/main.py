@@ -254,16 +254,20 @@ THÔNG TIN CÁC SẢN PHẨM PHÙ HỢP TRONG CỬA HÀNG:
         
         # 4. Gọi mô hình Gemini với chế độ Bất đồng bộ (Async) để tăng tốc I/O mạng
         async def stream_generator():
-            response_stream = await client.aio.models.generate_content_stream(
-                model="gemini-3.5-flash",
-                contents=chat.message,
-                config=genai.types.GenerateContentConfig(
-                    system_instruction=system_prompt,
+            try:
+                response_stream = await client.aio.models.generate_content_stream(
+                    model="gemini-3.5-flash",
+                    contents=chat.message,
+                    config=genai.types.GenerateContentConfig(
+                        system_instruction=system_prompt,
+                    )
                 )
-            )
-            async for chunk in response_stream:
-                if chunk.text:
-                    yield chunk.text
+                async for chunk in response_stream:
+                    if chunk.text:
+                        yield chunk.text
+            except Exception as e:
+                print(f"Gemini API Exception: {e}")
+                yield "[Hệ thống]: Hiện tại máy chủ AI của Google đang quá tải (503 Service Unavailable) hoặc vượt quá hạn mức yêu cầu. Vui lòng gửi lại tin nhắn sau vài giây."
                     
         # Trả về Stream thẳng xuống Frontend
         return StreamingResponse(stream_generator(), media_type="text/plain")

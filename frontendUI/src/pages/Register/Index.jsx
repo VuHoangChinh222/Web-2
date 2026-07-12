@@ -24,7 +24,6 @@ const RegisterView = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -80,7 +79,6 @@ const RegisterView = () => {
         fullName,
         email,
         phone: phone || null,
-        address: address || null,
         imageUrl: imageUrl || null,
         password
       };
@@ -197,16 +195,7 @@ const RegisterView = () => {
             />
           </div>
 
-          <div className="form-group">
-            <label>Địa chỉ nhận hàng</label>
-            <input
-              type="text"
-              className="form-input"
-              placeholder="Số nhà, tên đường, quận/huyện, tỉnh/thành"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-          </div>
+
 
           <div className="form-group">
             <label>Mật khẩu <span style={{ color: 'red' }}>*</span></label>

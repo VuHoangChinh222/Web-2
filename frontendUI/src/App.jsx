@@ -215,7 +215,25 @@ const PostDetailRoute = ({ navigate }) => {
 
 // Component chính App bao bọc Router ngoài cùng
 const App = () => {
-  const [cart, setCart] = useState([]);
+  // Khởi tạo giỏ hàng từ localStorage nếu có để tránh mất dữ liệu khi refresh trang
+  const [cart, setCart] = useState(() => {
+    try {
+      const savedCart = localStorage.getItem('shopping_cart');
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (e) {
+      console.error("Lỗi khi load giỏ hàng từ localStorage:", e);
+      return [];
+    }
+  });
+
+  // Tự động lưu giỏ hàng vào localStorage mỗi khi giỏ hàng thay đổi
+  useEffect(() => {
+    try {
+      localStorage.setItem('shopping_cart', JSON.stringify(cart));
+    } catch (e) {
+      console.error("Lỗi khi lưu giỏ hàng vào localStorage:", e);
+    }
+  }, [cart]);
 
   const addToCart = (product, size, qty, suppressAlert = false) => {
     // Tính tổng số lượng sản phẩm này đã có trong giỏ hàng (không phân biệt kích cỡ)

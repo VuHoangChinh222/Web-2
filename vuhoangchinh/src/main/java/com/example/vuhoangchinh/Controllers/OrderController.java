@@ -385,7 +385,21 @@ public class OrderController {
             order.setPaymentStatus(request.getPaymentStatus());
         }
         if (request.getOrderStatus() != null) {
-            order.setOrderStatus(request.getOrderStatus());
+            String oldStatus = order.getOrderStatus();
+            String newStatus = request.getOrderStatus();
+            if ("3".equals(newStatus) && !"3".equals(oldStatus)) {
+                for (OrderDetail detail : order.getOrderDetails()) {
+                    productVariantRepository.incrementStockAtomic(detail.getProductVariant().getId(), detail.getQuantity());
+                }
+            } else if (!"3".equals(newStatus) && "3".equals(oldStatus)) {
+                for (OrderDetail detail : order.getOrderDetails()) {
+                    int updatedRows = productVariantRepository.decrementStockAtomic(detail.getProductVariant().getId(), detail.getQuantity());
+                    if (updatedRows == 0) {
+                        throw new RuntimeException("Không thể khôi phục đơn hàng vì biến thể '" + detail.getProductVariant().getProduct().getName() + "' (Màu " + detail.getProductVariant().getColor() + ", Size " + detail.getProductVariant().getSize() + ") đã hết hàng hoặc không đủ tồn kho.");
+                    }
+                }
+            }
+            order.setOrderStatus(newStatus);
         }
         order.setNote(request.getNote());
 
@@ -411,6 +425,11 @@ public class OrderController {
     public ResponseEntity<?> deleteOrder(@PathVariable Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found with id " + id));
+        if (!"3".equals(order.getOrderStatus())) {
+            for (OrderDetail detail : order.getOrderDetails()) {
+                productVariantRepository.incrementStockAtomic(detail.getProductVariant().getId(), detail.getQuantity());
+            }
+        }
         orderRepository.delete(order);
         return ResponseEntity.ok("Xóa đơn hàng thành công");
     }

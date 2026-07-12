@@ -75,7 +75,7 @@ public class EmailService {
                 String productName = detail.getProductVariant().getProduct().getName();
                 String size = detail.getProductVariant().getSize();
                 String color = detail.getProductVariant().getColor();
-                String rawImgUrl = detail.getProductVariant().getProduct().getImageUrl();
+                String rawImgUrl = detail.getProductVariant().getImageUrl();
                 
                 String imgTagSrc;
                 // Nếu là ảnh nội bộ (base64 hoặc đường dẫn cục bộ /image/...) thì dùng CID
@@ -144,7 +144,7 @@ public class EmailService {
             // Đính kèm các ảnh inline CID tương ứng
             int attachCounter = 1;
             for (OrderDetail detail : details) {
-                String rawImgUrl = detail.getProductVariant().getProduct().getImageUrl();
+                String rawImgUrl = detail.getProductVariant().getImageUrl();
                 if (rawImgUrl != null) {
                     String cidName = "img_" + attachCounter;
                     if (rawImgUrl.startsWith("data:image/")) {

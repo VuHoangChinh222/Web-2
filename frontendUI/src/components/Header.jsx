@@ -60,8 +60,8 @@ const Header = ({ currentView, cartCount }) => {
         })
         .catch(err => {
           console.error("Lỗi khi tải thông tin khách hàng mới nhất:", err);
-          // Nếu bị lỗi 403 hoặc 401, tức là token đã hết hạn hoặc không hợp lệ -> xoá session để tránh spam request liên tục
-          if (err.response && (err.response.status === 403 || err.response.status === 401)) {
+          // Nếu bị lỗi 403, 401 hoặc 400 (do ID khách hàng không còn tồn tại trên DB) -> xoá session để tránh spam request liên tục
+          if (err.response && (err.response.status === 403 || err.response.status === 401 || err.response.status === 400)) {
             eraseCookie('customer');
             eraseCookie('token');
             setCustomer(null);

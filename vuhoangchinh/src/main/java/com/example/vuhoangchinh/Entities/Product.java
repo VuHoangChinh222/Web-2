@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp; // Điền thời gian lúc 
 import org.hibernate.annotations.UpdateTimestamp; // Điền thời gian lúc sửa (Update)
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -100,6 +101,10 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnoreProperties("product")
     private List<ProductVariant> variants = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnore
+    private List<ProductImage> images = new ArrayList<>();
 
     // Trả về số lượng tồn kho (tổng số lượng của các biến thể)
     public Integer getStockQuantity() {

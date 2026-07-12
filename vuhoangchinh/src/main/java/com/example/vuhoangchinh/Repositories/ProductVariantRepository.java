@@ -63,4 +63,14 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
     @Modifying
     @Query("UPDATE ProductVariant v SET v.stockQuantity = v.stockQuantity - :quantity WHERE v.id = :variantId AND v.stockQuantity >= :quantity")
     int decrementStockAtomic(@Param("variantId") Long variantId, @Param("quantity") Integer quantity);
+
+    @Modifying
+    @Query("UPDATE ProductVariant v SET v.stockQuantity = v.stockQuantity + :quantity WHERE v.id = :variantId")
+    int incrementStockAtomic(@Param("variantId") Long variantId, @Param("quantity") Integer quantity);
+
+    @Query("SELECT DISTINCT v.color FROM ProductVariant v WHERE v.color IS NOT NULL AND v.color != '' AND v.status = 1")
+    List<String> findDistinctColors();
+
+    @Query("SELECT DISTINCT v.size FROM ProductVariant v WHERE v.size IS NOT NULL AND v.size != '' AND v.status = 1")
+    List<String> findDistinctSizes();
 }

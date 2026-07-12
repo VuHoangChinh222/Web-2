@@ -75,4 +75,20 @@ public class ProductVariant {
     @Column(nullable = false)
     private Integer status = 1;
 
+    // Hàm lấy ảnh đại diện của biến thể dựa vào màu sắc
+    public String getImageUrl() {
+        if (product == null) return null;
+        if (color != null && !color.trim().isEmpty() && !color.equalsIgnoreCase("Mặc định") && !color.equalsIgnoreCase("Default")) {
+            java.util.List<ProductImage> imgs = product.getImages();
+            if (imgs != null) {
+                for (ProductImage img : imgs) {
+                    if (img.getColor() != null && img.getColor().trim().equalsIgnoreCase(color.trim())) {
+                        return img.getImageUrl();
+                    }
+                }
+            }
+        }
+        return product.getThumbnail();
+    }
+
 }

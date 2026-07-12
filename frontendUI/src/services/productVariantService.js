@@ -17,6 +17,16 @@ const productVariantService = {
     getVariantById: (id) => {
         const url = `/product-variants/${id}`;
         return axiosClient.get(url);
+    },
+
+    // API lấy tất cả các màu sắc biến thể có sẵn
+    getDistinctColors: () => {
+        return axiosClient.get('/product-variants/colors');
+    },
+
+    // API lấy tất cả các kích cỡ biến thể có sẵn
+    getDistinctSizes: () => {
+        return axiosClient.get('/product-variants/sizes');
     }
 };
 

@@ -96,7 +96,9 @@ public class ProductController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice) {
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) String color,
+            @RequestParam(required = false) String variantSize) {
         
         // Thiết lập bộ quy tắc sắp xếp
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
@@ -106,13 +108,15 @@ public class ProductController {
         Pageable pageable = PageRequest.of(page, size, sort);
         
         // Nếu không có bất kỳ bộ lọc nào được cung cấp, sử dụng findAll
-        if (categoryId == null && (keyword == null || keyword.trim().isEmpty()) && minPrice == null && maxPrice == null) {
+        if (categoryId == null && (keyword == null || keyword.trim().isEmpty()) && minPrice == null && maxPrice == null && (color == null || color.trim().isEmpty()) && (variantSize == null || variantSize.trim().isEmpty())) {
             return productRepository.findAll(pageable);
         }
         
         // Ngược lại, thực hiện lọc theo các tham số được cung cấp
         String searchKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
-        return productRepository.filterProducts(categoryId, searchKeyword, minPrice, maxPrice, pageable);
+        String colorFilter = (color != null && !color.trim().isEmpty()) ? color.trim() : null;
+        String sizeFilter = (variantSize != null && !variantSize.trim().isEmpty()) ? variantSize.trim() : null;
+        return productRepository.filterProducts(categoryId, searchKeyword, minPrice, maxPrice, colorFilter, sizeFilter, pageable);
     }
 
     /**

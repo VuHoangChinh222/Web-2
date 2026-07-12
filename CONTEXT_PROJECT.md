@@ -96,7 +96,7 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
 ## 5. QUY TẮC LƯU TRỮ SCRIPT VÀ TÀI LIỆU "Đặc biệt quan trọng cấm làm sai"
 1. **Thư mục lưu trữ Script**: Khi cần tạo bất kỳ script bổ trợ nào phục vụ cho việc tạo tài liệu, kiểm thử hoặc các tiến trình phụ, tất cả phải được lưu trữ trực tiếp tại thư mục `E:\asp\test\web2`.
 2. **Quy trình viết Tài liệu**: Bất kỳ script nào được sử dụng để cập nhật hay sinh tài liệu `.docx` phải được lưu trữ tại `E:\asp\test\web2` để phục vụ chạy lại khi cần thiết.
-
+3. **Khi chạy các script khởi động dự án java hoặc node**: Khi chạy xong hoặc kiểm tra xong mà không có lỗi thì hãy "kill" bỏ các port đi giùm tôi.
 ---
 
 ## 6. CÁC TÍNH NĂNG VÀ CẢI TIẾN MỚI HOÀN THÀNH (UPDATED & COMPLETED FEATURES)
@@ -185,6 +185,40 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
 - **Loại bỏ trường Liên kết Điều hướng Banner (Remove Banner Redirect Link URL)**:
   - Tiến hành rà soát thực thể Java `Banner.java` trong gói Entities và xác nhận CSDL MySQL không chứa cột redirect link (và cũng không cần thiết theo yêu cầu thiết kế mới).
   - Để đồng bộ dữ liệu chuẩn xác và dọn dẹp giao diện quản trị, đã loại bỏ hoàn toàn trường dữ liệu `link` / `linkUrl`, ô nhập liệu "Redirect Link (URL)" tại `BannerFormModal.jsx`, và các phần hiển thị cột liên kết điều hướng tại `BannerGridCard.jsx` và `BannerListItem.jsx` trên giao diện quản trị Admin Dashboard.
+- **Nâng cấp Bộ lọc Sản phẩm theo Màu sắc và Kích cỡ (Color and Size Storefront Filters)**:
+  - Nâng cấp API danh sách sản phẩm `/api/products` (trong `ProductController.java` và `ProductRepository.java`) để tiếp nhận thêm các tham số truy vấn tùy chọn `color` và `variantSize`.
+  - Tối ưu hóa câu lệnh truy vấn JPQL bằng cách sử dụng biểu thức `EXISTS` liên kết với bảng biến thể `ProductVariant` thay vì sử dụng phép `JOIN` trực tiếp, giúp tránh được việc lặp trùng các bản ghi sản phẩm khi một sản phẩm có nhiều biến thể phù hợp.
+  - Bổ sung 2 endpoint API mới tại `ProductVariantController.java` (`/api/product-variants/colors` và `/api/product-variants/sizes`) để trả về toàn bộ danh sách các màu sắc và kích cỡ hiện có trong hệ thống CSDL (được lọc chỉ lấy các biến thể đang kích hoạt `status = 1`).
+  - Thiết kế và tích hợp 2 bảng lọc trực quan (Color filter badges và Size grid layout) vào thanh Sidebar bên trái của trang danh mục sản phẩm (`Index.jsx`), kèm theo hiệu ứng hover, active theo tông màu tối neon đặc trưng của Chinh Hoops.
+  - Đồng bộ hóa mượt mà trạng thái lọc mới với phân trang API, tự động chuyển trang hiện tại về trang 1 khi người dùng thay đổi lựa chọn màu sắc hoặc kích cỡ. Nút "Xóa lọc" được mở rộng để tự động reset toàn bộ các bộ lọc mới này về trạng thái mặc định.
+- **Lưu trữ giỏ hàng bền vững qua Refresh trang (Shopping Cart Persistence)**:
+  - Khắc phục hiện tượng giỏ hàng bị xóa sạch khi người dùng tải lại trang web do giỏ hàng trước đó chỉ lưu trữ trên bộ nhớ State tạm thời của React.
+  - Tích hợp lưu trữ giỏ hàng thông qua cơ chế `localStorage` của trình duyệt. Khởi tạo trạng thái `cart` ban đầu bằng cách nạp dữ liệu từ `localStorage.getItem('shopping_cart')` và tự động cập nhật bản sao đồng bộ xuống bộ nhớ qua Hook `useEffect` mỗi khi giỏ hàng thay đổi (thêm mới, thay đổi số lượng hoặc xóa sản phẩm).
+- **Tự động đăng xuất khi phiên làm việc bị hết hạn hoặc Database bị reset (Session Reset and Stale Cookie Handling)**:
+  - Khắc phục các lỗi hệ thống nghiêm trọng xảy ra trên trang Checkout và Header khi dữ liệu khách hàng lưu trong cookie bị lỗi thời hoặc không còn tồn tại trên cơ sở dữ liệu backend.
+  - Bổ sung cơ chế tự động giải phóng session trên client (`Header.jsx`) bằng cách bắt mã trạng thái lỗi 400 Bad Request cùng với 401/403 để xóa sạch cookie của trình duyệt và tự động đưa khách hàng về trang đăng nhập.
+- **Đồng bộ hình ảnh biến thể theo màu sắc trong Email và Quản lý Đơn hàng (Variant Color-Specific Order Images)**:
+  - Sửa lỗi hình ảnh sản phẩm đính kèm trong email xác nhận đơn hàng và trang chi tiết đơn hàng trong quản trị (Admin Dashboard) hiển thị không đúng với ảnh màu của biến thể được chọn.
+  - Thiết lập quan hệ `@OneToMany` giữa thực thể `Product` và `ProductImage` ở backend, bổ sung phương thức `getImageUrl()` trong `ProductVariant` để tự động lấy ảnh khớp màu sắc biến thể.
+  - Cập nhật dịch vụ `EmailService.java` cùng với các modal chi tiết đơn hàng ở frontend (`OrderDetailModal.jsx` ở cả Admin UI và Storefront UI) để hiển thị chính xác hình ảnh màu của sản phẩm.
+- **Quản lý Tồn kho & Hoàn trả Kho khi Hủy hoặc Xóa Đơn hàng (Order Restocking Logic)**:
+  - Khắc phục lỗi thất thoát tồn kho khi đơn hàng bị Hủy (Cancelled) hoặc bị Xóa khỏi hệ thống.
+  - Khi khách hàng đặt đơn (trạng thái Processing - 0), hệ thống sẽ trừ trực tiếp tồn kho của biến thể sản phẩm đó ngay lập tức (Atomic update) để tránh bán quá số lượng (Overselling). Tuy nhiên, nếu admin chuyển trạng thái đơn hàng sang Hủy (Cancelled - 3) hoặc Xóa hoàn toàn đơn hàng khỏi hệ thống, cơ chế Restocking sẽ tự động được kích hoạt để hoàn trả lại số lượng tồn kho tương ứng của các biến thể trong đơn hàng. Đồng thời hỗ trợ tính toán lại và trừ kho nếu khôi phục đơn hàng từ trạng thái Hủy về trạng thái hoạt động.
+- **Sửa lỗi đè lớp giao diện (Stacking Context Overlap) tại trang quản lý địa chỉ**:
+  - Khắc phục lỗi UI nghiêm trọng khi mở modal nhập/sửa địa chỉ giao hàng (`/addresses`), nơi modal bị thanh Menu Header (navbar) che mất một phần phía trên và phần dưới modal che mất/bị che bởi Footer do ảnh hưởng bởi stacking context tạo ra từ hiệu ứng animation của trang.
+  - Thiết lập thuộc tính lớp động `modal-open` trên `.page-container` và điều chỉnh `position: relative; z-index: 99999;` trong `AddressManagement.css` khi modal mở, nâng tổng thể trang chứa modal lên trên cả thanh header và footer, đồng thời tự động khôi phục cấu trúc xếp chồng thông thường khi đóng modal để duy trì hoạt động mượt mà của thanh sticky header.
+- **Đồng bộ hóa Font chữ toàn diện & Đóng modal khi bấm ra ngoài ở trang quản lý địa chỉ**:
+  - Đồng bộ phông chữ hệ thống cho toàn bộ các thẻ nhập liệu (`input`, `select`, `textarea`) trong `main.css` để đảm bảo sử dụng đồng nhất font chữ `'Inter'` cao cấp của thương hiệu.
+  - Cải thiện trải nghiệm UX tại trang `/addresses`, hỗ trợ tự động đóng modal khi người dùng bấm ra vùng ngoài (overlay) của cửa sổ pop-up "Thêm địa chỉ mới" / "Cập nhật địa chỉ", đồng thời duy trì và ngăn chặn ảnh hưởng lan truyền khi click vào bên trong modal card.
+- **Loại bỏ trường Địa chỉ nhận hàng khi đăng ký (Remove Address Field from Customer Registration)**:
+  - Loại bỏ trường nhập liệu "Địa chỉ nhận hàng" cùng trạng thái `address` khỏi giao diện đăng ký (`Register/Index.jsx`) trên Storefront (`frontendUI`) giúp đơn giản hóa luồng đăng ký tài khoản cho khách hàng mới, do khách hàng có thể cập nhật địa chỉ giao hàng chi tiết sau đó trong trang quản lý tài khoản hoặc khi đặt hàng.
+- **Khắc phục lỗi tìm kiếm bài viết ở thanh tìm kiếm (Blog Navbar Search Fix)**:
+  - Khắc phục lỗi thanh tìm kiếm ở Header/Navbar luôn hiển thị toàn bộ 2 bài viết mặc định khi gõ bất kỳ từ khóa nào.
+  - Nguyên nhân: Phương thức `getAllBlogs` trong `BlogController.java` ở Backend không nhận tham số truy vấn `keyword`, dẫn đến việc bỏ qua từ khóa tìm kiếm gửi từ Frontend và trả về toàn bộ danh sách bài viết hiện có.
+  - Giải pháp: Bổ sung tham số `@RequestParam(required = false) String keyword` cho phương thức `getAllBlogs` và xây dựng câu truy vấn JPQL tùy chỉnh `searchBlogs` trong `BlogRepository.java` để lọc các bài viết có tiêu đề (title), tóm tắt (summary) hoặc nội dung (content) khớp với từ khóa tìm kiếm.
+
+
+
 
 
 

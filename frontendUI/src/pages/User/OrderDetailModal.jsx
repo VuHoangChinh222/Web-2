@@ -45,7 +45,7 @@ const OrderDetailModal = ({ orderId, onClose }) => {
             items: data.map(item => ({
               id: item.id,
               productName: `${item.productVariant?.product?.name || 'Sản phẩm'} (Size: ${item.productVariant?.size || 'N/A'}, Màu: ${item.productVariant?.color || 'N/A'})`,
-              productImageUrl: item.productVariant?.product?.thumbnail || item.productVariant?.product?.imageUrl || '',
+              productImageUrl: item.productVariant?.imageUrl || item.productVariant?.product?.thumbnail || item.productVariant?.product?.imageUrl || '',
               unitPrice: item.price || 0,
               quantity: item.quantity || 1,
               subTotal: (item.price || 0) * (item.quantity || 1)

@@ -47,8 +47,14 @@ ul {
     list-style: none;
 }
 
+input,
+select,
+textarea,
 button {
     font-family: var(--font-body);
+}
+
+button {
     cursor: pointer;
     border: none;
     outline: none;

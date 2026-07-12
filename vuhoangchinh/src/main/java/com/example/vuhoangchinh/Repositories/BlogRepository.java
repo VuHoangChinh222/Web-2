@@ -54,4 +54,17 @@ public interface BlogRepository extends JpaRepository<Blog, Long> {
      * Kiểm tra xem có bài viết nào thuộc danh mục này hay không.
      */
     boolean existsByCategoryBlogId(Long categoryBlogId);
+
+    /**
+     * Tìm kiếm bài viết theo từ khóa (keyword) kết hợp phân trang.
+     * Tìm kiếm theo Tiêu đề (title), tóm tắt (summary) hoặc nội dung (content).
+     */
+    @org.springframework.data.jpa.repository.Query("SELECT b FROM Blog b WHERE " +
+            "(:keyword IS NULL OR :keyword = '' OR " +
+            "LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(b.summary) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(b.content) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Blog> searchBlogs(
+            @org.springframework.data.repository.query.Param("keyword") String keyword,
+            Pageable pageable);
 }

@@ -380,7 +380,7 @@ const AddressManagement = ({ navigate }) => {
   }
 
   return (
-    <div className="page-container page-transition">
+    <div className={`page-container page-transition ${isModalOpen ? 'modal-open' : ''}`}>
       <div className="address-manager-container">
 
         {/* Tiêu đề & Nút thêm địa chỉ */}
@@ -449,8 +449,8 @@ const AddressManagement = ({ navigate }) => {
 
         {/* Modal Thêm/Sửa địa chỉ */}
         {isModalOpen && (
-          <div className="address-modal-overlay">
-            <div className="address-modal-card">
+          <div className="address-modal-overlay" onClick={() => setIsModalOpen(false)}>
+            <div className="address-modal-card" onClick={(e) => e.stopPropagation()}>
               <h3 className="address-modal-title">
                 {modalType === 'add' ? 'Địa chỉ mới' : 'Cập nhật địa chỉ'}
               </h3>

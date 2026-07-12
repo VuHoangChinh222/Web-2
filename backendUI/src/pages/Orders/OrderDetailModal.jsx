@@ -148,7 +148,7 @@ const OrderDetailModal = ({
                   const varName = item.productVariant 
                     ? `${item.productVariant.product?.name || 'Product'} (${item.productVariant.color === 'Mặc định' || item.productVariant.color === 'Default' ? '' : item.productVariant.color + ', '}${item.productVariant.size})`
                     : (prod ? prod.name : 'Unknown Product');
-                  const imgUrl = item.productVariant?.product?.thumbnail || prod?.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80';
+                  const imgUrl = item.productVariant?.imageUrl || item.productVariant?.product?.thumbnail || prod?.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80';
                   
                   const isProcessing = activeOrder.status === '0' || activeOrder.status === 'Processing';
                   const canDelete = mode === 'edit' && isProcessing;

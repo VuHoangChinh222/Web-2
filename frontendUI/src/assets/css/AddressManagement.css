@@ -186,6 +186,11 @@
     background-color: rgba(249, 115, 22, 0.05);
 }
 
+.page-container.modal-open {
+    position: relative;
+    z-index: 99999;
+}
+
 /* Modal Form styling - FIX OVERLAP NAVBAR/FOOTER & SCROLLABLE */
 .address-modal-overlay {
     position: fixed;

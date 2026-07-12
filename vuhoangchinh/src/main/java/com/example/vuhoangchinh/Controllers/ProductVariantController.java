@@ -275,4 +275,14 @@ public class ProductVariantController {
         }
         return ResponseEntity.ok(savedVariants);
     }
+
+    @GetMapping("/colors")
+    public ResponseEntity<?> getDistinctColors() {
+        return ResponseEntity.ok(productVariantRepository.findDistinctColors());
+    }
+
+    @GetMapping("/sizes")
+    public ResponseEntity<?> getDistinctSizes() {
+        return ResponseEntity.ok(productVariantRepository.findDistinctSizes());
+    }
 }

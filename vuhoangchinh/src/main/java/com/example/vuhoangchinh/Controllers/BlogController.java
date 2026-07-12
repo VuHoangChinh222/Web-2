@@ -86,20 +86,25 @@ public class BlogController {
     }
 
     /**
-     * API Lấy danh sách toàn bộ bài viết trong hệ thống (Hỗ trợ phân trang và sắp xếp).
-     * GET /api/blogs?page=0&size=10&sortBy=id&sortDir=desc
+     * API Lấy danh sách toàn bộ bài viết trong hệ thống (Hỗ trợ phân trang, tìm kiếm và sắp xếp).
+     * GET /api/blogs?page=0&size=10&sortBy=id&sortDir=desc&keyword=
      */
     @GetMapping
     public Page<Blog> getAllBlogs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
+            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(required = false) String keyword) {
         
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
                 Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
                 
         Pageable pageable = PageRequest.of(page, size, sort);
+        
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return blogRepository.searchBlogs(keyword.trim(), pageable);
+        }
         return blogRepository.findAll(pageable);
     }
 

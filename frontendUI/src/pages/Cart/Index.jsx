@@ -69,7 +69,7 @@ const CartView = ({ cart, updateQty, removeFromCart, navigate }) => {
                       padding: '4px 0',
                       margin: '0 5px',
                       outline: 'none',
-                      mozAppearance: 'textfield'
+                      MozAppearance: 'textfield'
                     }}
                   />
                   <button className="qty-btn" onClick={() => {

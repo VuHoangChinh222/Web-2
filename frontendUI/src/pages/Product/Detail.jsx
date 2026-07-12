@@ -136,7 +136,7 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
       setCurrentVariant(variant);
       setQty(1); // Reset qty on variant change
       setStockWarning(false);
-      
+
       // Tìm xem có ảnh gallery phụ nào được gán nhãn màu này không
       const colorSpecificGalleryImg = galleryImages.find(img => img.color && img.color.trim().toLowerCase() === selectedColor.trim().toLowerCase());
       if (colorSpecificGalleryImg) {
@@ -283,7 +283,9 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
 
     const success = addToCart(productForCart, productForCart.size, qty, selectedColor);
     if (success) {
-      navigate('cart');
+      // navigate('cart');
+      // Hiển thị thông báo thành công
+      alert("Đã thêm sản phẩm vào giỏ hàng!");
     }
   };
 

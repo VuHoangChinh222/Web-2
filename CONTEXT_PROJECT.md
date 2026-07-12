@@ -90,3 +90,10 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
 - *Luôn ưu tiên sửa đổi API Logic RAG ở file `ai_chatbot/main.py`.*
 - *Bất kỳ nghiệp vụ kinh doanh, thanh toán, hay CSDL (MySQL) nào phải được xử lý bên `vuhoangchinh`.*
 - *Luôn đọc kỹ nội dung file này trước khi tư vấn code cho User.*
+
+---
+
+## 5. QUY TẮC LƯU TRỮ SCRIPT VÀ TÀI LIỆU
+1. **Thư mục lưu trữ Script**: Khi cần tạo bất kỳ script bổ trợ nào phục vụ cho việc tạo tài liệu, kiểm thử hoặc các tiến trình phụ, tất cả phải được lưu trữ trực tiếp tại thư mục `E:\asp\test\web2`.
+2. **Quy trình viết Tài liệu**: Bất kỳ script nào được sử dụng để cập nhật hay sinh tài liệu `.docx` phải được lưu trữ tại `E:\asp\test\web2` để phục vụ chạy lại khi cần thiết.
+

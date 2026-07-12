@@ -266,16 +266,18 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
       return;
     }
 
-    // Tiến hành add to cart (chuẩn hóa thuộc tính hình ảnh cho giỏ hàng)
+    const colorSpecificImg = galleryImages.find(img => img.color && img.color.trim().toLowerCase() === selectedColor.trim().toLowerCase());
+    const cartItemImage = colorSpecificImg ? colorSpecificImg.imageUrl : (product.image || product.imageUrl);
+
     const productForCart = {
       id: product.id,
       name: product.name,
       price: displayPrice,
-      image: (currentVariant && currentVariant.imageUrl) || product.image || resolveImageUrl(product.imageUrl, 'src/assets/images/shoe_product_1_1778727884422.png'),
+      image: resolveImageUrl(cartItemImage, 'src/assets/images/shoe_product_1_1778727884422.png'),
       categoryName: product.categoryName,
       stockQuantity: stockQuantity,
       variantId: currentVariant ? currentVariant.id : null,
-      color: selectedColor,
+      color: selectedColor || 'Mặc định',
       size: availableSizes.length > 0 ? selectedSize : size
     };
 
@@ -283,6 +285,35 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
     if (success) {
       navigate('cart');
     }
+  };
+
+  const getOrderedThumbnails = () => {
+    const list = [];
+    if (selectedColor) {
+      const colorSpecific = galleryImages.filter(img => img.color && img.color.trim().toLowerCase() === selectedColor.trim().toLowerCase());
+      list.push(...colorSpecific);
+    }
+    const mainImgUrl = product.image || product.imageUrl;
+    if (mainImgUrl) {
+      if (!list.some(img => img.imageUrl === mainImgUrl)) {
+        list.push({ id: 'main', imageUrl: mainImgUrl, isMain: true });
+      }
+    }
+    const generalImages = galleryImages.filter(img => !img.color || !selectedColor || img.color.trim().toLowerCase() === selectedColor.trim().toLowerCase());
+    generalImages.forEach(img => {
+      if (!list.some(existing => existing.imageUrl === img.imageUrl)) {
+        list.push(img);
+      }
+    });
+
+    if (!selectedColor && list.some(img => img.isMain)) {
+      const mainIdx = list.findIndex(img => img.isMain);
+      if (mainIdx > 0) {
+        const [mainImg] = list.splice(mainIdx, 1);
+        list.unshift(mainImg);
+      }
+    }
+    return list;
   };
 
   const imageSrc = product.image || resolveImageUrl(product.imageUrl, 'src/assets/images/shoe_product_1_1778727884422.png');
@@ -299,36 +330,26 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
             <img
               src={resolveImageUrl(activeImage, 'src/assets/images/shoe_product_1_1778727884422.png')}
               alt={product.name}
-              key={activeImage} /* Buộc React re-render để kích hoạt animation CSS */
+              key={activeImage}
               className="fade-in-image"
             />
           </div>
 
-          {galleryImages.length > 0 && (
+          {getOrderedThumbnails().length > 0 && (
             <div className="detail-thumbnails">
-              {/* Main thumbnail */}
-              <div
-                onClick={() => setActiveImage(product.image || product.imageUrl)}
-                className={`thumbnail-item ${activeImage === (product.image || product.imageUrl) ? 'active' : ''}`}
-              >
-                <img src={resolveImageUrl(product.image || product.imageUrl)} alt="Thumbnail" />
-              </div>
-
-              {/* Additional thumbnails (filtered by selected color) */}
-              {galleryImages
-                .filter(img => !img.color || !selectedColor || img.color.trim().toLowerCase() === selectedColor.trim().toLowerCase())
-                .map(img => (
-                  <div
-                    key={img.id}
-                    onClick={() => setActiveImage(img.imageUrl)}
-                    className={`thumbnail-item ${activeImage === img.imageUrl ? 'active' : ''}`}
-                  >
-                    <img src={resolveImageUrl(img.imageUrl)} alt="Gallery" />
-                  </div>
-                ))}
+              {getOrderedThumbnails().map((img, idx) => (
+                <div
+                  key={img.id || idx}
+                  onClick={() => setActiveImage(img.imageUrl)}
+                  className={`thumbnail-item ${activeImage === img.imageUrl ? 'active' : ''}`}
+                >
+                  <img src={resolveImageUrl(img.imageUrl)} alt="Thumbnail" />
+                </div>
+              ))}
             </div>
           )}
         </div>
+
         <div className="detail-info">
           <div className="product-category-badge">
             <i className="fa-solid fa-tag"></i> {product.categoryName}

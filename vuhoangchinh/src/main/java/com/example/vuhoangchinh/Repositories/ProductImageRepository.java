@@ -24,5 +24,5 @@ public interface ProductImageRepository extends JpaRepository<ProductImage, Long
      * @param productId ID của sản phẩm cần lấy ảnh
      * @return Danh sách các thực thể hình ảnh tương ứng
      */
-    List<ProductImage> findByProductId(Long productId);
+    List<ProductImage> findByProductIdOrderBySortOrderAscIdAsc(Long productId);
 }

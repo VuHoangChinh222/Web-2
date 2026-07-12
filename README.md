@@ -371,7 +371,7 @@ Giao diện quản trị Admin được thiết kế theo phong cách Dark Mode 
 
 ### 📊 Các trang tính năng chính trong Dashboard
 1. **Dashboard (Bảng điều khiển)**: Thống kê tổng quan doanh thu, đơn hàng, khách hàng, biểu đồ tăng trưởng.
-2. **Products (Sản phẩm)**: Thêm/Sửa/Xóa sản phẩm, tải ảnh lên server. Nổi bật với hệ thống **Quản lý biến thể thông minh (Intelligent Variant Management)** hỗ trợ tạo hàng loạt (Bulk Generate) bằng tổ hợp chéo Size x Color siêu tốc, và thiết lập giá Base Price / Sale Price độc lập cho từng biến thể để tối ưu chiến lược xả kho.
+2. **Products (Sản phẩm)**: Thêm/Sửa/Xóa sản phẩm, tải ảnh lên server. Nổi bật với hệ thống **Quản lý biến thể thông minh (Intelligent Variant Management)** hỗ trợ tạo hàng loạt (Bulk Generate) bằng tổ hợp chéo Size x Color siêu tốc, và thiết lập giá Base Price / Sale Price độc lập cho từng biến thể để tối ưu chiến lược xả kho. Hình ảnh biến thể được quản lý trực quan theo Nhóm màu sắc (Color Groups) ở Form sản phẩm chính giúp đơn giản hóa và lược bỏ cột "Image" trong bảng quản trị biến thể.
 3. **Categories (Danh mục)**: Quản lý phân loại sản phẩm và tin tức.
 4. **Orders (Đơn hàng)**: Theo dõi đơn hàng, cập nhật trạng thái (`Pending` -> `Processing` -> `Shipped` -> `Completed` -> `Cancelled`).
 5. **Customers (Khách hàng)**: Quản lý danh sách khách hàng và trạng thái khóa/mở khóa tài khoản. Tích hợp nút **Quick Toggle Status** thay đổi trạng thái nhanh với hiệu ứng chuyển màu trực quan khi không ở trạng thái Active. Modal **"View Details"** nâng cấp hiển thị trực quan thông tin liên hệ, tổng đơn hàng, tổng chi tiêu (VND), danh sách Sổ địa chỉ (Shipping Addresses) và lịch sử Đơn hàng đã đặt (Associated Orders) kèm trạng thái đơn hàng cụ thể. Hỗ trợ **Quản lý Sổ Địa Chỉ Khách Hàng (Customer Address Management)** bằng tiếng Anh hóa 100%, chọn phân cấp hành chính (Province, District, Ward) chuẩn xác và cấu hình đặt làm địa chỉ mặc định, khắc phục hoàn toàn lỗi hiển thị chữ trắng nền trắng trên các thẻ dropdown trong môi trường Dark Mode.
@@ -548,3 +548,10 @@ web2/
     │   └── application.properties # Tệp tin cấu hình ứng dụng
     └── pom.xml                # Quản lý thư viện Maven
 ```
+
+---
+
+## 🛠️ Quy Tắc Lưu Trữ Script Bổ Trợ
+* **Thư mục chỉ định**: Tất cả các tệp kịch bản (scripts) bổ trợ dùng để cập nhật tài liệu, kiểm thử, seeding dữ liệu, hay chạy các tác vụ nền liên quan đều **bắt buộc** phải được đặt trong thư mục `E:\asp\test\web2`.
+* **Mục đích**: Nhằm tách biệt mã nguồn chạy chính của sản phẩm với các công cụ/tiện ích phát triển cá nhân, giữ cho kho lưu trữ dự án chính luôn sạch sẽ và tinh gọn.
+

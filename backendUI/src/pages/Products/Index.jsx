@@ -95,9 +95,13 @@ const Products = () => {
       if (modalType === 'add') {
         const newProduct = await productService.create(body);
         if (formData.additionalImages && formData.additionalImages.length > 0) {
+          const additionalImagesWithSort = formData.additionalImages.map((img, idx) => ({
+            ...img,
+            sortOrder: idx
+          }));
           try {
-            await Promise.all(formData.additionalImages.map(img =>
-              productImageService.create({ productId: newProduct.id, imageUrl: img.imageUrl, color: img.color })
+            await Promise.all(additionalImagesWithSort.map(img =>
+              productImageService.create({ productId: newProduct.id, imageUrl: img.imageUrl, color: img.color, sortOrder: img.sortOrder })
             ));
           } catch (e) {
             console.error("Error syncing additional images (Create):", e);
@@ -107,17 +111,21 @@ const Products = () => {
       } else {
         const updated = await productService.update(formData.id, body);
         if (formData.additionalImages) {
-          const newImages = formData.additionalImages.filter(img => img.isNew);
-          const existingImages = formData.additionalImages.filter(img => !img.isNew && img.id);
+          const additionalImagesWithSort = formData.additionalImages.map((img, idx) => ({
+            ...img,
+            sortOrder: idx
+          }));
+          const newImages = additionalImagesWithSort.filter(img => img.isNew);
+          const existingImages = additionalImagesWithSort.filter(img => !img.isNew && img.id);
           try {
             if (newImages.length > 0) {
               await Promise.all(newImages.map(img =>
-                productImageService.create({ productId: formData.id, imageUrl: img.imageUrl, color: img.color })
+                productImageService.create({ productId: formData.id, imageUrl: img.imageUrl, color: img.color, sortOrder: img.sortOrder })
               ));
             }
             if (existingImages.length > 0) {
               await Promise.all(existingImages.map(img =>
-                productImageService.update(img.id, { productId: formData.id, imageUrl: img.imageUrl, color: img.color })
+                productImageService.update(img.id, { productId: formData.id, imageUrl: img.imageUrl, color: img.color, sortOrder: img.sortOrder })
               ));
             }
           } catch (e) {

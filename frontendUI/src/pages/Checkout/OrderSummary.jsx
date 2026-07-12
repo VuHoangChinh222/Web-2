@@ -4,6 +4,8 @@
  * Môn học: Chuyên đề WEB 2 & ReactJS
  */
 
+import { resolveImageUrl } from '../../config';
+
 const OrderSummary = ({ cart }) => {
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + ' VND';
 
@@ -21,14 +23,14 @@ const OrderSummary = ({ cart }) => {
           <div key={item.cartId} className="checkout-summary-item">
             <div className="checkout-item-meta">
               <img
-                src={item.image}
+                src={resolveImageUrl(item.image)}
                 alt={item.name}
                 className="checkout-item-thumbnail"
               />
               <div>
                 <h4 className="checkout-item-title">{item.name}</h4>
                 <span className="checkout-item-details-text">
-                  Size: {item.size} &nbsp;&bull;&nbsp; Số lượng: {item.qty}
+                  Size: {item.size} &nbsp;&bull;&nbsp; Màu: {item.color || 'Mặc định'} &nbsp;&bull;&nbsp; Số lượng: {item.qty}
                 </span>
               </div>
             </div>

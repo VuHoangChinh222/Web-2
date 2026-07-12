@@ -55,6 +55,8 @@ public class ProductImageController {
         private String imageUrl; // URL đường dẫn tới hình ảnh
 
         private String color; // Màu sắc liên kết (nếu có)
+
+        private Integer sortOrder; // Thứ tự sắp xếp
     }
 
     /**
@@ -76,7 +78,7 @@ public class ProductImageController {
         if (!productRepository.existsById(productId)) {
             throw new RuntimeException("Product not found with id " + productId);
         }
-        return productImageRepository.findByProductId(productId);
+        return productImageRepository.findByProductIdOrderBySortOrderAscIdAsc(productId);
     }
 
     /**
@@ -105,6 +107,7 @@ public class ProductImageController {
         productImage.setProduct(product);
         productImage.setImageUrl(request.getImageUrl().trim());
         productImage.setColor(request.getColor() != null ? request.getColor().trim() : null);
+        productImage.setSortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0);
 
         ProductImage savedImage = productImageRepository.save(productImage);
         return ResponseEntity.ok(savedImage);
@@ -130,6 +133,7 @@ public class ProductImageController {
         // Cập nhật đường dẫn ảnh mới
         productImage.setImageUrl(request.getImageUrl().trim());
         productImage.setColor(request.getColor() != null ? request.getColor().trim() : null);
+        productImage.setSortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0);
 
         ProductImage updatedImage = productImageRepository.save(productImage);
         return ResponseEntity.ok(updatedImage);

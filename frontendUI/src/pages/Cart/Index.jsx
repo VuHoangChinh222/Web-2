@@ -1,9 +1,8 @@
 import { getCookie } from '../../utils/cookieHelper';
+import { resolveImageUrl } from '../../config';
 import '../../assets/css/cartCSS/Cart.css';
 
-
 export const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price) + ' VND';
-
 
 const CartView = ({ cart, updateQty, removeFromCart, navigate }) => {
   const total = cart.reduce((sum, item) => sum + (item.price * (parseInt(item.qty) || 0)), 0);
@@ -27,10 +26,13 @@ const CartView = ({ cart, updateQty, removeFromCart, navigate }) => {
           {cart.map(item => (
             <div className="cart-item" key={item.cartId}>
               <div className="cart-item-info">
-                <img src={item.image} alt={item.name} className="cart-item-img" />
+                <img src={resolveImageUrl(item.image)} alt={item.name} className="cart-item-img" />
                 <div className="cart-item-details">
                   <h4>{item.name}</h4>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Size: {item.size}</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', display: 'flex', gap: '12px', marginTop: '4px' }}>
+                    <span>Size: {item.size}</span>
+                    <span>Màu: {item.color || 'Mặc định'}</span>
+                  </div>
                   <div className="cart-item-price">{formatPrice(item.price)}</div>
                 </div>
               </div>

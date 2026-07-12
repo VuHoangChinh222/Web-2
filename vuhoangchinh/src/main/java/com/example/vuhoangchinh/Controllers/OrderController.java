@@ -78,6 +78,7 @@ public class OrderController {
         private Integer quantity;
 
         private String size; // Kích cỡ sản phẩm
+        private String color; // Màu sắc sản phẩm
         private BigDecimal price; // Giá tại thời điểm mua
     }
 
@@ -241,20 +242,46 @@ public class OrderController {
                 OrderDetail detail = new OrderDetail();
                 detail.setOrder(savedOrder);
                 
-                // Tìm ProductVariant phù hợp theo productId và size
+                // Tìm ProductVariant phù hợp theo productId, size và color
                 List<ProductVariant> variants = productVariantRepository.findByProductId(itemReq.getProductId());
                 ProductVariant selectedVariant = null;
                 if (!variants.isEmpty()) {
-                    if (itemReq.getSize() != null && !itemReq.getSize().trim().isEmpty()) {
+                    String reqSize = itemReq.getSize();
+                    String reqColor = itemReq.getColor();
+                    
+                    // Thử tìm khớp cả size và color
+                    if (reqSize != null && !reqSize.trim().isEmpty() && reqColor != null && !reqColor.trim().isEmpty()) {
                         for (ProductVariant v : variants) {
-                            if (itemReq.getSize().equalsIgnoreCase(v.getSize())) {
+                            if (reqSize.equalsIgnoreCase(v.getSize()) && reqColor.equalsIgnoreCase(v.getColor())) {
                                 selectedVariant = v;
                                 break;
                             }
                         }
                     }
+                    
+                    // Nếu không tìm thấy, thử tìm khớp size
+                    if (selectedVariant == null && reqSize != null && !reqSize.trim().isEmpty()) {
+                        for (ProductVariant v : variants) {
+                            if (reqSize.equalsIgnoreCase(v.getSize())) {
+                                selectedVariant = v;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Nếu vẫn không tìm thấy, thử tìm khớp color
+                    if (selectedVariant == null && reqColor != null && !reqColor.trim().isEmpty()) {
+                        for (ProductVariant v : variants) {
+                            if (reqColor.equalsIgnoreCase(v.getColor())) {
+                                selectedVariant = v;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Nếu vẫn không tìm thấy, lấy biến thể đầu tiên làm mặc định
                     if (selectedVariant == null) {
-                        selectedVariant = variants.get(0); // Lấy biến thể đầu tiên làm mặc định
+                        selectedVariant = variants.get(0);
                     }
                 } else {
                     // Tự động tạo một biến thể mặc định nếu sản phẩm chưa có biến thể nào trong DB
@@ -264,10 +291,10 @@ public class OrderController {
                     ProductVariant defaultVariant = new ProductVariant();
                     defaultVariant.setProduct(product);
                     defaultVariant.setSize(itemReq.getSize() != null && !itemReq.getSize().trim().isEmpty() ? itemReq.getSize().trim() : "M");
-                    defaultVariant.setColor("Mặc định");
+                    defaultVariant.setColor(itemReq.getColor() != null && !itemReq.getColor().trim().isEmpty() ? itemReq.getColor().trim() : "Mặc định");
                     defaultVariant.setPrice(product.getDiscountPrice() != null ? product.getDiscountPrice() : product.getBasePrice());
                     defaultVariant.setStockQuantity(100); // Tồn kho mặc định ảo
-                    defaultVariant.setSku("AUTO-SKU-" + product.getId() + "-" + (itemReq.getSize() != null && !itemReq.getSize().trim().isEmpty() ? itemReq.getSize().toUpperCase().trim() : "M"));
+                    defaultVariant.setSku("AUTO-SKU-" + product.getId() + "-" + (itemReq.getSize() != null && !itemReq.getSize().trim().isEmpty() ? itemReq.getSize().toUpperCase().trim() : "M") + "-" + (itemReq.getColor() != null && !itemReq.getColor().trim().isEmpty() ? itemReq.getColor().toUpperCase().trim() : "DEF"));
                     
                     Optional<ProductVariant> existingSku = productVariantRepository.findBySku(defaultVariant.getSku());
                     if (existingSku.isPresent()) {

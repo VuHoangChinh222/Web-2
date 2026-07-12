@@ -64,6 +64,7 @@ const PaymentView = ({ navigate, clearCart, cart }) => {
         productId: item.id,
         quantity: item.qty,
         size: item.size || null,
+        color: item.color || null,
         price: item.price
       }))
     };
@@ -74,11 +75,11 @@ const PaymentView = ({ navigate, clearCart, cart }) => {
       if (response && (response.id || response.orderId)) {
         // Chỉ khi lưu Database thành công mới xác nhận thanh toán hoàn tất
         alert("Thanh toán & Đặt hàng thành công! Cảm ơn bạn đã mua hàng tại Chinh Hoops.");
-        
+
         // Dọn dẹp giỏ hàng và thông tin tạm
         clearCart();
         sessionStorage.removeItem('checkout_shipping_info');
-        
+
         // Quay về trang chủ
         navigate('home');
       } else {
@@ -99,7 +100,7 @@ const PaymentView = ({ navigate, clearCart, cart }) => {
     <div className="page-container page-transition">
       <h2 className="page-title">Phương thức <span>Thanh toán</span></h2>
       <div className="form-card" style={{ maxWidth: '600px', margin: '2rem auto' }}>
-        
+
         {errorMessage && (
           <div className="checkout-error-alert" style={{
             backgroundColor: 'rgba(239, 68, 68, 0.1)',

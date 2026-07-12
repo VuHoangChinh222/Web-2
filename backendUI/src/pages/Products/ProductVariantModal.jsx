@@ -5,7 +5,7 @@ import { Save, X, Edit2, Trash2, AlertCircle, CheckCircle2, Plus, Layers } from 
 import { useAdmin } from '../../context/AdminContext';
 
 const ProductVariantModal = ({ isOpen, onClose, product }) => {
-  const { uploadImage, resolveImageUrl } = useAdmin();
+  const { uploadImage, resolveImageUrl, setProducts } = useAdmin();
   const [variants, setVariants] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -25,6 +25,17 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
   const [editingId, setEditingId] = useState(null);
   const [editRow, setEditRow] = useState(null);
 
+  const updateGlobalProductVariants = (updatedVariants) => {
+    if (setProducts && product) {
+      setProducts(prevProducts => prevProducts.map(p => {
+        if (p.id === product.id) {
+          return { ...p, variants: updatedVariants };
+        }
+        return p;
+      }));
+    }
+  };
+
   useEffect(() => {
     if (isOpen && product) {
       fetchVariants();
@@ -38,7 +49,9 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
     try {
       setLoading(true);
       const res = await productVariantService.getByProductId(product.id, 0, 100);
-      setVariants(res.content || res.Content || res || []);
+      const list = res.content || res.Content || res || [];
+      setVariants(list);
+      updateGlobalProductVariants(list);
     } catch (err) {
       alert("Error loading variants: " + err.message);
     } finally {
@@ -67,7 +80,9 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
       };
 
       const saved = await productVariantService.create(payload);
-      setVariants([...variants, saved]);
+      const updatedList = [...variants, saved];
+      setVariants(updatedList);
+      updateGlobalProductVariants(updatedList);
       setIsAdding(false);
       setNewRow({ size: '', color: '', price: '', salePrice: '', stockQuantity: 0, sku: '', status: 1, imageUrl: '' });
     } catch (err) {
@@ -110,7 +125,9 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
     try {
       setLoading(true);
       const savedVariants = await productVariantService.createBulk(payload);
-      setVariants([...variants, ...savedVariants]);
+      const updatedList = [...variants, ...savedVariants];
+      setVariants(updatedList);
+      updateGlobalProductVariants(updatedList);
       setIsBulkAdding(false);
       setBulkSizes('');
       setBulkColors('');
@@ -152,7 +169,9 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
       };
 
       const updated = await productVariantService.update(editingId, payload);
-      setVariants(variants.map(v => v.id === editingId ? updated : v));
+      const updatedList = variants.map(v => v.id === editingId ? updated : v);
+      setVariants(updatedList);
+      updateGlobalProductVariants(updatedList);
       setEditingId(null);
     } catch (err) {
       alert(err.response?.data || err.message);
@@ -163,7 +182,9 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
     if (window.confirm("Are you sure you want to delete this variant?")) {
       try {
         await productVariantService.delete(id);
-        setVariants(variants.filter(v => v.id !== id));
+        const updatedList = variants.filter(v => v.id !== id);
+        setVariants(updatedList);
+        updateGlobalProductVariants(updatedList);
       } catch (err) {
         alert(err.message || err.response?.data || "Error deleting variant!");
       }
@@ -208,7 +229,6 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
               <tr className="bg-white/5 border-b border-white/10 text-[10px] uppercase tracking-wider text-slate-400">
                 <th className="p-3 font-semibold w-16">Size</th>
                 <th className="p-3 font-semibold w-24">Color</th>
-                <th className="p-3 font-semibold w-20">Image</th>
                 <th className="p-3 font-semibold w-24">Base Price</th>
                 <th className="p-3 font-semibold w-24 text-rose-300">Sale Price</th>
                 <th className="p-3 font-semibold w-20">Stock</th>
@@ -218,35 +238,12 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
               </tr>
             </thead>
             <tbody className="text-xs text-slate-200">
-
+ 
               {/* Dòng nhập liệu Thêm mới */}
               {isAdding && (
                 <tr className="border-b border-emerald-500/30 bg-emerald-500/10">
                   <td className="p-2"><input type="text" placeholder="e.g. 40" className="w-full px-2 py-1 rounded glass-input text-xs" value={newRow.size} onChange={e => setNewRow({ ...newRow, size: e.target.value })} /></td>
                   <td className="p-2"><input type="text" placeholder="e.g. Red" className="w-full px-2 py-1 rounded glass-input text-xs" value={newRow.color} onChange={e => setNewRow({ ...newRow, color: e.target.value })} /></td>
-                  <td className="p-2">
-                    <div className="flex items-center gap-1">
-                      {newRow.imageUrl && (
-                        <img src={resolveImageUrl(newRow.imageUrl)} className="w-6 h-6 rounded object-cover" />
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files[0];
-                          if (file) {
-                            try {
-                              const url = await uploadImage(file);
-                              setNewRow(prev => ({ ...prev, imageUrl: url }));
-                            } catch (err) {
-                              alert("Upload failed: " + err.message);
-                            }
-                          }
-                        }}
-                        className="w-16 text-[9px] file:py-0.5 file:px-1 file:rounded file:border-0 file:bg-white/10 file:text-white cursor-pointer"
-                      />
-                    </div>
-                  </td>
                   <td className="p-2"><input type="number" placeholder="Default" className="w-full px-2 py-1 rounded glass-input text-xs" value={newRow.price} onChange={e => setNewRow({ ...newRow, price: e.target.value })} /></td>
                   <td className="p-2"><input type="number" placeholder="Default" className="w-full px-2 py-1 rounded glass-input text-xs border-rose-500/30 focus:border-rose-500/50" value={newRow.salePrice} onChange={e => setNewRow({ ...newRow, salePrice: e.target.value })} /></td>
                   <td className="p-2"><input type="number" min="0" className="w-full px-2 py-1 rounded glass-input text-xs" value={newRow.stockQuantity} onChange={e => setNewRow({ ...newRow, stockQuantity: e.target.value })} /></td>
@@ -269,7 +266,7 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
               {/* Bảng điều khiển sinh hàng loạt (Bulk Generation) */}
               {isBulkAdding && (
                 <tr className="border-b border-indigo-500/30 bg-indigo-500/10">
-                  <td colSpan="9" className="p-4">
+                  <td colSpan="8" className="p-4">
                     <div className="mb-3 flex items-center gap-2 text-indigo-300 font-semibold text-[13px]">
                       <Layers size={16} /> Fast Bulk Generation
                       <span className="text-[10px] font-normal text-slate-400 ml-2">(Generates a combination of all sizes and colors)</span>
@@ -310,10 +307,10 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
 
               {/* Danh sách dữ liệu */}
               {loading ? (
-                <tr><td colSpan="9" className="p-8 text-center text-slate-400">Loading variants...</td></tr>
+                <tr><td colSpan="8" className="p-8 text-center text-slate-400">Loading variants...</td></tr>
               ) : variants.length === 0 && !isAdding && !isBulkAdding ? (
                 <tr>
-                  <td colSpan="9" className="p-8 text-center">
+                  <td colSpan="8" className="p-8 text-center">
                     <div className="flex flex-col items-center text-slate-500">
                       <AlertCircle size={24} className="mb-2 opacity-50" />
                       <p>No variants configured for this product.</p>
@@ -329,29 +326,6 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
                       <>
                         <td className="p-2"><input type="text" className="w-full px-2 py-1 rounded glass-input text-xs" value={editRow.size} onChange={e => setEditRow({ ...editRow, size: e.target.value })} /></td>
                         <td className="p-2"><input type="text" className="w-full px-2 py-1 rounded glass-input text-xs" value={editRow.color} onChange={e => setEditRow({ ...editRow, color: e.target.value })} /></td>
-                        <td className="p-2">
-                          <div className="flex items-center gap-1">
-                            {editRow.imageUrl && (
-                              <img src={resolveImageUrl(editRow.imageUrl)} className="w-6 h-6 rounded object-cover" />
-                            )}
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={async (e) => {
-                                const file = e.target.files[0];
-                                if (file) {
-                                  try {
-                                    const url = await uploadImage(file);
-                                    setEditRow(prev => ({ ...prev, imageUrl: url }));
-                                  } catch (err) {
-                                    alert("Upload failed: " + err.message);
-                                  }
-                                }
-                              }}
-                              className="w-16 text-[9px] file:py-0.5 file:px-1 file:rounded file:border-0 file:bg-white/10 file:text-white cursor-pointer"
-                            />
-                          </div>
-                        </td>
                         <td className="p-2"><input type="number" placeholder="Default" className="w-full px-2 py-1 rounded glass-input text-xs" value={editRow.price} onChange={e => setEditRow({ ...editRow, price: e.target.value })} /></td>
                         <td className="p-2"><input type="number" placeholder="Default" className="w-full px-2 py-1 rounded glass-input text-xs border-rose-500/30" value={editRow.salePrice} onChange={e => setEditRow({ ...editRow, salePrice: e.target.value })} /></td>
                         <td className="p-2"><input type="number" min="0" className="w-full px-2 py-1 rounded glass-input text-xs" value={editRow.stockQuantity} onChange={e => setEditRow({ ...editRow, stockQuantity: e.target.value })} /></td>
@@ -376,13 +350,6 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
                           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[11px]">
                             {variant.color === 'Mặc định' ? 'Default' : variant.color}
                           </span>
-                        </td>
-                        <td className="p-3">
-                          {variant.imageUrl ? (
-                            <img src={resolveImageUrl(variant.imageUrl)} alt="" className="w-8 h-8 object-cover rounded border border-white/10" />
-                          ) : (
-                            <span className="text-slate-500 opacity-40">-</span>
-                          )}
                         </td>
                         <td className="p-3 text-[11px] font-mono text-purple-300">
                           {variant.price ? `${variant.price.toLocaleString()} VND` : <span className="text-slate-500 opacity-60">Default price</span>}

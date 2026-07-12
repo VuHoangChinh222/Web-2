@@ -43,4 +43,8 @@ public class ProductImage {
     // Màu sắc liên kết với ảnh này (nếu có) để lọc theo màu trên storefront
     @Column(name = "color", length = 50)
     private String color;
+
+    // Thứ tự sắp xếp ảnh phụ
+    @Column(name = "sort_order")
+    private Integer sortOrder = 0;
 }

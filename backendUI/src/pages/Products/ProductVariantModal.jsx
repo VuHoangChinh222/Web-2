@@ -11,7 +11,7 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
 
   // Single Add Mode
   const [isAdding, setIsAdding] = useState(false);
-  const [newRow, setNewRow] = useState({ size: '', color: '', price: '', salePrice: '', stockQuantity: 0, sku: '', status: 1, imageUrl: '' });
+  const [newRow, setNewRow] = useState({ size: '', color: '', price: '', salePrice: '', stockQuantity: 0, sku: '', status: 1 });
 
   // Bulk Add Mode
   const [isBulkAdding, setIsBulkAdding] = useState(false);
@@ -75,8 +75,7 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
         salePrice: newRow.salePrice ? parseFloat(newRow.salePrice) : null,
         stockQuantity: parseInt(newRow.stockQuantity),
         sku: newRow.sku.trim() || "",
-        status: newRow.status,
-        imageUrl: newRow.imageUrl || null
+        status: newRow.status
       };
 
       const saved = await productVariantService.create(payload);
@@ -84,7 +83,7 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
       setVariants(updatedList);
       updateGlobalProductVariants(updatedList);
       setIsAdding(false);
-      setNewRow({ size: '', color: '', price: '', salePrice: '', stockQuantity: 0, sku: '', status: 1, imageUrl: '' });
+      setNewRow({ size: '', color: '', price: '', salePrice: '', stockQuantity: 0, sku: '', status: 1 });
     } catch (err) {
       alert(err.response?.data || err.message);
     }
@@ -116,8 +115,7 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
           salePrice: bulkSalePrice ? parseFloat(bulkSalePrice) : null,
           stockQuantity: parseInt(bulkStock),
           sku: "",
-          status: 1,
-          imageUrl: null
+          status: 1
         });
       });
     });
@@ -144,8 +142,7 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
     setEditRow({
       ...variant,
       price: variant.price !== null ? variant.price : '',
-      salePrice: variant.salePrice !== null ? variant.salePrice : '',
-      imageUrl: variant.imageUrl || ''
+      salePrice: variant.salePrice !== null ? variant.salePrice : ''
     });
   };
 
@@ -164,8 +161,7 @@ const ProductVariantModal = ({ isOpen, onClose, product }) => {
         salePrice: editRow.salePrice ? parseFloat(editRow.salePrice) : null,
         stockQuantity: parseInt(editRow.stockQuantity),
         sku: editRow.sku || "",
-        status: editRow.status,
-        imageUrl: editRow.imageUrl || null
+        status: editRow.status
       };
 
       const updated = await productVariantService.update(editingId, payload);

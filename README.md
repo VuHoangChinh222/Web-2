@@ -388,7 +388,7 @@ Giao diện quản trị Admin được thiết kế theo phong cách Dark Mode 
 
 ### 📊 Các trang tính năng chính trong Dashboard
 1. **Dashboard (Bảng điều khiển)**: Thống kê tổng quan doanh thu, đơn hàng, khách hàng, biểu đồ tăng trưởng.
-2. **Products (Sản phẩm)**: Thêm/Sửa/Xóa sản phẩm, tải ảnh lên server. Nổi bật với hệ thống **Quản lý biến thể thông minh (Intelligent Variant Management)** hỗ trợ tạo hàng loạt (Bulk Generate) bằng tổ hợp chéo Size x Color siêu tốc, và thiết lập giá Base Price / Sale Price độc lập cho từng biến thể để tối ưu chiến lược xả kho. Hình ảnh biến thể được quản lý trực quan theo Nhóm màu sắc (Color Groups) ở Form sản phẩm chính giúp đơn giản hóa và lược bỏ cột "Image" trong bảng quản trị biến thể.
+2. **Products (Sản phẩm)**: Thêm/Sửa/Xóa sản phẩm, tải ảnh lên server. Nổi bật với hệ thống **Quản lý biến thể thông minh (Intelligent Variant Management)** hỗ trợ tạo hàng loạt (Bulk Generate) bằng tổ hợp chéo Size x Color siêu tốc, và thiết lập giá Base Price / Sale Price độc lập cho từng biến thể để tối ưu chiến lược xả kho. Hình ảnh biến thể được quản lý trực quan theo Nhóm màu sắc (Color Groups) ở Form sản phẩm chính giúp đơn giản hóa và lược bỏ cột "Image" trong bảng quản trị biến thể. Tích hợp bộ lọc phân trang động linh hoạt (6 sản phẩm/trang ở Grid view, 10 sản phẩm/trang ở List view) kèm theo bộ chuyển đổi dịch thuật thông báo lỗi API sang Tiếng Anh (`formatApiError`) chuẩn xác cho quản trị viên.
 3. **Categories (Danh mục)**: Quản lý phân loại sản phẩm và tin tức.
 4. **Orders (Đơn hàng)**: Theo dõi đơn hàng, cập nhật trạng thái (`Pending` -> `Processing` -> `Shipped` -> `Completed` -> `Cancelled`).
 5. **Customers (Khách hàng)**: Quản lý danh sách khách hàng và trạng thái khóa/mở khóa tài khoản. Tích hợp nút **Quick Toggle Status** thay đổi trạng thái nhanh với hiệu ứng chuyển màu trực quan khi không ở trạng thái Active. Modal **"View Details"** nâng cấp hiển thị trực quan thông tin liên hệ, tổng đơn hàng, tổng chi tiêu (VND), danh sách Sổ địa chỉ (Shipping Addresses) và lịch sử Đơn hàng đã đặt (Associated Orders) kèm trạng thái đơn hàng cụ thể. Hỗ trợ **Quản lý Sổ Địa Chỉ Khách Hàng (Customer Address Management)** bằng tiếng Anh hóa 100%, chọn phân cấp hành chính (Province, District, Ward) chuẩn xác và cấu hình đặt làm địa chỉ mặc định, khắc phục hoàn toàn lỗi hiển thị chữ trắng nền trắng trên các thẻ dropdown trong môi trường Dark Mode.
@@ -419,6 +419,7 @@ Giao diện bán hàng (Store UI) được thiết kế đồng bộ với phong
 5. **Bộ Lọc Nâng Cao & Tìm Kiếm Động Trang Cửa Hàng (`/products`)**:
    * Hỗ trợ tìm kiếm từ khóa, kết hợp lọc đồng thời theo danh mục và khoảng giá (áp dụng trên giá thực tế sau khi giảm `COALESCE(discount_price, base_price)`).
    * Sử dụng JPQL Query tùy chỉnh hỗ trợ các tham số lọc tùy chọn, giúp tối ưu hóa băng thông truyền tải và tăng tốc độ tải trang.
+   * **Đồng bộ sắp xếp mặc định**: Tích hợp hiển thị mặc định sản phẩm mới nhất lên hàng đầu thông qua tham số API `sortDir=desc`.
 
 ---
 

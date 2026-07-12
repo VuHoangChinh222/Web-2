@@ -75,7 +75,4 @@ public class ProductVariant {
     @Column(nullable = false)
     private Integer status = 1;
 
-    // Đường dẫn hình ảnh riêng cho biến thể này (ví dụ: ảnh tương ứng với màu sắc)
-    @Column(name = "image_url", columnDefinition = "LONGTEXT")
-    private String imageUrl;
 }

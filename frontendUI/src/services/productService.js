@@ -3,7 +3,7 @@ import axiosClient from '../axiosClient';
 const productService = {
     // API lấy tất cả sản phẩm có phân trang và bộ lọc nâng cao
     getAllProducts: (pageNumber, pageSize, keyword = '', minPrice = null, maxPrice = null, categoryId = null) => {
-        let url = `/products?page=${pageNumber > 0 ? pageNumber - 1 : 0}&size=${pageSize}`;
+        let url = `/products?page=${pageNumber > 0 ? pageNumber - 1 : 0}&size=${pageSize}&sortDir=desc`;
         if (keyword) {
             url += `&keyword=${encodeURIComponent(keyword)}`;
         }
@@ -21,7 +21,7 @@ const productService = {
 
     // API lọc sản phẩm theo mã danh mục có phân trang
     getProductsByCategory: (categoryId, pageNumber, pageSize) => {
-        const url = `/products/category/${categoryId}?page=${pageNumber > 0 ? pageNumber - 1 : 0}&size=${pageSize}`;
+        const url = `/products/category/${categoryId}?page=${pageNumber > 0 ? pageNumber - 1 : 0}&size=${pageSize}&sortDir=desc`;
         return axiosClient.get(url);
     },
 

@@ -77,8 +77,6 @@ public class ProductVariantController {
         private String sku; // Removed @NotBlank to allow auto-generation when empty
 
         private Integer status = 1;
-
-        private String imageUrl;
     }
 
     /**
@@ -165,7 +163,6 @@ public class ProductVariantController {
         variant.setStockQuantity(request.getStockQuantity());
         variant.setSku(sku);
         variant.setStatus(request.getStatus() != null ? request.getStatus() : 1);
-        variant.setImageUrl(request.getImageUrl());
 
         ProductVariant savedVariant = productVariantRepository.save(variant);
         return ResponseEntity.ok(savedVariant);
@@ -214,7 +211,6 @@ public class ProductVariantController {
         if (request.getStatus() != null) {
             variant.setStatus(request.getStatus());
         }
-        variant.setImageUrl(request.getImageUrl());
 
         ProductVariant updatedVariant = productVariantRepository.save(variant);
         return ResponseEntity.ok(updatedVariant);
@@ -274,7 +270,6 @@ public class ProductVariantController {
             variant.setStockQuantity(request.getStockQuantity());
             variant.setSku(sku);
             variant.setStatus(request.getStatus() != null ? request.getStatus() : 1);
-            variant.setImageUrl(request.getImageUrl());
 
             savedVariants.add(productVariantRepository.save(variant));
         }

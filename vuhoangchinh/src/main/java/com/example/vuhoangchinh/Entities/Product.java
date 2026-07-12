@@ -59,7 +59,7 @@ public class Product {
     private String slug;
 
     // Đoạn mô tả ngắn gọn về tính năng nổi bật của sản phẩm
-    @Column(name = "short_description", length = 500)
+    @Column(name = "short_description", columnDefinition = "TEXT")
     private String shortDescription;
 
     // Mô tả bài viết chi tiết sản phẩm (cho phép lưu mã HTML định dạng văn bản), dùng kiểu TEXT

@@ -135,6 +135,20 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
   - Tạo hiệu ứng ba dấu chấm nhảy lên xuống (bouncing animation) sinh động khi chờ phản hồi, mang lại trải nghiệm chuyên nghiệp giống như Facebook Messenger hay iMessage.
   - **Tối ưu trải nghiệm cuộn (Auto-scroll UX)**: Khắc phục triệt để lỗi cuộn trang khi thu nhỏ và mở lại chatbot bằng cách đưa trạng thái `isOpen` vào danh sách phụ thuộc của React Effect và trì hoãn 60ms để DOM render xong trước khi cuộn, bảo đảm tự động cuộn mượt mà xuống tin nhắn gần nhất mỗi khi mở lại khung chat.
 
+### E. Tối ưu hóa Quy trình Quản lý Sản phẩm, Phân trang và Đồng bộ Sắp xếp Storefront
+- **Chuẩn hóa thông báo lỗi API sang Tiếng Anh (English-translated Error Handling)**:
+  - Tích hợp bộ định dạng lỗi `formatApiError` tại tệp `Index.jsx` của `backendUI` chuyển các Exception thô của CSDL (như Data Truncation, Duplicate Slug, Price Mismatch) thành thông báo tiếng Anh rõ ràng, thân thiện với người quản trị thay vì hiển thị raw stack trace của hệ thống.
+- **Mở rộng kích thước trường mô tả ngắn (Database Schema Expansion)**:
+  - Chuyển đổi kiểu dữ liệu cột `short_description` trong Java Entity `Product` sang `TEXT` trên CSDL để tránh lỗi SQL Data Truncation khi lưu nội dung dài, đồng thời Hibernate tự động cập nhật cấu trúc cột tương ứng trên MySQL.
+- **Phân trang trang quản trị sản phẩm CMS (CMS Product Pagination)**:
+  - Bổ sung bộ điều khiển phân trang tại trang danh sách quản lý sản phẩm với kích thước 6 sản phẩm/trang ở Grid view và 10 sản phẩm/trang ở List view. Tự động reset về trang đầu khi thay đổi tìm kiếm, danh mục hoặc viewMode.
+- **Đồng bộ hóa sắp xếp storefront hiển thị sản phẩm mới (Newest Products First)**:
+  - Sửa đổi `productService.js` của `frontendUI` để tự động đính kèm tham số sắp xếp `sortDir=desc` trong API lấy tất cả sản phẩm (`getAllProducts`) và lấy sản phẩm theo danh mục (`getProductsByCategory`), giúp hiển thị các sản phẩm mới nhất lên hàng đầu của trang bán hàng storefront.
+- **Dọn dẹp trường hình ảnh thừa của biến thể (Cleanup Deprecated Variant Image Field)**:
+  - Loại bỏ hoàn toàn trường `image_url` thừa trong thực thể `ProductVariant` ở Backend (Java) và giao diện quản trị `ProductVariantModal` ở Frontend (React) do hệ thống đã áp dụng giải pháp lưu trữ hình ảnh theo màu sắc (Color-Aware Gallery) tại `ProductImage`. Việc này giúp tối ưu kích thước dữ liệu truyền tải API và đồng bộ hoàn toàn với sơ đồ thiết kế cơ sở dữ liệu (ERD).
+- **Dọn dẹp cổng mạng phát triển (Process & Port Stability)**:
+  - Thiết lập quy trình kiểm tra cổng `8080` trước khi chạy Server Java Backend, giải phóng các tiến trình Java/Spring Boot cũ bị treo ngầm giúp tránh lỗi xung đột cổng kết nối khi redeploy nhanh.
+
 
 
 

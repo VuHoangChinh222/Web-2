@@ -97,3 +97,28 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
 1. **Thư mục lưu trữ Script**: Khi cần tạo bất kỳ script bổ trợ nào phục vụ cho việc tạo tài liệu, kiểm thử hoặc các tiến trình phụ, tất cả phải được lưu trữ trực tiếp tại thư mục `E:\asp\test\web2`.
 2. **Quy trình viết Tài liệu**: Bất kỳ script nào được sử dụng để cập nhật hay sinh tài liệu `.docx` phải được lưu trữ tại `E:\asp\test\web2` để phục vụ chạy lại khi cần thiết.
 
+---
+
+## 6. CÁC TÍNH NĂNG VÀ CẢI TIẾN MỚI HOÀN THÀNH (UPDATED & COMPLETED FEATURES)
+
+### A. Quản lý hình ảnh và sắp xếp gallery theo màu sắc (Color-Aware Image Gallery & Sorting)
+- **Backend (Spring Boot)**: 
+  - Cập nhật thực thể `ProductImage` bổ sung 2 trường: `color` (`VARCHAR(50)`) để liên kết ảnh với màu biến thể, và `sortOrder` (`Integer`) để xác định thứ tự ảnh.
+  - Cập nhật repository `ProductImageRepository` sử dụng phương thức truy vấn `findByProductIdOrderBySortOrderAscIdAsc` đảm bảo ảnh luôn trả về theo thứ tự đã định trước.
+- **Frontend Quản trị (backendUI)**:
+  - Tích hợp đồng bộ hóa trường `sortOrder` theo chỉ mục (index) của mảng ảnh khi tải lên hoặc cập nhật sản phẩm.
+- **Frontend Trang chủ (frontendUI)**:
+  - Trang chi tiết sản phẩm (`Detail.jsx`): Tích hợp hàm helper `getOrderedThumbnails()` để tự động lọc và đẩy các hình ảnh có màu trùng với màu biến thể đang chọn lên đầu danh sách gallery, giữ lại các hình ảnh chung hoặc màu khác ở phía sau.
+  - Giao diện gallery ảnh phụ được căn giữa hoàn toàn bên dưới ảnh chính thay vì lệch trái.
+
+### B. Đồng bộ hóa hiển thị ảnh ở Giỏ hàng và Thanh toán
+- **Giỏ hàng (`Cart/Index.jsx`)** và **Trang Thanh toán (`Checkout/OrderSummary.jsx`)**:
+  - Tích hợp chuẩn hóa hàm `resolveImageUrl` (từ `config.js`) để xử lý toàn bộ đường dẫn ảnh thumbnail của biến thể được chọn.
+  - Đảm bảo hiển thị chính xác ảnh của biến thể màu đã chọn trong giỏ hàng và tóm tắt thanh toán, tránh gây hoang mang cho khách hàng.
+
+### C. Đồng bộ hóa Tài liệu & Báo cáo (`.docx`)
+- Đã chạy script `E:\asp\test\web2\update_docx_product_images.py` để chèn thông tin cấu trúc cột `color` và `sort_order` vào **Bảng 2.6 (Thực thể ProductImage)** trong tài liệu `VuHoangChinh-2122110380.docx`.
+- Đồng thời cập nhật mô tả thực thể tại **Mục 2.2 (Sơ đồ ERD)** trong file báo cáo Word để phản ánh chính xác cấu trúc thực thể `ProductImage` hiện tại.
+- Đồng bộ hóa toàn bộ nội dung báo cáo từ Chương 3 đến Chương 6 bằng cách cập nhật và chạy thành công script `update_report_v3.py`.
+
+

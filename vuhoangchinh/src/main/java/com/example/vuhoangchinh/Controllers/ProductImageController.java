@@ -53,6 +53,8 @@ public class ProductImageController {
 
         @NotBlank(message = "Đường dẫn hình ảnh không được để trống")
         private String imageUrl; // URL đường dẫn tới hình ảnh
+
+        private String color; // Màu sắc liên kết (nếu có)
     }
 
     /**
@@ -102,6 +104,7 @@ public class ProductImageController {
         ProductImage productImage = new ProductImage();
         productImage.setProduct(product);
         productImage.setImageUrl(request.getImageUrl().trim());
+        productImage.setColor(request.getColor() != null ? request.getColor().trim() : null);
 
         ProductImage savedImage = productImageRepository.save(productImage);
         return ResponseEntity.ok(savedImage);
@@ -126,6 +129,7 @@ public class ProductImageController {
 
         // Cập nhật đường dẫn ảnh mới
         productImage.setImageUrl(request.getImageUrl().trim());
+        productImage.setColor(request.getColor() != null ? request.getColor().trim() : null);
 
         ProductImage updatedImage = productImageRepository.save(productImage);
         return ResponseEntity.ok(updatedImage);

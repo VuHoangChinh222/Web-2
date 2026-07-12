@@ -20,9 +20,10 @@ const mapProductFromBackend = (prod) => {
     shortDescription: prod.shortDescription || '',
     price: prod.basePrice ? parseFloat(prod.basePrice) : 0,
     salePrice: prod.discountPrice ? parseFloat(prod.discountPrice) : (prod.basePrice ? parseFloat(prod.basePrice) : 0),
-    stock: 120, // default stock count as it is variant-based on DB
+    stock: prod.stockQuantity !== undefined && prod.stockQuantity !== null ? prod.stockQuantity : 0,
     categoryId: prod.category ? prod.category.id : '',
     category: prod.category,
+    variants: prod.variants || [],
     image: prod.thumbnail || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80',
     status: prod.status === 1 ? 'Active' : (prod.status === 2 ? 'OutOfStock' : 'Draft'),
     createdAt: prod.createdAt
@@ -96,7 +97,7 @@ const Products = () => {
         if (formData.additionalImages && formData.additionalImages.length > 0) {
           try {
             await Promise.all(formData.additionalImages.map(img =>
-              productImageService.create({ productId: newProduct.id, imageUrl: img.imageUrl })
+              productImageService.create({ productId: newProduct.id, imageUrl: img.imageUrl, color: img.color })
             ));
           } catch (e) {
             console.error("Error syncing additional images (Create):", e);
@@ -107,14 +108,20 @@ const Products = () => {
         const updated = await productService.update(formData.id, body);
         if (formData.additionalImages) {
           const newImages = formData.additionalImages.filter(img => img.isNew);
-          if (newImages.length > 0) {
-            try {
+          const existingImages = formData.additionalImages.filter(img => !img.isNew && img.id);
+          try {
+            if (newImages.length > 0) {
               await Promise.all(newImages.map(img =>
-                productImageService.create({ productId: formData.id, imageUrl: img.imageUrl })
+                productImageService.create({ productId: formData.id, imageUrl: img.imageUrl, color: img.color })
               ));
-            } catch (e) {
-              console.error("Error syncing additional images (Update):", e);
             }
+            if (existingImages.length > 0) {
+              await Promise.all(existingImages.map(img =>
+                productImageService.update(img.id, { productId: formData.id, imageUrl: img.imageUrl, color: img.color })
+              ));
+            }
+          } catch (e) {
+            console.error("Error syncing additional images (Update):", e);
           }
         }
         setProducts(prev => prev.map(p => p.id === formData.id ? updated : p));

@@ -17,7 +17,7 @@ const ProductFormModal = ({
     name: '',
     price: '',
     salePrice: '',
-    stock: '',
+    stock: '0',
     categoryId: '',
     image: '',
     status: 'Active',
@@ -34,7 +34,7 @@ const ProductFormModal = ({
           name: '',
           price: '',
           salePrice: '',
-          stock: '',
+          stock: '0',
           categoryId: categoriesProduct[0]?.id || '',
           image: '',
           status: 'Active',
@@ -46,7 +46,7 @@ const ProductFormModal = ({
           ...productData,
           price: productData.price !== undefined && productData.price !== null ? String(productData.price) : '',
           salePrice: productData.salePrice !== undefined && productData.salePrice !== null ? String(productData.salePrice) : '',
-          stock: productData.stock !== undefined && productData.stock !== null ? String(productData.stock) : ''
+          stock: productData.stock !== undefined && productData.stock !== null ? String(productData.stock) : '0'
         });
 
         // Tải ảnh phụ đã lưu
@@ -109,9 +109,13 @@ const ProductFormModal = ({
     }
   };
 
+  const handleUpdateImageColor = (index, value) => {
+    setAdditionalImages(prev => prev.map((img, i) => i === index ? { ...img, color: value } : img));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.name || !form.price || form.stock === '') {
+    if (!form.name || !form.price) {
       alert("Please fill in all required fields.");
       return;
     }
@@ -123,7 +127,7 @@ const ProductFormModal = ({
 
     const priceNum = parseFloat(form.price);
     const salePriceNum = form.salePrice ? parseFloat(form.salePrice) : priceNum;
-    const stockNum = parseInt(form.stock, 10);
+    const stockNum = parseInt(form.stock || '0', 10);
 
     onSubmit({
       ...form,
@@ -157,7 +161,7 @@ const ProductFormModal = ({
         {/* Pricing Row */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Original Price (VND) *</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Default Base Price (VND) *</label>
             <input
               type="number"
               required
@@ -170,7 +174,7 @@ const ProductFormModal = ({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Sale Price (VND)</label>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Default Sale Price (VND)</label>
             <input
               type="number"
               step="0.01"
@@ -182,33 +186,20 @@ const ProductFormModal = ({
             />
           </div>
         </div>
+        <span className="text-[9px] text-slate-500 block -mt-2">Used as the general fallback price and the default value when bulk generating variants.</span>
 
-        {/* Stock & Category */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Stock Count *</label>
-            <input
-              type="number"
-              required
-              min="0"
-              placeholder="50"
-              value={form.stock}
-              onChange={(e) => setForm({ ...form, stock: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg text-xs glass-input"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Category *</label>
-            <select
-              value={form.categoryId}
-              onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-              className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
-            >
-              {categoriesProduct.map(cat => (
-                <option key={cat.id} value={cat.id} className="bg-[#0F1224] text-white">{cat.name}</option>
-              ))}
-            </select>
-          </div>
+        {/* Category */}
+        <div className="space-y-1">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Category *</label>
+          <select
+            value={form.categoryId}
+            onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
+            className="w-full px-3 py-2 rounded-lg text-xs glass-input bg-[#0F1224] text-white"
+          >
+            {categoriesProduct.map(cat => (
+              <option key={cat.id} value={cat.id} className="bg-[#0F1224] text-white">{cat.name}</option>
+            ))}
+          </select>
         </div>
 
         {/* Status Selection */}
@@ -265,14 +256,24 @@ const ProductFormModal = ({
 
           {/* Gallery Preview */}
           {additionalImages.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3 p-2 bg-[#0F1224]/30 rounded-lg border border-white/5">
+            <div className="grid grid-cols-2 gap-3 mt-3 p-3 bg-[#0F1224]/30 rounded-lg border border-white/5">
               {additionalImages.map((img, index) => (
-                <div key={img.id || index} className="relative group w-14 h-14">
-                  <img src={resolveImageUrl(img.imageUrl)} className="w-full h-full object-cover rounded-md border border-white/10" />
+                <div key={img.id || index} className="relative flex items-center gap-3 p-2 rounded-lg bg-white/[0.02] border border-white/5">
+                  <img src={resolveImageUrl(img.imageUrl)} className="w-12 h-12 object-cover rounded-md border border-white/10" />
+                  <div className="flex-1 min-w-0">
+                    <label className="text-[8px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Color Tag</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Đen, Đỏ"
+                      value={img.color || ''}
+                      onChange={(e) => handleUpdateImageColor(index, e.target.value)}
+                      className="w-full px-1.5 py-1 rounded text-[10px] glass-input bg-[#0A0D1A] text-white"
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() => handleDeleteAdditionalImage(img, index)}
-                    className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                    className="bg-rose-500/20 text-rose-300 hover:bg-rose-500 hover:text-white rounded p-1 transition-colors self-end"
                     title="Delete this image"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>

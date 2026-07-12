@@ -137,16 +137,24 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
       setQty(1); // Reset qty on variant change
       setStockWarning(false);
       
-      // Tự động chuyển đổi hình ảnh hiển thị dựa trên biến thể được chọn
-      if (variant && variant.imageUrl) {
+      // Tìm xem có ảnh gallery phụ nào được gán nhãn màu này không
+      const colorSpecificGalleryImg = galleryImages.find(img => img.color && img.color.trim().toLowerCase() === selectedColor.trim().toLowerCase());
+      if (colorSpecificGalleryImg) {
+        setActiveImage(colorSpecificGalleryImg.imageUrl);
+      } else if (variant && variant.imageUrl) {
         setActiveImage(variant.imageUrl);
-      } else if (product) {
-        setActiveImage(product.image || product.imageUrl || '');
+      } else {
+        const variantWithImg = variants.find(v => v.color === selectedColor && v.imageUrl);
+        if (variantWithImg && variantWithImg.imageUrl) {
+          setActiveImage(variantWithImg.imageUrl);
+        } else if (product) {
+          setActiveImage(product.image || product.imageUrl || '');
+        }
       }
     } else {
       setCurrentVariant(null);
     }
-  }, [selectedColor, selectedSize, variants, product]);
+  }, [selectedColor, selectedSize, variants, product, galleryImages]);
 
   // Chuyển đổi thẻ oembed từ CKEditor thành iframe phát video thời gian thực
   useEffect(() => {
@@ -231,12 +239,12 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
     : (product.stockQuantity !== undefined && product.stockQuantity !== null ? product.stockQuantity : 0);
 
   const displayPrice = currentVariant
-    ? (currentVariant.salePrice > 0 ? currentVariant.salePrice : currentVariant.price)
-    : product.price;
+    ? (currentVariant.salePrice > 0 ? currentVariant.salePrice : (currentVariant.price || product.price))
+    : (product.discountPrice || product.basePrice || product.price);
 
-  const originalPrice = currentVariant && currentVariant.salePrice > 0
-    ? currentVariant.price
-    : null;
+  const originalPrice = currentVariant
+    ? (currentVariant.salePrice > 0 && currentVariant.price > currentVariant.salePrice ? currentVariant.price : null)
+    : (product.discountPrice && product.basePrice > product.discountPrice ? product.basePrice : null);
 
   // Xử lý thêm vào giỏ hàng
   const handleAdd = () => {
@@ -306,16 +314,18 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
                 <img src={resolveImageUrl(product.image || product.imageUrl)} alt="Thumbnail" />
               </div>
 
-              {/* Additional thumbnails */}
-              {galleryImages.map(img => (
-                <div
-                  key={img.id}
-                  onClick={() => setActiveImage(img.imageUrl)}
-                  className={`thumbnail-item ${activeImage === img.imageUrl ? 'active' : ''}`}
-                >
-                  <img src={resolveImageUrl(img.imageUrl)} alt="Gallery" />
-                </div>
-              ))}
+              {/* Additional thumbnails (filtered by selected color) */}
+              {galleryImages
+                .filter(img => !img.color || !selectedColor || img.color.trim().toLowerCase() === selectedColor.trim().toLowerCase())
+                .map(img => (
+                  <div
+                    key={img.id}
+                    onClick={() => setActiveImage(img.imageUrl)}
+                    className={`thumbnail-item ${activeImage === img.imageUrl ? 'active' : ''}`}
+                  >
+                    <img src={resolveImageUrl(img.imageUrl)} alt="Gallery" />
+                  </div>
+                ))}
             </div>
           )}
         </div>

@@ -39,4 +39,8 @@ public class ProductImage {
     @Column(name = "image_url", nullable = false, columnDefinition = "LONGTEXT")
     @NotBlank(message = "Đường dẫn hình ảnh không được để trống")
     private String imageUrl;
+
+    // Màu sắc liên kết với ảnh này (nếu có) để lọc theo màu trên storefront
+    @Column(name = "color", length = 50)
+    private String color;
 }

@@ -558,20 +558,6 @@ springdoc.api-docs.path=/api-docs
      ```bash
      curl -X POST http://localhost:8000/api/ai/sync-all-from-source
      ```
-
-
----
-
-### 🔑 Tài Khoản Đăng Nhập Mẫu (Được seed tự động)
-
-Hệ thống tự động đồng bộ danh sách nhân viên vận hành và thiết lập quyền mẫu xuống MySQL khi khởi động lần đầu:
-
-| Tài Khoản | Mật Khẩu | Vai Trò (Role) | Phân Quyền Động Mặc Định |
-| :--- | :--- | :--- | :--- |
-| **admin_duong** | `chinh123` | **ROLE_ADMIN** | Toàn quyền kiểm soát 12 entity hệ thống và xem Dashboard |
-| **editor_minh** | `chinh123` | **ROLE_EDITOR** | Quản lý Sản phẩm, Danh mục, Tin tức, Banner và xem Dashboard |
-| **employee_lan** | `chinh123` | **ROLE_EMPLOYEE** | Quản lý Đơn hàng, Chi tiết đơn hàng, Khách hàng và xem Dashboard |
-
 ---
 
 ## 📁 Sơ Đồ Thư Mục Dự Án tiêu biểu

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { getCookie } from '../../utils/cookieHelper';
 import orderService from '../../services/orderService';
+import paymentService from '../../services/paymentService';
 
 const PaymentView = ({ navigate, clearCart, cart }) => {
   const [method, setMethod] = useState('cod');
@@ -57,7 +58,7 @@ const PaymentView = ({ navigate, clearCart, cart }) => {
       totalPrice: totalPrice,
       shippingFee: 0,
       paymentMethod: method.toUpperCase(),
-      paymentStatus: method === 'cod' ? 'PENDING' : 'PAID',
+      paymentStatus: 'PENDING',
       orderStatus: '0',
       note: shippingData.notes || null,
       items: cart.map(item => ({
@@ -72,16 +73,31 @@ const PaymentView = ({ navigate, clearCart, cart }) => {
     try {
       // Thực hiện gọi API lưu đơn hàng vào CSDL
       const response = await orderService.checkout(orderPayload);
-      if (response && (response.id || response.orderId)) {
-        // Chỉ khi lưu Database thành công mới xác nhận thanh toán hoàn tất
-        alert("Thanh toán & Đặt hàng thành công! Cảm ơn bạn đã mua hàng tại Chinh Hoops.");
-
-        // Dọn dẹp giỏ hàng và thông tin tạm
-        clearCart();
-        sessionStorage.removeItem('checkout_shipping_info');
-
-        // Quay về trang chủ
-        navigate('home');
+      const orderId = response?.id || response?.orderId;
+      
+      if (response && orderId) {
+        if (method === 'cod') {
+          // COD Flow
+          alert("Thanh toán & Đặt hàng thành công! Cảm ơn bạn đã mua hàng tại Chinh Hoops.");
+          clearCart();
+          sessionStorage.removeItem('checkout_shipping_info');
+          navigate('home');
+        } else if (method === 'vnpay') {
+          // VNPay Redirect Flow
+          const resPay = await paymentService.createVnPayPayment(orderId);
+          if (resPay && resPay.paymentUrl) {
+            // Chuyển hướng sang VNPay
+            window.location.href = resPay.paymentUrl;
+          } else {
+            setErrorMessage("Không thể tạo cổng thanh toán VNPay. Vui lòng liên hệ hỗ trợ.");
+          }
+        } else {
+          // COD fallback hoặc phương thức khác chưa tích hợp hoàn chỉnh
+          alert("Đặt hàng thành công! Đơn hàng của bạn đang được xử lý.");
+          clearCart();
+          sessionStorage.removeItem('checkout_shipping_info');
+          navigate('home');
+        }
       } else {
         setErrorMessage("Không thể tạo đơn hàng. Vui lòng kiểm tra lại kết nối.");
       }

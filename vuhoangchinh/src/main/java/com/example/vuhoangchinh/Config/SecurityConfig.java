@@ -94,6 +94,9 @@ public class SecurityConfig {
                 // Cho phép gọi API đăng ký và đăng nhập của khách hàng tự do
                 .requestMatchers("/api/customers/login", "/api/customers/register", "/api/customers/forgot-password", "/api/customers/reset-password", "/api/customers/google-login").permitAll()
                 
+                // Cho phép gọi các API thanh toán online
+                .requestMatchers("/api/payment/**").permitAll()
+
                 // Các API GET công khai phục vụ xem sản phẩm, danh mục, tin tức, banner ở trang Frontend
                 .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/product-images/**", "/api/product-variants/**", "/api/category-products/**", "/api/blogs/**", "/api/category-blogs/**", "/api/banners/**").permitAll()
                 

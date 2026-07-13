@@ -114,3 +114,9 @@ body {
   font-family: 'Outfit', 'Inter', sans-serif;
   overflow-y: overlay; /* overlay scrollbar so it doesn't shift content */
 }
+
+/* Ẩn con mắt hiển thị mật khẩu mặc định của trình duyệt Microsoft Edge/IE */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}

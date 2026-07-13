@@ -220,7 +220,7 @@ public class EmailService {
                     + "    <a href='" + resetLink + "' style='background-color: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;'>Đặt lại mật khẩu</a>"
                     + "  </div>"
                     + "  <p style='color: #ff0000; font-size: 0.9em;'>* Link khôi phục mật khẩu này sẽ hết hạn sau 15 phút.</p>"
-                    + "  <p>If you did not request this, please ignore this email.</p>"
+                    + "  <p>Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email này.</p>"
                     + "  <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>"
                     + "  <div style='text-align: center; color: #888; font-size: 0.9em;'>"
                     + "    <p style='margin: 5px 0;'><strong>Chinh Hoops - Nâng tầm bước chân của bạn.</strong></p>"

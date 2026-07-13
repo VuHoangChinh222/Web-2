@@ -16,6 +16,7 @@ import ProductDetailView from './pages/Product/Detail';
 import CartView from './pages/Cart/Index';
 import CheckoutView from './pages/Checkout/Index';
 import PaymentView from './pages/Checkout/PaymentView';
+import PaymentResultView from './pages/Checkout/PaymentResult';
 import LoginView from './pages/Login/Index';
 import RegisterView from './pages/Register/Index';
 import ForgotPasswordView from './pages/ForgotPassword/ForgotPassword';
@@ -152,6 +153,7 @@ const AppContent = ({ cart, addToCart, updateQty, removeFromCart, clearCart }) =
           <Route path="/cart" element={<CartView cart={cart} updateQty={updateQty} removeFromCart={removeFromCart} navigate={navigate} />} />
           <Route path="/checkout" element={<CheckoutView cart={cart} clearCart={clearCart} navigate={navigate} />} />
           <Route path="/payment" element={<PaymentView navigate={navigate} clearCart={clearCart} cart={cart} />} />
+          <Route path="/payment-result" element={<PaymentResultView navigate={navigate} clearCart={clearCart} />} />
 
           <Route path="/login" element={<LoginView />} />
           <Route path="/register" element={<RegisterView />} />

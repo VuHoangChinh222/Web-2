@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Search, BookOpen, LayoutGrid, List } from 'lucide-react';
+import { Plus, Search, BookOpen, LayoutGrid, List, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 import BlogFormModal from './BlogFormModal';
 import BlogGridCard from './BlogGridCard';
@@ -58,6 +58,40 @@ const Blogs = () => {
     const matchesCategory = selectedCategory === 'all' || String(b.categoryId) === String(selectedCategory);
     return matchesSearch && matchesCategory;
   });
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = viewMode === 'grid' ? 6 : 10;
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory, viewMode]);
+
+  const totalItems = filteredBlogs.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredBlogs.slice(indexOfFirstItem, indexOfLastItem);
+
+  const getVisiblePages = () => {
+    const pages = [];
+    const maxVisible = 5;
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      let start = Math.max(1, currentPage - 2);
+      let end = Math.min(totalPages, currentPage + 2);
+      if (start === 1) {
+        end = 5;
+      } else if (end === totalPages) {
+        start = totalPages - 4;
+      }
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+    }
+    return pages;
+  };
 
   // Modal Open Actions
   const handleOpenAdd = () => {
@@ -203,7 +237,7 @@ const Blogs = () => {
               <p className="text-xs font-semibold">No articles found.</p>
             </div>
           ) : (
-            filteredBlogs.map(blog => {
+            currentItems.map(blog => {
               const author = mappedUsers.find(u => u.id === blog.authorId);
               const category = categoriesBlog.find(c => c.id === blog.categoryId);
               return (
@@ -239,13 +273,13 @@ const Blogs = () => {
             <tbody>
               {filteredBlogs.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="p-8 text-center text-slate-500">
+                  <td colSpan="6" className="p-8 text-center text-slate-500">
                     <BookOpen size={24} className="mx-auto mb-2 opacity-50" />
                     No articles found.
                   </td>
                 </tr>
               ) : (
-                filteredBlogs.map(blog => {
+                currentItems.map(blog => {
                   const author = mappedUsers.find(u => u.id === blog.authorId);
                   const category = categoriesBlog.find(c => c.id === blog.categoryId);
                   return (
@@ -266,6 +300,52 @@ const Blogs = () => {
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/5 pt-6 mt-4">
+          <p className="text-xs text-slate-400 order-2 sm:order-1">
+            Showing <span className="font-semibold text-white">{indexOfFirstItem + 1}</span> to{" "}
+            <span className="font-semibold text-white">
+              {Math.min(indexOfLastItem, totalItems)}
+            </span>{" "}
+            of <span className="font-semibold text-white">{totalItems}</span> articles
+          </p>
+          <div className="flex items-center gap-1.5 order-1 sm:order-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded-lg border border-white/5 text-slate-400 hover:text-white bg-white/[0.02] hover:bg-white/[0.05] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+              title="Previous Page"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            
+            {getVisiblePages().map(pageNumber => (
+              <button
+                key={pageNumber}
+                onClick={() => setCurrentPage(pageNumber)}
+                className={`w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center border transition-all duration-200 ${
+                  currentPage === pageNumber
+                    ? "bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20"
+                    : "border-white/5 text-slate-400 hover:text-white bg-white/[0.02] hover:bg-white/[0.05]"
+                }`}
+              >
+                {pageNumber}
+              </button>
+            ))}
+            
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded-lg border border-white/5 text-slate-400 hover:text-white bg-white/[0.02] hover:bg-white/[0.05] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+              title="Next Page"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
       )}
 

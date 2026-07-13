@@ -40,6 +40,9 @@ public class RoleController {
      */
     @PostMapping
     public Role createRole(@RequestBody Role role) {
+        if (role.getName() != null && role.getName().equalsIgnoreCase("ROLE_ADMIN")) {
+            throw new RuntimeException("Cannot create a new role with the protected name ROLE_ADMIN.");
+        }
         return roleRepository.save(role);
     }
 
@@ -63,6 +66,11 @@ public class RoleController {
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Role not found with id " + id));
         
+        // Ngăn chặn sửa đổi vai trò quản trị tối cao ROLE_ADMIN
+        if (role.getName().equalsIgnoreCase("ROLE_ADMIN")) {
+            throw new RuntimeException("Cannot modify standard system admin role security configuration.");
+        }
+        
         // Cập nhật tên vai trò, mô tả chi tiết và danh sách quyền
         role.setName(roleDetails.getName());
         role.setDescription(roleDetails.getDescription());
@@ -81,6 +89,11 @@ public class RoleController {
         // Tìm vai trò cần xóa trong DB, báo lỗi nếu không tìm thấy
         Role role = roleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Role not found with id " + id));
+        
+        // Ngăn chặn xóa vai trò quản trị tối cao ROLE_ADMIN
+        if (role.getName().equalsIgnoreCase("ROLE_ADMIN")) {
+            throw new RuntimeException("Cannot delete standard system admin role.");
+        }
         
         // Tiến hành xóa vai trò khỏi Database
         roleRepository.delete(role);

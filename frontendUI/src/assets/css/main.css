@@ -472,3 +472,9 @@ button {
     opacity: 0.4; /* Độ mờ 40% */
     cursor: not-allowed; /* Con trỏ dạng cấm */
 }
+
+/* Ẩn con mắt hiển thị mật khẩu mặc định của trình duyệt Microsoft Edge/IE */
+input::-ms-reveal,
+input::-ms-clear {
+    display: none;
+}

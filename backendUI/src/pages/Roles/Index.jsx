@@ -36,7 +36,7 @@ const Roles = () => {
   // Active selected role for permission adjustment
   const [selectedRoleId, setSelectedRoleId] = useState('');
   const activeRole = roles.find(r => r.id === selectedRoleId);
-  
+
   // Temporary state for checkboxes
   const [tempPermissions, setTempPermissions] = useState([]);
 
@@ -64,12 +64,12 @@ const Roles = () => {
   };
 
   const handleTogglePermission = (permissionKey) => {
-    // Prevent removing dashboard_view or basic rights from ROLE_ADMIN for absolute security
-    if (activeRole?.name === 'ROLE_ADMIN' && permissionKey === 'manage_role') {
-      alert("Cannot revoke Roles Management from standard system admin role.");
+    // Ngăn chặn sửa đổi quyền của vai trò quản trị tối cao ROLE_ADMIN để bảo vệ an toàn hệ thống
+    if (activeRole?.name === 'ROLE_ADMIN') {
+      alert("The authority of the Super Admin role (ROLE_ADMIN) is default and cannot be changed.");
       return;
     }
-    setTempPermissions(prev => 
+    setTempPermissions(prev =>
       prev.includes(permissionKey)
         ? prev.filter(k => k !== permissionKey)
         : [...prev, permissionKey]
@@ -78,6 +78,10 @@ const Roles = () => {
 
   const handleSave = async () => {
     if (!selectedRoleId) return;
+    if (activeRole?.name === 'ROLE_ADMIN') {
+      alert("Không thể lưu cấu hình quyền cho vai trò quản trị tối cao ROLE_ADMIN.");
+      return;
+    }
     try {
       const roleObj = roles.find(r => r.id === selectedRoleId);
       if (!roleObj) return;
@@ -184,8 +188,8 @@ const Roles = () => {
                 <div
                   key={r.id}
                   className={`w-full p-4 rounded-xl border flex items-start justify-between gap-3 transition-all
-                    ${isActive 
-                      ? 'bg-purple-900/10 border-purple-500/40 text-purple-300 shadow-md shadow-purple-500/5' 
+                    ${isActive
+                      ? 'bg-purple-900/10 border-purple-500/40 text-purple-300 shadow-md shadow-purple-500/5'
                       : 'bg-[#0F1224]/30 border-white/5 text-slate-400 hover:border-white/10 hover:text-slate-200'}`}
                 >
                   <div className="cursor-pointer flex-1" onClick={() => handleRoleChange(r.id)}>
@@ -224,13 +228,13 @@ const Roles = () => {
           <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">
             Permissions for: <strong className="text-purple-400">{activeRole?.name || 'No Role Selected'}</strong>
           </h3>
-          
+
           <GlassCard hoverEffect={false} className="space-y-5">
             <div className="divide-y divide-white/5">
               {systemPermissions.map((perm) => {
                 const isChecked = tempPermissions.includes(perm.key);
                 return (
-                  <div 
+                  <div
                     key={perm.key}
                     onClick={() => handleTogglePermission(perm.key)}
                     className="flex items-start gap-3.5 py-4 cursor-pointer hover:bg-white/[0.01] transition-colors rounded-lg px-2 -mx-2"

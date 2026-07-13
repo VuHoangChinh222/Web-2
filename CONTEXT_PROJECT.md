@@ -216,6 +216,17 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
   - Khắc phục lỗi thanh tìm kiếm ở Header/Navbar luôn hiển thị toàn bộ 2 bài viết mặc định khi gõ bất kỳ từ khóa nào.
   - Nguyên nhân: Phương thức `getAllBlogs` trong `BlogController.java` ở Backend không nhận tham số truy vấn `keyword`, dẫn đến việc bỏ qua từ khóa tìm kiếm gửi từ Frontend và trả về toàn bộ danh sách bài viết hiện có.
   - Giải pháp: Bổ sung tham số `@RequestParam(required = false) String keyword` cho phương thức `getAllBlogs` và xây dựng câu truy vấn JPQL tùy chỉnh `searchBlogs` trong `BlogRepository.java` để lọc các bài viết có tiêu đề (title), tóm tắt (summary) hoặc nội dung (content) khớp với từ khóa tìm kiếm.
+- **Bảo mật Định tuyến Quản trị, Phân trang toàn diện & Đồng bộ Dropdown Địa chỉ Khách hàng**:
+  - **Bảo mật định tuyến**: Cài đặt routing guard động tại `App.jsx` trong `backendUI` kiểm tra quyền của tài khoản nhân viên. Tránh việc truy cập sai quyền và tự động chuyển hướng về trang được phép truy cập đầu tiên thay vì tự động chuyển đến Dashboard.
+  - **Phân trang toàn diện**: Thiết lập phân trang phía Client (Client-Side Pagination) cho tất cả các mô-đun quản trị lớn bao gồm: Danh mục (Categories), Khách hàng (Customers), Đơn hàng (Orders), Bài viết (Blogs), và Nhân viên (Staff Users). Tự động đưa trang về 1 khi có thao tác lọc/tìm kiếm dữ liệu.
+  - **Đồng bộ Dropdown Địa chỉ trong Form Khách hàng**: Chuyển đổi trường nhập địa chỉ thô ở modal thêm mới/chỉnh sửa khách hàng (`CustomerFormModal.jsx`) thành dải dropdown chọn Tỉnh/Thành phố, Quận/Huyện, Phường/Xã chuẩn địa lý hành chính Việt Nam và nhập chi tiết địa chỉ.
+- **Tích hợp thành công Cổng Thanh toán Trực tuyến VNPay (VNPay Payment Integration)**:
+  - Cấu hình credentials môi trường Sandbox của VNPay (`S32UGW9B`, `0SL8E4HWY75AI6BQ1VS5FXYR3WKNQCCE`) vào `application.properties`.
+  - Thiết lập Spring Security cho phép truy cập công khai endpoint thanh toán `/api/payment/**`.
+  - Tạo `VnPayConfig` và `VnPayService` để tạo liên kết thanh toán (`createPaymentUrl`) bằng thuật toán mã hóa HMAC SHA-512 và xác thực chữ ký số callback (`verifyCallback`).
+  - Xây dựng `PaymentController` cung cấp các REST API cho Frontend tạo URL thanh toán, đối soát trạng thái giao dịch (`/vnpay/verify-return`) và nhận tin nhắn webhook IPN tự động từ server VNPay (`/vnpay/ipn`) để cập nhật trạng thái đơn hàng trong DB (`PAID` hoặc `FAILED`).
+  - Cập nhật trang `/payment` trên Storefront React để chuyển hướng khách hàng sang VNPay và xây dựng trang `/payment-result` hiển thị giao diện kính mờ (Glassmorphism) cao cấp hiển thị thông tin hóa đơn.
+
 
 
 

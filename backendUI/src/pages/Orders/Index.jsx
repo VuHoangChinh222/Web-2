@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
 import GlassCard from '../../components/GlassCard';
 import OrderDetailModal from './OrderDetailModal';
@@ -116,6 +116,40 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
       (statusFilter === '3' && o.status === 'Cancelled');
     return matchesSearch && matchesStatus;
   });
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
+  const totalItems = filteredOrders.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredOrders.slice(indexOfFirstItem, indexOfLastItem);
+
+  const getVisiblePages = () => {
+    const pages = [];
+    const maxVisible = 5;
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      let start = Math.max(1, currentPage - 2);
+      let end = Math.min(totalPages, currentPage + 2);
+      if (start === 1) {
+        end = 5;
+      } else if (end === totalPages) {
+        start = totalPages - 4;
+      }
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+    }
+    return pages;
+  };
 
   console.log("DEBUG ORDERS - raw:", orders, "mapped:", mappedOrders, "filtered:", filteredOrders);
 
@@ -303,8 +337,8 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
                   </td>
                 </tr>
               ) : (
-                filteredOrders.map(order => (
-                  <OrderListItem 
+                currentItems.map(order => (
+                  <OrderListItem
                     key={order.id}
                     order={order}
                     mappedCustomers={mappedCustomers}
@@ -321,7 +355,52 @@ const Orders = ({ selectedOrderId, setSelectedOrderId, isOpen, setIsOpen }) => {
           </table>
         </div>
       </GlassCard>
- 
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/5 pt-6 mt-4">
+          <p className="text-xs text-slate-400 order-2 sm:order-1">
+            Showing <span className="font-semibold text-white">{indexOfFirstItem + 1}</span> to{" "}
+            <span className="font-semibold text-white">
+              {Math.min(indexOfLastItem, totalItems)}
+            </span>{" "}
+            of <span className="font-semibold text-white">{totalItems}</span> orders
+          </p>
+          <div className="flex items-center gap-1.5 order-1 sm:order-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded-lg border border-white/5 text-slate-400 hover:text-white bg-white/[0.02] hover:bg-white/[0.05] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+              title="Previous Page"
+            >
+              <ChevronLeft size={16} />
+            </button>
+
+            {getVisiblePages().map(pageNumber => (
+              <button
+                key={pageNumber}
+                onClick={() => setCurrentPage(pageNumber)}
+                className={`w-8 h-8 rounded-lg text-xs font-semibold flex items-center justify-center border transition-all duration-200 ${currentPage === pageNumber
+                    ? "bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20"
+                    : "border-white/5 text-slate-400 hover:text-white bg-white/[0.02] hover:bg-white/[0.05]"
+                  }`}
+              >
+                {pageNumber}
+              </button>
+            ))}
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded-lg border border-white/5 text-slate-400 hover:text-white bg-white/[0.02] hover:bg-white/[0.05] disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+              title="Next Page"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
       <OrderDetailModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}

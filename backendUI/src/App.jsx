@@ -16,6 +16,18 @@ import Users from './pages/Users/Index';
 import Roles from './pages/Roles/Index';
 import Login from './pages/Login/Index';
 
+const PAGE_PERMISSIONS = {
+  'dashboard': 'dashboard_view',
+  'products': 'manage_product',
+  'categories': 'manage_categoryproduct',
+  'orders': 'manage_order',
+  'customers': 'manage_customer',
+  'blogs': 'manage_blog',
+  'banners': 'manage_banner',
+  'users': 'manage_user',
+  'roles': 'manage_role'
+};
+
 const DashboardContent = () => {
   const { users, roles, currentUser, setCurrentUser } = useAdmin();
   const [activePage, setActivePage] = useState('dashboard');
@@ -25,19 +37,46 @@ const DashboardContent = () => {
   const [selectedOrderId, setSelectedOrderId] = useState('ord-1001');
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
-  // Sync activePage with URL pathname
+  // Sync activePage with URL pathname and enforce permissions
   React.useEffect(() => {
     const handleLocationChange = () => {
       const path = window.location.pathname.replace(/^\//, '') || 'dashboard';
-      const validPages = ['dashboard', 'products', 'categories', 'orders', 'customers', 'blogs', 'banners', 'users', 'roles'];
+      const validPages = ['dashboard', 'products', 'categories', 'orders', 'customers', 'blogs', 'banners', 'users', 'roles', 'unauthorized'];
       if (validPages.includes(path)) {
-        setActivePage(path);
+        if (!currentUser) return;
+        const requiredPerm = PAGE_PERMISSIONS[path];
+        const userPermissions = currentUser?.role?.permissions || [];
+
+        if (requiredPerm && !userPermissions.includes(requiredPerm)) {
+          // Find first allowed page
+          const firstAllowedPage = Object.keys(PAGE_PERMISSIONS).find(p =>
+            userPermissions.includes(PAGE_PERMISSIONS[p])
+          );
+          setActivePage(firstAllowedPage || 'unauthorized');
+        } else {
+          setActivePage(path);
+        }
       }
     };
     handleLocationChange();
     window.addEventListener('popstate', handleLocationChange);
     return () => window.removeEventListener('popstate', handleLocationChange);
-  }, []);
+  }, [currentUser]);
+
+  // Enforce permissions whenever activePage or currentUser changes
+  React.useEffect(() => {
+    if (!currentUser) return;
+    const requiredPerm = PAGE_PERMISSIONS[activePage];
+    if (requiredPerm) {
+      const userPermissions = currentUser?.role?.permissions || [];
+      if (!userPermissions.includes(requiredPerm)) {
+        const firstAllowedPage = Object.keys(PAGE_PERMISSIONS).find(p =>
+          userPermissions.includes(PAGE_PERMISSIONS[p])
+        );
+        setActivePage(firstAllowedPage || 'unauthorized');
+      }
+    }
+  }, [activePage, currentUser]);
 
   // Update URL pathname when activePage changes
   React.useEffect(() => {
@@ -50,23 +89,13 @@ const DashboardContent = () => {
   const handleChangeUser = (newUser) => {
     setCurrentUser(newUser);
 
-    // Check if the page the user is viewing is allowed for the new role, if not fallback to dashboard
-    const pagePermissions = {
-      'dashboard': 'dashboard_view',
-      'products': 'manage_product',
-      'categories': 'manage_categoryproduct',
-      'orders': 'manage_order',
-      'customers': 'manage_customer',
-      'blogs': 'manage_blog',
-      'banners': 'manage_banner',
-      'users': 'manage_user',
-      'roles': 'manage_role'
-    };
-
-    const requiredPerm = pagePermissions[activePage];
+    const requiredPerm = PAGE_PERMISSIONS[activePage];
     const userPermissions = newUser?.role?.permissions || [];
     if (requiredPerm && !userPermissions.includes(requiredPerm)) {
-      setActivePage('dashboard');
+      const firstAllowedPage = Object.keys(PAGE_PERMISSIONS).find(p =>
+        userPermissions.includes(PAGE_PERMISSIONS[p])
+      );
+      setActivePage(firstAllowedPage || 'unauthorized');
     }
   };
 
@@ -110,8 +139,33 @@ const DashboardContent = () => {
         return <Users currentUser={currentUser} />;
       case 'roles':
         return <Roles />;
+      case 'unauthorized':
+        return (
+          <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-8 bg-[#0F1224]/30 backdrop-blur-md rounded-2xl border border-white/5">
+            <h2 className="text-2xl font-bold text-rose-400 mb-2">Access Denied</h2>
+            <p className="text-slate-400 text-sm">Bạn không có quyền truy cập vào chức năng hoặc trang này.</p>
+          </div>
+        );
       default:
-        return <Dashboard />;
+        {
+          const userPermissions = currentUser?.role?.permissions || [];
+          if (userPermissions.includes('dashboard_view')) {
+            return (
+              <Dashboard
+                setActivePage={setActivePage}
+                setSelectedOrderId={setSelectedOrderId}
+                setIsOrderModalOpen={setIsOrderModalOpen}
+              />
+            );
+          } else {
+            return (
+              <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-8 bg-[#0F1224]/30 backdrop-blur-md rounded-2xl border border-white/5">
+                <h2 className="text-2xl font-bold text-rose-400 mb-2">Access Denied</h2>
+                <p className="text-slate-400 text-sm">Bạn không có quyền truy cập vào chức năng hoặc trang này.</p>
+              </div>
+            );
+          }
+        }
     }
   };
 

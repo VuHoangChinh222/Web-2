@@ -603,4 +603,24 @@ web2/
 
 ---
 
+## 🛠️ Các Cập Nhật Mới Hoàn Thành & Lộ Trình Sắp Tới
+
+### 1. Phân trang Client-Side & Bảo mật Định tuyến (Admin Panel)
+* **Phân trang Client-Side đồng bộ**: Tích hợp chuẩn hóa phân trang phía client (Client-side Pagination) trên toàn bộ các mô-đun quản trị lớn bao gồm: **Danh mục (Categories)**, **Khách hàng (Customers)**, **Đơn hàng (Orders)**, **Tin tức (Blogs)**, và **Nhân sự (Staff Users)**. Trình duyệt tự động chia mảng dữ liệu đã lọc và tự động đưa chỉ số trang hiện tại về trang đầu tiên (`currentPage = 1`) mỗi khi thay đổi bộ lọc tìm kiếm hoặc view mode.
+* **Bảo mật định tuyến động (Dynamic Routing Guard)**: Xây dựng bộ lọc quyền truy cập theo thời gian thực trong `App.jsx`. Nếu nhân viên không có quyền truy cập trang hiện tại, hệ thống sẽ tự động quét danh sách quyền hạn và chuyển hướng họ về trang được phép truy cập đầu tiên thay vì tự động mở trang Dashboard như trước. Nếu tài khoản không có quyền xem bất cứ trang nào, màn hình **403 Access Denied** cao cấp sẽ hiển thị trực quan.
+* **Dropdown chọn địa chỉ trong Form Khách hàng**: Nâng cấp modal thêm mới/sửa thông tin khách hàng (`CustomerFormModal.jsx`) chuyển đổi ô nhập địa chỉ thô thành dải dropdown chọn **Tỉnh/Thành phố, Quận/Huyện, Phường/Xã** kết hợp với ô nhập chi tiết (Số nhà, tên đường), tự động đồng bộ hóa với cơ chế lưu địa chỉ giao hàng mặc định của CSDL.
+
+### 2. Tích hợp thành công Cổng Thanh toán Trực tuyến VNPay (Hoàn thành)
+* **Quy trình hoạt động**: Áp dụng luồng xử lý giao dịch chuẩn: **Redirect** (Client sang Cổng thanh toán) kết hợp **IPN Callback** (Cổng thanh toán bắn tin xác thực Server-to-Server) bảo đảm an toàn dữ liệu và chống gian lận.
+* **Tầng Backend (Spring Boot)**:
+  - Cấu hình credentials môi trường Sandbox của VNPay (`S32UGW9B`, `0SL8E4HWY75AI6BQ1VS5FXYR3WKNQCCE`) vào `application.properties`.
+  - Thiết lập Spring Security cho phép truy cập công khai endpoint thanh toán `/api/payment/**`.
+  - Tạo `VnPayConfig` và `VnPayService` để tạo liên kết thanh toán (`createPaymentUrl`) bằng thuật toán mã hóa HMAC SHA-512 và xác thực chữ ký số callback (`verifyCallback`).
+  - Xây dựng `PaymentController` cung cấp các REST API cho Frontend tạo URL thanh toán, đối soát trạng thái giao dịch (`/vnpay/verify-return`) và nhận tin nhắn webhook IPN tự động từ server VNPay (`/vnpay/ipn`) để cập nhật trạng thái đơn hàng trong DB (`PAID` hoặc `FAILED`).
+* **Tầng Frontend (React Storefront)**:
+  - Bổ sung tùy chọn thanh toán VNPay tại trang `/payment` để sau khi tạo đơn hàng thành công sẽ tự động chuyển hướng khách hàng sang cổng giao dịch VNPAY Sandbox.
+  - Thiết lập trang đối soát kết quả `/payment-result` với thiết kế Glassmorphism cao cấp, tự động đối soát chữ ký giao dịch qua API Backend, làm sạch giỏ hàng và dẫn hướng khách hàng.
+
+
+
 

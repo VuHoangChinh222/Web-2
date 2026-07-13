@@ -110,11 +110,15 @@ def build_product_document(
             size = v_dict.get("size")
             color = v_dict.get("color")
             v_price = v_dict.get("salePrice") if v_dict.get("salePrice") else v_dict.get("price")
+            # Nếu biến thể không có giá riêng, lấy giá của sản phẩm chính làm mặc định
+            if not v_price:
+                v_price = discount_price if discount_price else base_price
+                
             stock = v_dict.get("stockQuantity", 0)
             
             v_price_str = ""
             if v_price:
-                v_price_str = f" với giá riêng {v_price:,.0f} VNĐ"
+                v_price_str = f" với giá {v_price:,.0f} VNĐ"
             
             stock_str = f"còn {stock} đôi" if stock > 0 else "đã HẾT HÀNG"
             variants_info.append(f"- Màu {color}, Kích cỡ {size}: {stock_str}{v_price_str}.")
@@ -243,8 +247,9 @@ async def chat_bot(chat: ChatMessage):
             context_text = "Hiện tại cửa hàng chưa có thông tin sản phẩm nào."
 
         # 4. Tạo System Prompt (Nhắc nhở AI về vai trò của nó)
-        system_prompt = f"""Bạn là trợ lý AI tư vấn bán hàng thân thiện, chuyên nghiệp và lịch sự của cửa hàng.
+        system_prompt = f"""Bạn là trợ lý AI tư vấn bán hàng thân thiện, chuyên nghiệp và lịch sự của cửa hàng Chinh Hoops.
 Nhiệm vụ của bạn là trả lời câu hỏi và tư vấn sản phẩm dựa vào thông tin của cửa hàng dưới đây.
+Đặc biệt lưu ý về giá bán: Hãy luôn kiểm tra kỹ phần "Thông tin chi tiết các biến thể (Màu sắc, Kích cỡ & Tồn kho)" bên dưới để trả lời đúng giá của từng biến thể cụ thể (màu sắc, kích cỡ). Nếu biến thể có giá cụ thể, hãy báo đúng giá của biến thể đó cho khách hàng thay vì chỉ lấy giá chung của sản phẩm.
 Tuyệt đối KHÔNG ĐƯỢC bịa đặt sản phẩm, giá cả, hoặc thông tin không có trong danh sách.
 Nếu khách hàng hỏi ngoài lề không liên quan tới mua bán sản phẩm, hãy từ chối khéo léo.
 

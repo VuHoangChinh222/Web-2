@@ -1,0 +1,86 @@
+216: [Heading 1]  TỔNG QUAN VỀ ĐỀ TÀI VÀ CƠ SỞ LÝ THUYẾT
+217: [Heading 2] Lý do chọn đề tài
+221: [Heading 2] Mục tiêu của đồ án
+228: [Heading 2] Đối tượng và phạm vi nghiên cứu
+239: [Heading 2] Công nghệ áp dụng trong hệ thống
+240: [Heading 3] Tổng quan về ngôn ngữ Java và nền tảng Spring Boot
+246: [Heading 3] Thư viện ReactJS và kiến trúc ứng dụng một trang Single Page Application
+249: [Heading 3] Hệ quản trị cơ sở dữ liệu MySQL và thư viện Spring Data Java Persistence API tích hợp Hibernate
+252: [Heading 3] Kiến trúc Web API RESTful và giao thức truyền tải JSON
+255: [Heading 3] Mô hình Ngôn ngữ Lớn Large Language Model
+257: [Heading 3] Kỹ thuật Retrieval-Augmented Generation thông qua kỹ thuật Retrieval-Augmented Generation
+259: [Heading 3] Cơ sở dữ liệu Vector ChromaDB
+261: [Heading 3] Cơ chế đăng nhập một lần Google OAuth 2.0
+263: [Heading 3] Hệ thống gửi Email tự động qua giao thức SMTP
+265: [Heading 1] PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG
+266: [Heading 2] Phân tích yêu cầu chức năng
+283: [Heading 2] Sơ đồ thực thể mối quan hệ sơ đồ sơ đồ thực thể mối quan hệ của hệ thống
+289: [Heading 2] Chi tiết thiết kế cơ sở dữ liệu Database Schema
+323: [Heading 1] TRIỂN KHAI PHẦN BACKEND VỚI JAVA SPRING BOOT RESTful API
+324: [Heading 2] Cấu trúc Solution và phân tách các tầng kiến trúc
+330: [Heading 2] Khởi tạo Cơ sở dữ liệu và di trú dữ liệu mẫu Seed Data
+336: [Heading 2] Xây dựng các Controller xử lý API dữ liệu
+343: [Heading 2] Triển khai phân hệ bảo mật, mã hóa mật khẩu và phân quyền
+350: [Heading 2] Xử lý Upload ảnh vật lý và lưu trữ dữ liệu văn bản thuần
+354: [Heading 2] Cấu hình chính sách chia sẻ tài nguyên nguồn gốc chéo CORS cho ReactJS
+359: [Heading 2] Hoàn chỉnh phần quản trị Backend đầy đủ chức năng dành cho nhân viên của cửa hàng/công ty/doanh nghiệp sử dụng.
+365: [Heading 2] Tài liệu hóa và Kiểm thử hệ thống API bằng Swagger UI
+369: [Heading 3] API AuthController
+373: [Heading 3] API BannerController
+387: [Heading 3] API BlogController
+405: [Heading 3] API CategoryBlogController
+419: [Heading 3] API CategoryProductController
+435: [Heading 3] API CustomerController
+457: [Heading 3] API FileUploadController
+463: [Heading 3] API OrderController
+479: [Heading 3] API OrderDetailController
+495: [Heading 3] API ProductController
+515: [Heading 3] API ProductImageController
+529: [Heading 3] API ProductVariantController
+549: [Heading 3] API RoleController
+563: [Heading 3] API UserAddressController
+579: [Heading 3] API UserController
+595: [Heading 1] TRIỂN KHAI PHẦN FRONTEND DÀNH CHO CLIENT SITE
+596: [Heading 2] Khởi tạo cấu trúc dự án ReactJS và tích hợp React Router DOM
+602: [Heading 2] Cấu hình trục HTTP Client chung axiosClient và xử lý dữ liệu JSON
+608: [Heading 2] Triển khai phần Frontend Trang quản trị Admin Dashboard
+610: [Heading 3] Giao diện Đăng nhập Quản trị
+621: [Heading 3] Bảng điều khiển Dashboard
+628: [Heading 3] Quản lý Danh mục Sản phẩm
+648: [Heading 3] Quản lý Sản phẩm và Biến thể
+717: [Heading 3] Quản lý Đơn hàng
+746: [Heading 3] Quản lý Khách hàng
+795: [Heading 3] Quản lý Tài khoản Nhân viên
+828: [Heading 3] Phân quyền Hệ thống như ROLE
+866: [Heading 3] Quản lý Danh mục Bài viết
+889: [Heading 3] Quản lý Bài viết
+924: [Heading 3] Quản lý Banner Quảng cáo
+956: [Heading 2] Triển khai phần Frontend Trang bán hàng Storefront
+958: [Heading 3] Giao diện Trang chủ
+963: [Heading 3] Danh sách Sản phẩm và Cửa hàng
+996: [Heading 3] Chức năng Tìm kiếm Thời gian thực
+1010: [Heading 3] Chi tiết Sản phẩm
+1029: [Heading 3] Lựa chọn Thuộc tính Biến thể như kích cỡ và màu sắc
+1034: [Heading 3] Giỏ hàng
+1048: [Heading 3] Thanh toán và Đặt hàng
+1080: [Heading 3] Đăng nhập Khách hàng
+1094: [Heading 3] Đăng ký Tài khoản
+1114: [Heading 3] Quên Mật khẩu
+1140: [Heading 3] Hồ sơ Cá nhân Khách hàng
+1148: [Heading 3] Quản lý Địa chỉ Giao hàng
+1177: [Heading 3] Lịch sử Mua hàng
+1185: [Heading 3] Danh sách Tin tức Blog
+1196: [Heading 3] Chi tiết Bài viết
+1201: [Heading 3] Trợ lý Ảo AI Chatbot
+1232: [Heading 3] Trang Giới thiệu About
+1237: [Heading 3] Chính sách Đổi trả
+1242: [Heading 3] Chính sách Bảo mật
+1247: [Heading 1] KIỂM THỬ VÀ ĐÁNH GIÁ KẾ THÚC ĐỒ ÁN
+1248: [Heading 2] Kiểm thử chức năng phân quyền bảo mật vùng Admin gồm quyền Admin và Editor
+1252: [Heading 2] Kiểm thử luồng nghiệp vụ mua sắm và bắt lỗi logic số lượng tồn kho
+1257: [Heading 2] Kiểm thử hiệu năng đồng bộ thời gian thực ngầm bằng bảng điều khiển F12 và Swagger UI
+1262: [Heading 2] Đánh giá ưu điểm và nhược điểm của giải pháp thiết kế
+1266: [Heading 1] KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN NÂNG CẤP
+1267: [Heading 2] Kết quả đạt được của đồ án đối với sinh viên
+1271: [Heading 2] Hướng phát triển nâng cấp hệ thống trong tương lai bao gồm việc tích hợp các cổng thanh toán và phát triển hệ thống gợi ý sản phẩm dựa trên công nghệ AI
+1277: [Heading 2] 

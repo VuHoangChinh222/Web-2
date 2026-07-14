@@ -340,10 +340,12 @@ public class OrderController {
         }
 
         // Gửi email xác nhận đơn hàng bất đồng bộ
-        try {
-            emailService.sendOrderConfirmationEmail(customer, savedOrder, savedDetails);
-        } catch (Exception e) {
-            System.err.println("Không thể kích hoạt gửi mail: " + e.getMessage());
+        if ("COD".equalsIgnoreCase(savedOrder.getPaymentMethod())) {
+            try {
+                emailService.sendOrderConfirmationEmail(customer, savedOrder, savedDetails);
+            } catch (Exception e) {
+                System.err.println("Không thể kích hoạt gửi mail: " + e.getMessage());
+            }
         }
 
         return ResponseEntity.ok(savedOrder);

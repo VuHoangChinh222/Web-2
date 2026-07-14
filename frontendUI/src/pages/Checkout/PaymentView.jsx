@@ -57,7 +57,7 @@ const PaymentView = ({ navigate, clearCart, cart }) => {
       shippingAddress: shippingData.address,
       totalPrice: totalPrice,
       shippingFee: 0,
-      paymentMethod: method.toUpperCase(),
+      paymentMethod: method.startsWith('momo_') ? 'MOMO' : method.toUpperCase(),
       paymentStatus: 'PENDING',
       orderStatus: '0',
       note: shippingData.notes || null,
@@ -90,6 +90,15 @@ const PaymentView = ({ navigate, clearCart, cart }) => {
             window.location.href = resPay.paymentUrl;
           } else {
             setErrorMessage("Không thể tạo cổng thanh toán VNPay. Vui lòng liên hệ hỗ trợ.");
+          }
+        } else if (method === 'momo') {
+          // MoMo ATM Redirect Flow (Test nhanh)
+          const resPay = await paymentService.createMomoPayment(orderId, 'payWithATM');
+          if (resPay && resPay.paymentUrl) {
+            // Chuyển hướng sang MoMo ATM
+            window.location.href = resPay.paymentUrl;
+          } else {
+            setErrorMessage("Không thể tạo cổng thanh toán ATM MoMo. Vui lòng liên hệ hỗ trợ.");
           }
         } else {
           // COD fallback hoặc phương thức khác chưa tích hợp hoàn chỉnh
@@ -139,26 +148,14 @@ const PaymentView = ({ navigate, clearCart, cart }) => {
             <i className="fa-solid fa-truck"></i><span>Thanh toán khi nhận hàng (COD)</span>
           </div>
           <div className={`payment-card ${method === 'vnpay' ? 'active' : ''}`} onClick={() => setMethod('vnpay')}>
-            <i className="fa-solid fa-qrcode"></i><span>VNPay</span>
+            <span style={{ fontWeight: '900', color: '#005baa', letterSpacing: '1px', fontSize: '1.1rem' }}>VNPAY</span>
+            <span>Thanh toán qua VNPay</span>
           </div>
           <div className={`payment-card ${method === 'momo' ? 'active' : ''}`} onClick={() => setMethod('momo')}>
-            <i className="fa-solid fa-wallet"></i><span>Ví MoMo</span>
-          </div>
-          <div className={`payment-card ${method === 'credit' ? 'active' : ''}`} onClick={() => setMethod('credit')}>
-            <i className="fa-solid fa-credit-card"></i><span>Thẻ Tín Dụng / Ghi Nợ</span>
+            <span style={{ fontWeight: '900', color: '#ae2070', letterSpacing: '1px', fontSize: '1.1rem' }}>MoMo</span>
+            <span>Thanh toán qua MoMo</span>
           </div>
         </div>
-
-        {method === 'credit' && (
-          <div className="form-group" style={{ animation: 'fadeIn 0.3s', marginTop: '1.5rem' }}>
-            <label>Số thẻ</label>
-            <input type="text" className="form-input" placeholder="0000 0000 0000 0000" disabled={loading} />
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-              <input type="text" className="form-input" placeholder="MM/YY" disabled={loading} />
-              <input type="text" className="form-input" placeholder="CVV" disabled={loading} />
-            </div>
-          </div>
-        )}
 
         <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
           <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => navigate('checkout')} disabled={loading}>Quay lại</button>

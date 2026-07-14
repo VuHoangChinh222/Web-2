@@ -41,9 +41,35 @@ const PaymentResult = ({ navigate, clearCart }) => {
             });
           }
         } catch (err) {
-          console.error("Lỗi đối soát kết quả:", err);
+          console.error("Lỗi đối soát kết quả VNPay:", err);
           setStatus('error');
           setMessage('Đã xảy ra lỗi khi kết nối đối soát giao dịch với máy chủ.');
+        }
+      } else if (gateway === 'momo') {
+        try {
+          const res = await paymentService.verifyMomoReturn(params);
+          if (res && res.success) {
+            setStatus('success');
+            setMessage(res.message || 'Thanh toán đơn hàng qua MoMo thành công!');
+            setOrderInfo({
+              orderCode: res.orderCode || params['orderId'] || 'N/A',
+              amount: res.amount ? Number(res.amount) : Number(params['amount'] || 0)
+            });
+            // Dọn dẹp giỏ hàng và thông tin tạm khi thanh toán thành công
+            clearCart();
+            sessionStorage.removeItem('checkout_shipping_info');
+          } else {
+            setStatus('error');
+            setMessage(res?.message || 'Giao dịch thanh toán MoMo thất bại hoặc chữ ký không hợp lệ.');
+            setOrderInfo({
+              orderCode: res?.orderCode || params['orderId'] || 'N/A',
+              amount: Number(params['amount'] || 0)
+            });
+          }
+        } catch (err) {
+          console.error("Lỗi đối soát kết quả MoMo:", err);
+          setStatus('error');
+          setMessage('Đã xảy ra lỗi khi kết nối đối soát giao dịch MoMo với máy chủ.');
         }
       } else {
         setStatus('error');

@@ -624,3 +624,13 @@ web2/
 
 
 
+
+
+### 3. Tích hợp Cổng Thanh toán MoMo & Tự Động Hủy Đơn Treo (Hoàn thành)
+* **Thanh toán MoMo Đa Phương Thức**: 
+  - Khách hàng có 2 tùy chọn riêng biệt: **Ví MoMo (Quét QR)** (captureWallet) và **Thẻ ATM nội địa MoMo** (payWithATM), cho phép kiểm thử trực tiếp trên trình duyệt mà không bắt buộc dùng điện thoại quét mã Sandbox.
+  - Tích hợp bảo mật băm HMAC-SHA256 để ký và xác thực dữ liệu API giữa hệ thống và MoMo. Cung cấp API Webhook /momo/ipn Server-to-Server để tự động cập nhật trạng thái đơn hàng khi thanh toán thành công.
+* **Tự Động Hủy Đơn Hàng Bị Treo (Cron Job)**:
+  - Áp dụng cấu hình Spring Boot Scheduling (@EnableScheduling) kết hợp với hàm chạy ngầm (@Scheduled) trong OrderCleanupService.
+  - Hệ thống tự động truy quét mỗi phút, xác định các hóa đơn thanh toán trực tuyến (MOMO, VNPAY) ở trạng thái kẹt (PENDING) quá hạn 15 phút do người dùng đóng trình duyệt đột ngột hoặc bỏ dở thanh toán.
+  - Tự động thay đổi trạng thái đơn hàng sang **Đã hủy** và hoàn trả toàn bộ số lượng sản phẩm liên quan vào kho, tối ưu tài nguyên lưu trữ và chống chiếm dụng hàng hóa.

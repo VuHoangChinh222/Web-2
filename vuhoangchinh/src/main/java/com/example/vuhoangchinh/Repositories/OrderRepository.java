@@ -49,4 +49,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      */
     @org.springframework.data.jpa.repository.Query("SELECT DISTINCT o FROM Order o JOIN o.orderDetails od JOIN od.productVariant pv JOIN pv.product p WHERE p.id = :productId")
     List<Order> findOrdersByProductId(@org.springframework.data.repository.query.Param("productId") Long productId);
+
+    /**
+     * Tìm các đơn hàng thanh toán online (MOMO, VNPAY) đang ở trạng thái PENDING và quá hạn (tạo trước thời gian cutoff)
+     */
+    @org.springframework.data.jpa.repository.Query("SELECT o FROM Order o WHERE o.paymentMethod IN ('MOMO', 'VNPAY', 'MOMO_QR', 'MOMO_ATM') AND o.paymentStatus = 'PENDING' AND o.createdAt <= :cutoffTime AND o.orderStatus != '3'")
+    List<Order> findAbandonedOnlineOrders(@org.springframework.data.repository.query.Param("cutoffTime") java.time.LocalDateTime cutoffTime);
 }

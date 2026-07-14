@@ -236,3 +236,14 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
 
 
 
+
+
+### 8. Tích hợp Cổng Thanh toán MoMo & Tự Động Hủy Đơn Treo (Hoàn thành)
+* **Thanh toán MoMo Đa Phương Thức**: 
+  - Tích hợp cổng thanh toán MoMo Sandbox với 2 tùy chọn riêng biệt: **Ví MoMo (Quét QR)** (captureWallet) và **Thẻ ATM nội địa MoMo** (payWithATM), giúp tối ưu hóa việc kiểm thử trên trình duyệt.
+  - Tích hợp thuật toán bảo mật băm HMAC-SHA256 để ký và xác thực tính toàn vẹn của dữ liệu API giữa Spring Boot và hệ thống MoMo.
+  - Cung cấp API Webhook /momo/ipn (Server-to-Server) để nhận thông báo thanh toán thành công và tự động thay đổi trạng thái đơn hàng sang PAID.
+* **Tự Động Hủy Đơn Hàng Bị Treo (Spring Scheduling)**:
+  - Kích hoạt Spring Boot Scheduling (@EnableScheduling) kết hợp với hàm chạy ngầm định kỳ (@Scheduled) bên trong OrderCleanupService.
+  - Tự động truy quét toàn bộ cơ sở dữ liệu mỗi phút để xác định các hóa đơn thanh toán trực tuyến (MOMO, VNPAY) ở trạng thái bị kẹt (PENDING) và có thời gian tạo vượt quá 15 phút.
+  - Hệ thống tự động chuyển trạng thái hóa đơn sang **Đã hủy** (3) và hoàn trả toàn bộ số lượng sản phẩm liên quan vào kho, giải quyết bài toán chống chiếm dụng hàng hóa và tối ưu hóa hàng tồn kho hiệu quả.

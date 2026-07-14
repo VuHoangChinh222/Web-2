@@ -52,10 +52,10 @@ const UserProfileHeader = ({ customer, totalSpent, vipRank, navigate, onLogout }
         <button className="user-profile-edit-btn" onClick={() => navigate('user-info')}>
           <i className="fa-solid fa-user-pen"></i> Sửa thông tin
         </button>
-        <button className="btn btn-outline user-profile-logout-btn" onClick={() => navigate('addresses')}>
+        <button className="user-profile-logout-btn" onClick={() => navigate('addresses')}>
           <i className="fa-solid fa-location-dot"></i> Địa chỉ nhận hàng
         </button>
-        <button className="btn btn-outline user-profile-logout-btn" onClick={onLogout}>
+        <button className="user-profile-logout-btn" onClick={onLogout}>
           <i className="fa-solid fa-right-from-bracket"></i> Đăng xuất
         </button>
       </div>

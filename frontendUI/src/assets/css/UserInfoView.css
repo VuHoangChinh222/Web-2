@@ -74,6 +74,8 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    white-space: nowrap;
+    overflow-x: auto;
 }
 
 /* Huy hiệu hạng thành viên */
@@ -127,6 +129,20 @@
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+}
+
+.user-profile-logout-btn:hover {
+    background-color: var(--accent);
+    color: white;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
 }
 
 /* Lịch sử đơn hàng */

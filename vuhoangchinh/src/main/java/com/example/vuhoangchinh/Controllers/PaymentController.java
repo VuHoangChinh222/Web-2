@@ -91,6 +91,12 @@ public class PaymentController {
                 if (!"PAID".equals(order.getPaymentStatus())) {
                     order.setPaymentStatus("PAID");
                     orderRepository.save(order);
+                    
+                    try {
+                        emailService.sendOrderConfirmationEmail(order.getCustomer(), order, order.getOrderDetails());
+                    } catch (Exception e) {
+                        System.err.println("Không thể kích hoạt gửi mail: " + e.getMessage());
+                    }
                 }
                 response.put("success", true);
                 response.put("message", "Thanh toán đơn hàng thành công!");
@@ -172,6 +178,11 @@ public class PaymentController {
             String responseCode = allParams.get("vnp_ResponseCode");
             if ("00".equals(responseCode)) {
                 order.setPaymentStatus("PAID");
+                try {
+                    emailService.sendOrderConfirmationEmail(order.getCustomer(), order, order.getOrderDetails());
+                } catch (Exception e) {
+                    System.err.println("Không thể kích hoạt gửi mail: " + e.getMessage());
+                }
             } else {
                 order.setPaymentStatus("FAILED");
                 order.setOrderStatus("3"); // Cập nhật trạng thái đơn hàng thành CANCELLED (3)
@@ -255,6 +266,12 @@ public class PaymentController {
                 if (!"PAID".equals(order.getPaymentStatus())) {
                     order.setPaymentStatus("PAID");
                     orderRepository.save(order);
+                    
+                    try {
+                        emailService.sendOrderConfirmationEmail(order.getCustomer(), order, order.getOrderDetails());
+                    } catch (Exception e) {
+                        System.err.println("Không thể kích hoạt gửi mail: " + e.getMessage());
+                    }
                 }
                 response.put("success", true);
                 response.put("message", "Thanh toán đơn hàng qua MoMo thành công!");
@@ -326,6 +343,11 @@ public class PaymentController {
             String resultCode = allParams.get("resultCode");
             if ("0".equals(resultCode)) {
                 order.setPaymentStatus("PAID");
+                try {
+                    emailService.sendOrderConfirmationEmail(order.getCustomer(), order, order.getOrderDetails());
+                } catch (Exception e) {
+                    System.err.println("Không thể kích hoạt gửi mail: " + e.getMessage());
+                }
             } else {
                 order.setPaymentStatus("FAILED");
                 order.setOrderStatus("3"); // Hủy đơn

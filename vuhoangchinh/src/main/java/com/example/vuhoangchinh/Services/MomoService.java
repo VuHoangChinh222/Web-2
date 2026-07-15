@@ -23,11 +23,15 @@ public class MomoService {
     /**
      * Tạo đường dẫn thanh toán sang MoMo Sandbox
      */
-    public Map<String, Object> createPaymentUrl(Order order, String requestType) {
+    public Map<String, Object> createPaymentUrl(Order order, String requestType, String customRedirectUrl) {
         String partnerCode = momoConfig.getPartnerCode();
         String accessKey = momoConfig.getAccessKey();
         String secretKey = momoConfig.getSecretKey();
-        String redirectUrl = momoConfig.getRedirectUrl();
+        
+        String redirectUrl = (customRedirectUrl != null && !customRedirectUrl.isEmpty())
+            ? customRedirectUrl
+            : momoConfig.getRedirectUrl();
+            
         String ipnUrl = momoConfig.getIpnUrl();
         
         String orderId = order.getOrderCode();

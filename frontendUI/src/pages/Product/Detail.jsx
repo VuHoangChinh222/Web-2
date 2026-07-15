@@ -80,11 +80,12 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
         // Load Variants
         productVariantService.getVariantsByProductId(data.id)
           .then(res => {
-            const activeVariants = res.content ? res.content.filter(v => v.status === 1) : [];
+            const list = res?.content || res?.Content || (Array.isArray(res) ? res : []);
+            const activeVariants = list.filter(v => v.status === 1);
             setVariants(activeVariants);
 
             if (activeVariants.length > 0) {
-              const colors = [...new Set(activeVariants.map(v => v.color).filter(Boolean))];
+              const colors = [...new Set(activeVariants.map(v => v.color).filter(c => c && c !== 'Mặc định'))];
               setAvailableColors(colors);
               if (colors.length > 0) setSelectedColor(colors[0]);
             }

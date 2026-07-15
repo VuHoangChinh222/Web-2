@@ -41,12 +41,12 @@ public class PaymentController {
      * POST /api/payment/vnpay/create?orderId=...
      */
     @PostMapping("/vnpay/create")
-    public ResponseEntity<?> createVnPayPayment(@RequestParam Long orderId, HttpServletRequest request) {
+    public ResponseEntity<?> createVnPayPayment(@RequestParam Long orderId, @RequestParam(required = false) String returnUrl, HttpServletRequest request) {
         try {
             Order order = orderRepository.findById(orderId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID " + orderId));
 
-            String paymentUrl = vnPayService.createPaymentUrl(order, request);
+            String paymentUrl = vnPayService.createPaymentUrl(order, returnUrl, request);
             
             Map<String, String> response = new HashMap<>();
             response.put("paymentUrl", paymentUrl);
@@ -211,12 +211,12 @@ public class PaymentController {
      * POST /api/payment/momo/create?orderId=...
      */
     @PostMapping("/momo/create")
-    public ResponseEntity<?> createMomoPayment(@RequestParam Long orderId, @RequestParam(required = false, defaultValue = "captureWallet") String requestType) {
+    public ResponseEntity<?> createMomoPayment(@RequestParam Long orderId, @RequestParam(required = false, defaultValue = "captureWallet") String requestType, @RequestParam(required = false) String redirectUrl) {
         try {
             Order order = orderRepository.findById(orderId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID " + orderId));
             
-            Map<String, Object> momoResponse = momoService.createPaymentUrl(order, requestType);
+            Map<String, Object> momoResponse = momoService.createPaymentUrl(order, requestType, redirectUrl);
             
             if (momoResponse != null && Integer.valueOf(0).equals(momoResponse.get("resultCode"))) {
                 String payUrl = (String) momoResponse.get("payUrl");

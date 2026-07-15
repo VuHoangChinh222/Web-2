@@ -23,7 +23,7 @@ public class VnPayService {
      * @param request HttpServletRequest để lấy IP client
      * @return Chuỗi URL chuyển hướng thanh toán
      */
-    public String createPaymentUrl(Order order, HttpServletRequest request) {
+    public String createPaymentUrl(Order order, String customReturnUrl, HttpServletRequest request) {
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         
@@ -45,12 +45,17 @@ public class VnPayService {
         vnp_Params.put("vnp_OrderInfo", vnp_OrderInfo);
         vnp_Params.put("vnp_OrderType", vnp_OrderType);
         vnp_Params.put("vnp_Locale", vnp_Locale);
-        vnp_Params.put("vnp_ReturnUrl", vnPayConfig.getReturnUrl());
+        
+        String returnUrl = (customReturnUrl != null && !customReturnUrl.isEmpty()) 
+            ? customReturnUrl 
+            : vnPayConfig.getReturnUrl();
+        vnp_Params.put("vnp_ReturnUrl", returnUrl);
         vnp_Params.put("vnp_IpAddr", VnPayConfig.getIpAddress(request));
 
         // Định dạng thời gian Giao dịch và thời gian hết hạn (15 phút sau)
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         String vnp_CreateDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
         

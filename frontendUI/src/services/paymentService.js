@@ -3,7 +3,8 @@ import axiosClient from '../axiosClient';
 const paymentService = {
     // Gọi API để lấy đường dẫn thanh toán VNPay
     createVnPayPayment: (orderId) => {
-        return axiosClient.post(`/payment/vnpay/create?orderId=${orderId}`);
+        const returnUrl = window.location.origin + '/payment-result?gateway=vnpay';
+        return axiosClient.post(`/payment/vnpay/create?orderId=${orderId}&returnUrl=${encodeURIComponent(returnUrl)}`);
     },
 
     // Gọi API để xác thực chữ ký kết quả thanh toán từ VNPay
@@ -14,7 +15,8 @@ const paymentService = {
 
     // Gọi API để lấy đường dẫn thanh toán MoMo
     createMomoPayment: (orderId, requestType = 'captureWallet') => {
-        return axiosClient.post(`/payment/momo/create?orderId=${orderId}&requestType=${requestType}`);
+        const redirectUrl = window.location.origin + '/payment-result?gateway=momo';
+        return axiosClient.post(`/payment/momo/create?orderId=${orderId}&requestType=${requestType}&redirectUrl=${encodeURIComponent(redirectUrl)}`);
     },
 
     // Gọi API để xác thực chữ ký kết quả thanh toán từ MoMo

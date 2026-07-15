@@ -1,5 +1,10 @@
 # Hệ Thống Quản Trị & API Bán Hàng (Sales Admin Dashboard & Spring Boot REST API)
 
+## 🌐 Đường Dẫn Dự Án Trực Tuyến (Production Live Links)
+* **Trang bán hàng (Client Store)**: [https://shop-web-inky.vercel.app](https://shop-web-inky.vercel.app)
+* **Máy chủ API (Production Backend)**: [https://java-spring-boot-api-ijoc.onrender.com](https://java-spring-boot-api-ijoc.onrender.com)
+* **API Trợ lý AI (AI Chatbot API)**: [https://chat-bot-ai-k2z9.onrender.com](https://chat-bot-ai-k2z9.onrender.com)
+
 ## 📝 Mô Tả Cơ Bản
 
 Dự án **Hệ Thống Quản Trị & API Bán Hàng** là một giải pháp quản lý bán hàng và thương mại điện tử khép kín, an toàn và chuyên nghiệp. Dự án được phân tách rõ ràng thành ba phân hệ độc lập:
@@ -611,6 +616,12 @@ web2/
 * **Dropdown chọn địa chỉ trong Form Khách hàng**: Nâng cấp modal thêm mới/sửa thông tin khách hàng (`CustomerFormModal.jsx`) chuyển đổi ô nhập địa chỉ thô thành dải dropdown chọn **Tỉnh/Thành phố, Quận/Huyện, Phường/Xã** kết hợp với ô nhập chi tiết (Số nhà, tên đường), tự động đồng bộ hóa với cơ chế lưu địa chỉ giao hàng mặc định của CSDL.
 
 ### 2. Tích hợp thành công Cổng Thanh toán Trực tuyến VNPay (Hoàn thành)
+* **Đồng bộ hóa múi giờ (Timezone Stabilization)**:
+  - Khắc phục lỗi lệch múi giờ (UTC vs ICT) dẫn tới thông báo giao dịch quá thời gian thanh toán (Transaction Expired) trên cổng Sandbox.
+  - Ép buộc múi giờ `Asia/Ho_Chi_Minh` (GMT+7) trong `VnPayService.java` khi định dạng trường ngày khởi tạo `vnp_CreateDate` và ngày hết hạn `vnp_ExpireDate` (15 phút).
+* **Địa chỉ phản hồi động (Dynamic Callback URLs)**:
+  - Decouple cấu hình callback tĩnh. Cho phép Frontend React truyền động URL nhận kết quả (`returnUrl`) thông qua API Parameter.
+  - Tự động nhận diện môi trường chạy (Localhost hoặc Production Vercel) qua `window.location.origin` trên Frontend để định tuyến chính xác sau khi hoàn tất giao dịch.
 * **Quy trình hoạt động**: Áp dụng luồng xử lý giao dịch chuẩn: **Redirect** (Client sang Cổng thanh toán) kết hợp **IPN Callback** (Cổng thanh toán bắn tin xác thực Server-to-Server) bảo đảm an toàn dữ liệu và chống gian lận.
 * **Tầng Backend (Spring Boot)**:
   - Cấu hình credentials môi trường Sandbox của VNPay (`S32UGW9B`, `0SL8E4HWY75AI6BQ1VS5FXYR3WKNQCCE`) vào `application.properties`.
@@ -627,6 +638,9 @@ web2/
 
 
 ### 3. Tích hợp Cổng Thanh toán MoMo & Tự Động Hủy Đơn Treo (Hoàn thành)
+* **Địa chỉ chuyển hướng động (Dynamic Redirect URLs)**:
+  - Hỗ trợ truyền động địa chỉ chuyển hướng nhận kết quả (`redirectUrl`) từ Frontend qua API.
+  - Tự động phát hiện môi trường chạy của client (localhost hoặc vercel) qua `window.location.origin` để chuyển hướng chính xác sau khi thanh toán trên MoMo.
 * **Thanh toán MoMo Đa Phương Thức**: 
   - Khách hàng có 2 tùy chọn riêng biệt: **Ví MoMo (Quét QR)** (captureWallet) và **Thẻ ATM nội địa MoMo** (payWithATM), cho phép kiểm thử trực tiếp trên trình duyệt mà không bắt buộc dùng điện thoại quét mã Sandbox.
   - Tích hợp bảo mật băm HMAC-SHA256 để ký và xác thực dữ liệu API giữa hệ thống và MoMo. Cung cấp API Webhook /momo/ipn Server-to-Server để tự động cập nhật trạng thái đơn hàng khi thanh toán thành công.
@@ -634,3 +648,10 @@ web2/
   - Áp dụng cấu hình Spring Boot Scheduling (@EnableScheduling) kết hợp với hàm chạy ngầm (@Scheduled) trong OrderCleanupService.
   - Hệ thống tự động truy quét mỗi phút, xác định các hóa đơn thanh toán trực tuyến (MOMO, VNPAY) ở trạng thái kẹt (PENDING) quá hạn 15 phút do người dùng đóng trình duyệt đột ngột hoặc bỏ dở thanh toán.
   - Tự động thay đổi trạng thái đơn hàng sang **Đã hủy** và hoàn trả toàn bộ số lượng sản phẩm liên quan vào kho, tối ưu tài nguyên lưu trữ và chống chiếm dụng hàng hóa.
+
+### 4. Tối ưu hóa Trợ lý AI (AI Chatbot) cho các câu hỏi tổng quan (Hoàn thành)
+* **Truy vấn lai (Hybrid RAG Search)**:
+  - Khắc phục giới hạn của Vector Search thuần túy (chỉ lấy Top 3 sản phẩm có mô tả tương đồng nhất với câu hỏi) khiến chatbot trả lời sai về giá cao nhất/thấp nhất hoặc sản phẩm bán chạy nhất.
+  - Tích hợp bộ nhận diện từ khóa phân tích tổng quan (`đắt nhất`, `rẻ nhất`, `bán chạy`, `best seller`, `bao nhiêu sản phẩm`, `phổ biến nhất`).
+  - Khi phát hiện câu hỏi tổng quan, chatbot tự động sử dụng phương thức `collection.get()` để nạp toàn bộ danh mục sản phẩm của cửa hàng vào ngữ cảnh (context) của mô hình **Gemini 3.5 Flash**, cho phép AI so sánh giá tiền và nhãn đặc biệt để đưa ra câu trả lời chính xác 100%.
+  - Khi hỏi chi tiết từng sản phẩm cụ thể, hệ thống tự động fallback về Vector Search (`collection.query`) với `n_results=3` để tối ưu hóa tốc độ và tài nguyên.

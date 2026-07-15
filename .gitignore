@@ -5,3 +5,4 @@ ai_chatbot/.env
 ai_chatbot/chroma_data/
 __pycache__/
 *.pyc
+CONTEXT_PROJECT.md

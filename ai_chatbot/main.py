@@ -20,6 +20,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="AI Sales Assistant API")
 
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8080").rstrip("/")
+
 # Cấu hình CORS để cho phép React Frontend kết nối
 app.add_middleware(
     CORSMiddleware,
@@ -62,7 +64,7 @@ import requests
 # Hàm kiểm tra sản phẩm có phải bán chạy nhất không
 def check_is_best_seller(p_id: str) -> bool:
     try:
-        bs_response = requests.get("http://localhost:8080/api/products/best-sellers")
+        bs_response = requests.get(f"{BACKEND_URL}/api/products/best-sellers")
         if bs_response.status_code == 200:
             bs_data = bs_response.json()
             for item in bs_data:
@@ -140,7 +142,7 @@ async def sync_all_from_source():
     """API đặc biệt: Gọi 1 lần để kéo toàn bộ dữ liệu từ Java sang AI (Pull)"""
     try:
         # Gọi API của Java để lấy danh sách sản phẩm
-        java_api_url = "http://localhost:8080/api/products?size=10000"
+        java_api_url = f"{BACKEND_URL}/api/products?size=10000"
         response = requests.get(java_api_url)
         if response.status_code != 200:
             return {"status": "error", "message": "Không thể kết nối đến Java Server"}
@@ -151,7 +153,7 @@ async def sync_all_from_source():
         # Lấy danh sách sản phẩm bán chạy để đánh nhãn
         best_sellers_ids = []
         try:
-            bs_response = requests.get("http://localhost:8080/api/products/best-sellers")
+            bs_response = requests.get(f"{BACKEND_URL}/api/products/best-sellers")
             if bs_response.status_code == 200:
                 bs_data = bs_response.json()
                 best_sellers_ids = [str(item.get("id")) for item in bs_data]

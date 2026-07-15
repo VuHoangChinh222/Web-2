@@ -247,3 +247,13 @@ Hệ thống sở hữu tính năng **Đồng bộ thời gian thực** từ Bac
   - Kích hoạt Spring Boot Scheduling (@EnableScheduling) kết hợp với hàm chạy ngầm định kỳ (@Scheduled) bên trong OrderCleanupService.
   - Tự động truy quét toàn bộ cơ sở dữ liệu mỗi phút để xác định các hóa đơn thanh toán trực tuyến (MOMO, VNPAY) ở trạng thái bị kẹt (PENDING) và có thời gian tạo vượt quá 15 phút.
   - Hệ thống tự động chuyển trạng thái hóa đơn sang **Đã hủy** (3) và hoàn trả toàn bộ số lượng sản phẩm liên quan vào kho, giải quyết bài toán chống chiếm dụng hàng hóa và tối ưu hóa hàng tồn kho hiệu quả.
+
+
+### 9. Tối ưu Giao diện Thanh toán và Hồ sơ Người dùng (Hoàn thành)
+* **Trang Thanh toán (Checkout)**:
+  - Gỡ bỏ tùy chọn thanh toán Thẻ tín dụng/Ghi nợ và form nhập số thẻ ảo để tập trung vào các cổng thanh toán thực tế (VNPay, MoMo).
+  - Lược bỏ chức năng quét mã QR MoMo, chỉ giữ lại thanh toán qua Thẻ ATM MoMo nhằm tối ưu hóa trải nghiệm kiểm thử trực tiếp trên trình duyệt máy tính.
+  - Thiết kế lại các nút thanh toán: thay thế các icon mặc định bằng dạng Text Logo (VNPAY, MoMo) kết hợp phối màu thương hiệu để tăng tính chuyên nghiệp.
+* **Trang Hồ sơ Khách hàng (User Profile)**:
+  - Sửa lỗi đứt dòng (line break) ở phần hiển thị huy hiệu cấp bậc khách hàng và tổng chi tiêu bằng thuộc tính white-space: nowrap.
+  - Đồng bộ hóa thiết kế (font-size, padding, hiệu ứng hover, căn chỉnh icon) của cụm nút hành động (Sửa thông tin, Địa chỉ nhận hàng, Đăng xuất) giúp giao diện trông gọn gàng và nhất quán hơn.

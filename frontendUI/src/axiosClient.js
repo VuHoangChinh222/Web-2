@@ -8,7 +8,7 @@ const axiosClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 10000, // Thời gian tối đa chờ phản hồi từ server (10 giây)
+    timeout: 60000, // Thời gian tối đa chờ phản hồi từ server (60 giây cho Render Free Tier)
 });
 
 // Thêm Request Interceptor để tự động đính kèm JWT Token vào Header

@@ -30,7 +30,9 @@ const OrderSummary = ({ cart }) => {
               <div>
                 <h4 className="checkout-item-title">{item.name}</h4>
                 <span className="checkout-item-details-text">
-                  Size: {item.size} &nbsp;&bull;&nbsp; Màu: {item.color || 'Mặc định'} &nbsp;&bull;&nbsp; Số lượng: {item.qty}
+                  {item.size && item.size !== 'Mặc định' && <span>Size: {item.size} &nbsp;&bull;&nbsp; </span>}
+                  {item.color && item.color !== 'Mặc định' && <span>Màu: {item.color} &nbsp;&bull;&nbsp; </span>}
+                  Số lượng: {item.qty}
                 </span>
               </div>
             </div>

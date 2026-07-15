@@ -49,7 +49,7 @@ public class VnPayService {
         vnp_Params.put("vnp_IpAddr", VnPayConfig.getIpAddress(request));
 
         // Định dạng thời gian Giao dịch và thời gian hết hạn (15 phút sau)
-        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         String vnp_CreateDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_CreateDate", vnp_CreateDate);

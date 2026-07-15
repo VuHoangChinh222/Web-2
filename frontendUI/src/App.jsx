@@ -253,7 +253,7 @@ const App = () => {
       return false;
     }
 
-    const existing = cart.find(item => item.id === product.id && item.size === size && (item.color || 'Mặc định') === (product.color || 'Mặc định'));
+    const existing = cart.find(item => item.id === product.id && item.size === size && (item.color || '') === (product.color || ''));
     if (existing) {
       setCart(cart.map(item => item.cartId === existing.cartId ? { ...item, qty: existing.qty + qty } : item));
     } else {

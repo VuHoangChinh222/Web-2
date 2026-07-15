@@ -30,8 +30,8 @@ const CartView = ({ cart, updateQty, removeFromCart, navigate }) => {
                 <div className="cart-item-details">
                   <h4>{item.name}</h4>
                   <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', display: 'flex', gap: '12px', marginTop: '4px' }}>
-                    <span>Size: {item.size}</span>
-                    <span>Màu: {item.color || 'Mặc định'}</span>
+                    {item.size && item.size !== 'Mặc định' && <span>Size: {item.size}</span>}
+                    {item.color && item.color !== 'Mặc định' && <span>Màu: {item.color}</span>}
                   </div>
                   <div className="cart-item-price">{formatPrice(item.price)}</div>
                 </div>

@@ -277,11 +277,11 @@ const ProductDetailView = ({ params, addToCart, navigate }) => {
       categoryName: product.categoryName,
       stockQuantity: stockQuantity,
       variantId: currentVariant ? currentVariant.id : null,
-      color: selectedColor || 'Mặc định',
+      color: selectedColor || '',
       size: availableSizes.length > 0 ? selectedSize : size
     };
 
-    const success = addToCart(productForCart, productForCart.size, qty, selectedColor);
+    const success = addToCart(productForCart, productForCart.size, qty);
     if (success) {
       // navigate('cart');
       // Hiển thị thông báo thành công

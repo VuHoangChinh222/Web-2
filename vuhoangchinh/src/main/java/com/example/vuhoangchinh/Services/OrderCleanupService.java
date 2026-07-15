@@ -29,7 +29,7 @@ public class OrderCleanupService {
     public void cancelAbandonedOrders() {
         // Lấy thời điểm hiện tại và lùi về 1 phút trước
         // Bất kỳ đơn hàng nào tạo trước cutoffTime đều được coi là quá hạn
-        LocalDateTime cutoffTime = LocalDateTime.now().minusMinutes(1);
+        LocalDateTime cutoffTime = LocalDateTime.now().minusMinutes(15);
         
         // Tìm các đơn hàng online (MOMO, VNPAY) có paymentStatus là PENDING
         List<Order> abandonedOrders = orderRepository.findAbandonedOnlineOrders(cutoffTime);

@@ -9,7 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { getCookie, setCookie } from '../../utils/cookieHelper';
 import customerService from '../../services/customerService';
 import IsLoading from '../../components/IsLoading';
-import { resolveImageUrl } from '../../config';
+import { resolveImageUrl, API_BASE_URL } from '../../config';
 import '../../assets/css/UserInfoView.css';
 
 const UserInfo = ({ navigate }) => {
@@ -30,7 +30,7 @@ const UserInfo = ({ navigate }) => {
       const formData = new FormData();
       formData.append('file', file);
       try {
-        const response = await fetch('http://localhost:8080/api/uploads/image', {
+        const response = await fetch(`${API_BASE_URL}/uploads/image`, {
           method: 'POST',
           body: formData,
         });

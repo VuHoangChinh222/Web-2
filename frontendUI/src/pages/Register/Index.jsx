@@ -6,6 +6,8 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import { API_BASE_URL } from '../../config';
 import customerService from '../../services/customerService';
 import { getCookie } from '../../utils/cookieHelper';
 import { resolveImageUrl } from '../../config';
@@ -40,7 +42,7 @@ const RegisterView = () => {
       const formData = new FormData();
       formData.append('file', file);
       try {
-        const response = await fetch('http://localhost:8080/api/uploads/image', {
+        const response = await fetch(`${API_BASE_URL}/uploads/image`, {
           method: 'POST',
           body: formData,
         });
